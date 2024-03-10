@@ -4,6 +4,9 @@ namespace POP
     using System;
     using System.Collections.Generic;
     using static System.ArgumentNullException;
+
+
+#pragma warning disable CS0659
     public class Literal : ICloneable
     {
         private string name;
@@ -106,5 +109,8 @@ namespace POP
             return new Literal(this, this.BoundVariables);
         }
 #nullable restore warnings
+
+
     }
+#pragma warning restore CS0659
 }
