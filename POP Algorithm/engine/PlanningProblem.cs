@@ -20,12 +20,10 @@ namespace POP
         public List<Literal> InitialState
         {
             get { return initialState; }
-            set { initialState = value; }
         }
         public List<Literal> GoalState
         {
             get { return goalState; }
-            set { goalState = value; }
         }
 
         public List<Literal> Literals
@@ -42,8 +40,8 @@ namespace POP
             ThrowIfNull(goalState, nameof(goalState));
 
             this.Operators = operators;
-            this.InitialState = initialState;
-            this.GoalState = goalState;
+            this.initialState = initialState;
+            this.goalState = goalState;
 
             foreach (Operator op in operators)
             {

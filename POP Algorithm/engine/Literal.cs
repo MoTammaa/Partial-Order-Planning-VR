@@ -4,7 +4,7 @@ namespace POP
     using System;
     using System.Collections.Generic;
     using static System.ArgumentNullException;
-    public class Literal
+    public class Literal : ICloneable
     {
         private string name;
         private bool isPositive;
@@ -47,9 +47,9 @@ namespace POP
         public Literal(Literal l, Dictionary<string, string>? boundVariables = null)
         {
             ThrowIfNull(l, nameof(l));
-            this.Name = l.Name;
+            this.Name = l.Name.Clone() as string ?? "";
             this.IsPositive = l.IsPositive;
-            this.Variables = l.Variables;
+            this.Variables = l.Variables.Clone() as string[] ?? Array.Empty<string>();
             this.BoundVariables = boundVariables ?? new Dictionary<string, string>();
         }
 
@@ -99,6 +99,11 @@ namespace POP
         {
             // TODO: Implement unifiesWith
             return false;
+        }
+
+        public object Clone()
+        {
+            return new Literal(this, this.BoundVariables);
         }
 #nullable restore warnings
     }

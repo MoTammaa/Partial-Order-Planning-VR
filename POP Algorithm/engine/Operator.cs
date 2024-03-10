@@ -9,7 +9,7 @@ namespace POP
 
         private string name;
         private List<Literal> effects, preconditions;
-        private List<string> variables;
+        private string[] variables;
 
         public string Name
         {
@@ -30,19 +30,20 @@ namespace POP
             set { preconditions = value; }
         }
 
-        public List<string> Variables
+        public string[] Variables
         {
             get { return variables; }
             set { variables = value; }
         }
 
 #nullable disable warnings
-        public Operator(string name, List<Literal> effects, List<Literal> preconditions, List<string> variables)
+        public Operator(string name, List<Literal> effects, List<Literal> preconditions, string[]? variables = null)
         {
             ThrowIfNull(name, nameof(name));
             ThrowIfNull(effects, nameof(effects));
             ThrowIfNull(preconditions, nameof(preconditions));
-            ThrowIfNull(variables, nameof(variables));
+            this.Variables = variables ?? new string[0];
+
 
             this.Name = name;
             this.Effects = effects;
