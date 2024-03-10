@@ -1,8 +1,9 @@
-using System;
-using System.Collections.Generic;
 
 namespace POP
 {
+    using System;
+    using System.Collections.Generic;
+    using static System.ArgumentNullException;
     public class Literal
     {
         private string name;
@@ -30,10 +31,19 @@ namespace POP
             get { return boundVariables; }
             set { boundVariables = value; }
         }
-
-        public Literal()
+#nullable disable warnings
+        public Literal(string name, bool isPositive, string[] variables, Dictionary<string, string> boundVariables)
         {
+            ThrowIfNull(name, nameof(name));
+            ThrowIfNull(variables, nameof(variables));
+            ThrowIfNull(boundVariables, nameof(boundVariables));
+
+            this.Name = name;
+            this.IsPositive = isPositive;
+            this.Variables = variables;
+            this.BoundVariables = boundVariables;
 
         }
+#nullable restore warnings
     }
 }

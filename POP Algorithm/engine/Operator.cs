@@ -1,14 +1,14 @@
-using System;
-using System.Runtime.CompilerServices;
 
 namespace POP
 {
+    using System.Collections.Generic;
+    using static System.ArgumentNullException;
+
     public class Operator
     {
 
         private string name;
-        private List<Literal> effects;
-        private List<Literal> preconditions;
+        private List<Literal> effects, preconditions;
         private List<string> variables;
 
         public string Name
@@ -16,6 +16,7 @@ namespace POP
             get { return name; }
             set { name = value; }
         }
+
 
         public List<Literal> Effects
         {
@@ -35,9 +36,20 @@ namespace POP
             set { variables = value; }
         }
 
-        public Operator()
+#nullable disable warnings
+        public Operator(string name, List<Literal> effects, List<Literal> preconditions, List<string> variables)
         {
+            ThrowIfNull(name, nameof(name));
+            ThrowIfNull(effects, nameof(effects));
+            ThrowIfNull(preconditions, nameof(preconditions));
+            ThrowIfNull(variables, nameof(variables));
+
+            this.Name = name;
+            this.Effects = effects;
+            this.Preconditions = preconditions;
+            this.Variables = variables;
 
         }
+#nullable restore warnings
     }
 }

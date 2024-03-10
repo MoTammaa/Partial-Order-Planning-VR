@@ -1,8 +1,9 @@
-using System;
-
 
 namespace POP
 {
+    using System;
+
+    using static System.ArgumentNullException;
     public enum Operation
     {
         EQUALS,
@@ -19,6 +20,7 @@ namespace POP
     {
         private string var1, var2;
         private bool isVar1Constant = false, isVar2Constant = false;
+        private Operation operation;
 
         public string Var1
         {
@@ -40,12 +42,27 @@ namespace POP
             get { return isVar2Constant; }
             set { isVar2Constant = value; }
         }
-
-
-        public BindingConstraint()
+        public Operation Operation
         {
-
+            get { return operation; }
+            set { operation = value; }
         }
+
+#nullable disable warnings
+        public BindingConstraint(string var1, string var2, bool isVar1Constant, bool isVar2Constant, Operation operation)
+        {
+            ThrowIfNull(var1, nameof(var1));
+            ThrowIfNull(var2, nameof(var2));
+            ThrowIfNull(operation, nameof(operation));
+
+            this.Var1 = var1;
+            this.Var2 = var2;
+            this.IsVar1Constant = isVar1Constant;
+            this.IsVar2Constant = isVar2Constant;
+            this.Operation = operation;
+        }
+#nullable restore warnings
+
         public static string OpToString(Operation op)
         {
             switch (op)

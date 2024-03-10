@@ -1,7 +1,9 @@
-using System;
 
 namespace POP
 {
+    using System;
+    using static System.ArgumentNullException;
+
     public class CausalLink
     {
         private Action produceri;
@@ -24,9 +26,17 @@ namespace POP
             set { consumerj = value; }
         }
 
-        public CausalLink()
+#nullable disable warnings
+        public CausalLink(Action produceri, List<Literal> linkConditions, Action consumerj)
         {
+            ThrowIfNull(produceri, nameof(produceri));
+            ThrowIfNull(linkConditions, nameof(linkConditions));
+            ThrowIfNull(consumerj, nameof(consumerj));
 
+            this.Produceri = produceri;
+            this.LinkConditions = linkConditions;
+            this.Consumerj = consumerj;
         }
+#nullable restore warnings
     }
 }
