@@ -70,3 +70,34 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+
+# C# Console App specific ignore
+# Compiled binary files
+*.exe
+*.dll
+*.pdb
+
+# NuGet packages
+*.nupkg
+
+# User-specific files
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Oo]bj/
+[Bb]in/
+
+# Visual Studio files
+.vscode/
+*.sln
+*.suo
+*.csproj
+*.csproj.user
+*.config
+*.vs/
+
