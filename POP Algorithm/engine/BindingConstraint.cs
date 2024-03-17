@@ -4,106 +4,45 @@ namespace POP
     using System;
 
     using static System.ArgumentNullException;
-    public enum Operation
-    {
-        EQUALS,
-        NOT_EQUALS,
-        LESS_THAN,
-        GREATER_THAN,
-        LESS_THAN_OR_EQUAL,
-        GREATER_THAN_OR_EQUAL
-    }
 
 
 
     public class BindingConstraint
     {
-        private string var1, var2;
-        private bool isVar1Constant = false, isVar2Constant = false;
-        private Operation operation;
+        private string variable;
+        private List<string> bounds;
 
-        public string Var1
+        private bool isEqBelong;
+
+        public string Variable
         {
-            get { return var1; }
-            set { var1 = value; }
+            get { return variable; }
+            set { variable = value; }
         }
-        public string Var2
+        public List<string> Bounds
         {
-            get { return var2; }
-            set { var2 = value; }
+            get { return bounds; }
+            set { bounds = value; }
         }
-        public bool IsVar1Constant
+        public bool IsEqBelong
         {
-            get { return isVar1Constant; }
-            set { isVar1Constant = value; }
+            get { return isEqBelong; }
+            set { isEqBelong = value; }
         }
-        public bool IsVar2Constant
-        {
-            get { return isVar2Constant; }
-            set { isVar2Constant = value; }
-        }
-        public Operation Operation
-        {
-            get { return operation; }
-            set { operation = value; }
-        }
+
 
 #nullable disable warnings
-        public BindingConstraint(string var1, string var2, bool isVar1Constant, bool isVar2Constant, Operation operation)
+        public BindingConstraint(string variable, List<string> bounds, bool isEqBelong)
         {
-            ThrowIfNull(var1, nameof(var1));
-            ThrowIfNull(var2, nameof(var2));
-            ThrowIfNull(operation, nameof(operation));
+            ThrowIfNull(variable, nameof(variable));
+            ThrowIfNull(bounds, nameof(bounds));
 
-            this.Var1 = var1;
-            this.Var2 = var2;
-            this.IsVar1Constant = isVar1Constant;
-            this.IsVar2Constant = isVar2Constant;
-            this.Operation = operation;
+            this.Variable = variable;
+            this.Bounds = bounds;
+            this.IsEqBelong = isEqBelong;
         }
 #nullable restore warnings
 
-        public static string OpToString(Operation op)
-        {
-            switch (op)
-            {
-                case Operation.EQUALS:
-                    return "=";
-                case Operation.NOT_EQUALS:
-                    return "!=";
-                case Operation.LESS_THAN:
-                    return "<";
-                case Operation.GREATER_THAN:
-                    return ">";
-                case Operation.LESS_THAN_OR_EQUAL:
-                    return "<=";
-                case Operation.GREATER_THAN_OR_EQUAL:
-                    return ">=";
-                default:
-                    throw new Exception("Invalid operation");
-            }
-        }
-
-        public static Operation StringToOp(string op)
-        {
-            switch (op)
-            {
-                case "=":
-                    return Operation.EQUALS;
-                case "!=":
-                    return Operation.NOT_EQUALS;
-                case "<":
-                    return Operation.LESS_THAN;
-                case ">":
-                    return Operation.GREATER_THAN;
-                case "<=":
-                    return Operation.LESS_THAN_OR_EQUAL;
-                case ">=":
-                    return Operation.GREATER_THAN_OR_EQUAL;
-                default:
-                    throw new Exception("Invalid operation");
-            }
-        }
 
     }
 }

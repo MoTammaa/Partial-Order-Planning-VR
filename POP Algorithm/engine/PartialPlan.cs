@@ -5,17 +5,17 @@ namespace POP
 
     public class PartialPlan
     {
-        private List<Action> actions;
-        private List<CausalLink> causalLinks;
+        private HashSet<Action> actions;
+        private HashSet<CausalLink> causalLinks;
         private List<BindingConstraint> bindingConstraints;
         private List<Tuple<Action, Action>> orderingConstraints;
 
-        public List<Action> Actions
+        public HashSet<Action> Actions
         {
             get { return actions; }
             set { actions = value; }
         }
-        public List<CausalLink> CausalLinks
+        public HashSet<CausalLink> CausalLinks
         {
             get { return causalLinks; }
             set { causalLinks = value; }
@@ -32,7 +32,7 @@ namespace POP
         }
 
 #nullable disable warnings
-        public PartialPlan(List<Action> actions, List<CausalLink> causalLinks, List<BindingConstraint> bindingConstraints, List<Tuple<Action, Action>> orderingConstraints)
+        public PartialPlan(HashSet<Action> actions, HashSet<CausalLink> causalLinks, List<BindingConstraint> bindingConstraints, List<Tuple<Action, Action>> orderingConstraints)
         {
             ThrowIfNull(actions, nameof(actions));
             ThrowIfNull(orderingConstraints, nameof(orderingConstraints));

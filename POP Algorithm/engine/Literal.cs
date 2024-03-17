@@ -7,12 +7,12 @@ namespace POP
 
 
 #pragma warning disable CS0659
-    public class Literal : ICloneable
+    public class Literal : ICloneable, IEquatable<Literal>
     {
         private string name;
         private bool isPositive;
         private string[] variables;
-        private Dictionary<string, string> boundVariables = new Dictionary<string, string>();
+        //private Dictionary<string, string> boundVariables = new Dictionary<string, string>();
 
         public string Name
         {
@@ -29,11 +29,11 @@ namespace POP
             get { return variables; }
             set { variables = value; }
         }
-        public Dictionary<string, string> BoundVariables
-        {
-            get { return boundVariables; }
-            set { boundVariables = value; }
-        }
+        // public Dictionary<string, string> BoundVariables
+        // {
+        //     get { return boundVariables; }
+        //     set { boundVariables = value; }
+        // }
 #nullable disable warnings
         public Literal(string name, bool isPositive, string[] variables, Dictionary<string, string> boundVariables)
         {
@@ -44,7 +44,7 @@ namespace POP
             this.Name = name;
             this.IsPositive = isPositive;
             this.Variables = variables;
-            this.BoundVariables = boundVariables;
+            //this.BoundVariables = boundVariables;
 
         }
         public Literal(Literal l, Dictionary<string, string>? boundVariables = null)
@@ -53,7 +53,7 @@ namespace POP
             this.Name = l.Name.Clone() as string ?? "";
             this.IsPositive = l.IsPositive;
             this.Variables = l.Variables.Clone() as string[] ?? Array.Empty<string>();
-            this.BoundVariables = boundVariables ?? new Dictionary<string, string>();
+            //this.BoundVariables = boundVariables ?? new Dictionary<string, string>();
         }
 
         public override string ToString()
@@ -106,7 +106,21 @@ namespace POP
 
         public object Clone()
         {
-            return new Literal(this, this.BoundVariables);
+            return new Literal(this);
+        }
+
+        public bool Equals(Literal? other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+            if (Name != other.Name || IsPositive != other.IsPositive || Variables.Length != other.Variables.Length)
+            {
+                return false;
+            }
+
+            return true;
         }
 #nullable restore warnings
 

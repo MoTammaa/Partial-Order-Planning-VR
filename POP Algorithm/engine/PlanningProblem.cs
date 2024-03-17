@@ -78,5 +78,23 @@ namespace POP
         }
 
 #nullable restore warnings
+
+        public List<Operator> GetListOfAchievers(Literal l)
+        {
+            List<Operator> achievers = new List<Operator>();
+            foreach (Operator op in operators)
+            {
+                foreach (Literal effect in op.Effects)
+                {
+                    if (effect.Name == l.Name && effect.IsPositive == l.IsPositive
+                        && effect.Variables.Length == l.Variables.Length)
+                    {
+                        achievers.Add(op);
+                        break;
+                    }
+                }
+            }
+            return achievers;
+        }
     }
 }
