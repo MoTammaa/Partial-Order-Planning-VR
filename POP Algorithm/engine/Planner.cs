@@ -47,6 +47,22 @@ namespace POP
             if (agenda == null || agenda.Count == 0)  // If the agenda is empty ∅, return the current plan 
                 return plan; // π
 
+            // Select any Pair (a, p) from the agenda (based on heuristic described in the Agenda class)
+            Tuple<Action, Literal> pair = agenda.Remove();
+
+            // Find the list of achievers for the selected literal p
+            // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
+            List<Operator> achievers = problem.GetListOfAchievers(pair.Item2);
+
+            // TODO: Non-deterministically select an operator a from the list of achievers
+            // for now, we just select randomly
+            Operator achiever = achievers[new Random().Next(achievers.Count)];
+
+
+
+
+
+
 
 
 

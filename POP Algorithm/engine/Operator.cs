@@ -4,7 +4,7 @@ namespace POP
     using System.Collections.Generic;
     using static System.ArgumentNullException;
 
-    public class Operator
+    public class Operator : ICloneable
     {
 
         private string name;
@@ -51,6 +51,14 @@ namespace POP
             this.Variables = variables;
 
         }
+
 #nullable restore warnings
+        public object Clone()
+        {
+            List<Literal> effects = Effects.Select(l => (Literal)l.Clone()).ToList();
+            List<Literal> preconditions = Preconditions.Select(l => (Literal)l.Clone()).ToList();
+
+            return new Operator(this.Name, effects, preconditions, this.Variables.Clone() as string[] ?? Array.Empty<string>());
+        }
     }
 }

@@ -4,10 +4,10 @@ namespace POP
     using System;
     using static System.ArgumentNullException;
 
-    public class CausalLink
+    public class CausalLink : ICloneable
     {
         private Action produceri;
-        private List<Literal> linkConditions;
+        private Literal linkConditions;
         private Action consumerj;
 
         public Action Produceri
@@ -15,7 +15,7 @@ namespace POP
             get { return produceri; }
             set { produceri = value; }
         }
-        public List<Literal> LinkConditions
+        public Literal LinkConditions
         {
             get { return linkConditions; }
             set { linkConditions = value; }
@@ -27,7 +27,7 @@ namespace POP
         }
 
 #nullable disable warnings
-        public CausalLink(Action produceri, List<Literal> linkConditions, Action consumerj)
+        public CausalLink(Action produceri, Literal linkConditions, Action consumerj)
         {
             ThrowIfNull(produceri, nameof(produceri));
             ThrowIfNull(linkConditions, nameof(linkConditions));
@@ -37,6 +37,11 @@ namespace POP
             this.LinkConditions = linkConditions;
             this.Consumerj = consumerj;
         }
+
 #nullable restore warnings
+        public object Clone()
+        {
+            return new CausalLink((Action)this.Produceri.Clone(), new Literal(this.LinkConditions), (Action)this.Consumerj.Clone());
+        }
     }
 }

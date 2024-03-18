@@ -5,7 +5,7 @@ namespace POP
     using System.Collections.Generic;
     using static System.ArgumentNullException;
 
-    public class Action : Operator
+    public class Action : Operator, ICloneable
     {
         private Dictionary<string, string> boundVariables = new Dictionary<string, string>();
         public Dictionary<string, string> BoundVariables
@@ -28,5 +28,12 @@ namespace POP
             this.BoundVariables = boundVariables;
         }
 
+        public object Clone()
+        {
+            List<Literal> effects = Effects.Select(l => new Literal(l)).ToList();
+            List<Literal> preconditions = Preconditions.Select(l => new Literal(l)).ToList();
+
+            return new Action(this.Name, effects, preconditions, this.Variables.Clone() as string[] ?? Array.Empty<string>(), new Dictionary<string, string>(this.BoundVariables));
+        }
     }
 }

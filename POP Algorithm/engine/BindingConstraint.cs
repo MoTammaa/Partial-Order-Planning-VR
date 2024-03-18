@@ -7,7 +7,7 @@ namespace POP
 
 
 
-    public class BindingConstraint
+    public class BindingConstraint : ICloneable
     {
         private string variable;
         private List<string> bounds;
@@ -41,7 +41,12 @@ namespace POP
             this.Bounds = bounds;
             this.IsEqBelong = isEqBelong;
         }
+
 #nullable restore warnings
+        public object Clone()
+        {
+            return new BindingConstraint((string)this.Variable.Clone(), new List<string>(this.Bounds), this.IsEqBelong);
+        }
 
 
     }

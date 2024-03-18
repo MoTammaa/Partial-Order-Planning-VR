@@ -3,7 +3,7 @@ namespace POP
 {
     using static System.ArgumentNullException;
 
-    public class PartialPlan
+    public class PartialPlan : ICloneable
     {
         private HashSet<Action> actions;
         private HashSet<CausalLink> causalLinks;
@@ -42,6 +42,16 @@ namespace POP
             this.BindingConstraints = bindingConstraints;
             this.OrderingConstraints = orderingConstraints;
 
+        }
+
+        public object Clone()
+        {
+            var newBindConstraints = this.BindingConstraints.Select(item => (BindingConstraint)item.Clone()).ToList();
+            var newOrderingConstraints = this.OrderingConstraints.Select(item => new Tuple<Action, Action>((Action)item.Item1.Clone(), (Action)item.Item2.Clone())).ToList();
+            var newActions = new HashSet<Action>(this.Actions.Select(action => (Action)action.Clone()));
+            var newCausalLinks = new HashSet<CausalLink>(this.CausalLinks.Select(link => (CausalLink)link.Clone()));
+
+            return new PartialPlan(newActions, newCausalLinks, newBindConstraints, newOrderingConstraints);
         }
 #nullable restore warnings
     }
