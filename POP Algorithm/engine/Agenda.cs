@@ -4,32 +4,39 @@ namespace POP
     using System.Collections.Generic;
     using static System.ArgumentNullException;
 
-    public class Agenda : PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>>, IComparer<System.Tuple<POP.Action, POP.Literal>>
+    public class Agenda : IComparer<System.Tuple<POP.Action, POP.Literal>>
     {
         private PlanningProblem problem;
+        private PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> priorityQueue;
         // Constructor
         public Agenda(PlanningProblem problem)
-        : base(new Agenda(problem))
         {
             ThrowIfNull(problem, nameof(problem));
             this.problem = problem;
-
+            this.priorityQueue = new PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>>(this);
         }
 
-
+        public void Add(Tuple<POP.Action, POP.Literal> item)
+        {
+            priorityQueue.Enqueue(item, item);
+        }
         public void Add(POP.Action action, POP.Literal literal)
         {
             Tuple<POP.Action, POP.Literal> item = new Tuple<POP.Action, POP.Literal>(action, literal);
-            base.Enqueue(item, item);
-        }
-        public void Add(Tuple<POP.Action, POP.Literal> item)
-        {
-            base.Enqueue(item, item);
+            this.Add(item);
         }
 
         public Tuple<POP.Action, POP.Literal> Remove()
         {
-            return base.Dequeue();
+            return priorityQueue.Dequeue();
+        }
+        public Tuple<POP.Action, POP.Literal> Peek()
+        {
+            return priorityQueue.Peek();
+        }
+        public int Count
+        {
+            get { return priorityQueue.Count; }
         }
 
         public int Compare(Tuple<Action, Literal>? x, Tuple<Action, Literal>? y)

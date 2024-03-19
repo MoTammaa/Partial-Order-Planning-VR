@@ -7,15 +7,14 @@ namespace POP
 
     public class PlanningProblem
     {
-        private List<Operator> operators;
+        private readonly HashSet<Operator> operators;
         private List<Literal> initialState;
         private List<Literal> goalState;
-        private List<Literal> literals = new List<Literal>();
+        private readonly HashSet<Literal> literals = new HashSet<Literal>();
 
-        public List<Operator> Operators
+        public HashSet<Operator> Operators
         {
             get { return operators; }
-            set { operators = value; }
         }
         public List<Literal> InitialState
         {
@@ -26,20 +25,19 @@ namespace POP
             get { return goalState; }
         }
 
-        public List<Literal> Literals
+        public HashSet<Literal> Literals
         {
             get { return literals; }
-            set { literals = value; }
         }
 
 #nullable disable warnings
-        public PlanningProblem(List<Operator> operators, List<Literal> initialState, List<Literal> goalState)
+        public PlanningProblem(HashSet<Operator> operators, List<Literal> initialState, List<Literal> goalState)
         {
             ThrowIfNull(operators, nameof(operators));
             ThrowIfNull(initialState, nameof(initialState));
             ThrowIfNull(goalState, nameof(goalState));
 
-            this.Operators = operators;
+            this.operators = operators;
             this.initialState = initialState;
             this.goalState = goalState;
 

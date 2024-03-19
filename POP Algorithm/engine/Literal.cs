@@ -10,7 +10,7 @@ namespace POP
     public class Literal : ICloneable, IEquatable<Literal>
     {
         private string name;
-        private bool isPositive;
+        private bool isPositive = true;
         private string[] variables;
         //private Dictionary<string, string> boundVariables = new Dictionary<string, string>();
 
@@ -35,11 +35,11 @@ namespace POP
         //     set { boundVariables = value; }
         // }
 #nullable disable warnings
-        public Literal(string name, bool isPositive, string[] variables, Dictionary<string, string> boundVariables)
+        public Literal(string name, string[] variables, bool isPositive = true)/*, Dictionary<string, string> boundVariables*/
         {
             ThrowIfNull(name, nameof(name));
             ThrowIfNull(variables, nameof(variables));
-            ThrowIfNull(boundVariables, nameof(boundVariables));
+            // ThrowIfNull(boundVariables, nameof(boundVariables));
 
             this.Name = name;
             this.IsPositive = isPositive;
@@ -76,27 +76,6 @@ namespace POP
             return s;
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null || GetType() != obj.GetType())
-            {
-                return false;
-            }
-            Literal l = (Literal)obj;
-            if (l.Name != Name || l.IsPositive != IsPositive || l.Variables.Length != Variables.Length)
-            {
-                return false;
-            }
-            for (int i = 0; i < Variables.Length; i++)
-            {
-                if (l.Variables[i] != Variables[i])
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
 
         public bool unifiesWith(Literal l)
         {
@@ -111,14 +90,10 @@ namespace POP
 
         public bool Equals(Literal? other)
         {
-            if (other == null)
-            {
-                return false;
-            }
+            if (other == null) return false;
+
             if (Name != other.Name || IsPositive != other.IsPositive || Variables.Length != other.Variables.Length)
-            {
                 return false;
-            }
 
             return true;
         }

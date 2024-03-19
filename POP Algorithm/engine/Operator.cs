@@ -4,7 +4,7 @@ namespace POP
     using System.Collections.Generic;
     using static System.ArgumentNullException;
 
-    public class Operator : ICloneable
+    public class Operator : ICloneable, IEquatable<Operator>
     {
 
         private string name;
@@ -59,6 +59,19 @@ namespace POP
             List<Literal> preconditions = Preconditions.Select(l => (Literal)l.Clone()).ToList();
 
             return new Operator(this.Name, effects, preconditions, this.Variables.Clone() as string[] ?? Array.Empty<string>());
+        }
+
+        public bool Equals(Operator? other)
+        {
+            if (other is null)
+                return false;
+            // check if this operator is instance of an action
+            if (this is Action a && other is Action b)
+                return a.Equals(b);
+
+            return this.Name == other.Name
+                && this.Variables.Length == other.Variables.Length;
+
         }
     }
 }
