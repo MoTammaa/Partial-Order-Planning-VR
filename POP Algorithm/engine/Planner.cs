@@ -5,6 +5,8 @@ namespace POP
     using System.Collections.Generic;
     using static System.ArgumentNullException;
 
+    using Node = Tuple<PartialPlan, Agenda, int>;
+
     public class Planner
     {
 
@@ -70,6 +72,78 @@ namespace POP
 
 
             return POP();
+
+        }
+
+        private int Eval_Fn(Node node)
+        {
+            /* 
+             *      f(n) = h(n) + g(n)
+             *      h(n) = open preconditions of the partial plan (inside the agenda) 
+             *      g(n) = path cost from the start node to the current node
+            */
+            // Node => Item1: PartialPlan, Item2: Agenda, Item3: path cost integer
+            return node.Item3 + node.Item2.Count;
+        }
+
+
+        private PartialPlan NonDetermenisticAchieverSearch()
+        {
+            /* For this function and all non-deterministic searches here, we will implement A* search Algorithm, where each node in the queue will contain a parital plan */
+
+            // using Node = Tuple<PartialPlan, Agenda, int>;
+
+            // Create a new PriorityQueue to store the partial plans with the cost of the path from the start node (root) to the current node -> Pair (partial plan, path cost, agenda)
+            PriorityQueue<Node, int> queue = new PriorityQueue<Node, int>();
+
+            // Use the initial plan as the root node
+            Node root = new Node(plan, agenda, 0);
+            queue.Enqueue(root, Eval_Fn(root));
+
+            while (queue.Count > 0)
+            {
+                Node current = queue.Dequeue();
+
+                // Check if the current node is a goal node
+                if (current.Item2.Count == 0) // if the agenda is empty
+                {
+                    return current.Item1; // return the partial plan
+                }
+
+                // Expand the current node by applying each of the achievers to the current node
+                // First, select any Pair (a, p) from the agenda (based on heuristic described in the Agenda class)
+                Tuple<Action, Literal> chosenAgendaPair = current.Item2.Remove();
+
+                // Find the list of achievers for the selected literal p
+                // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
+                List<Operator> achievers = problem.GetListOfAchievers(chosenAgendaPair.Item2);
+
+                // Apply each of the achievers to the current node
+
+                //.........
+            }
+
+
+        }
+
+
+        private void ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair)
+        {
+            // Create a new action from the operator
+            Action newAction = createAction(achiever);
+
+            // Add the new action to the plan
+            plan.Actions.Add(newAction);
+
+            // Add the new action to the plan's causal links (L ∪ {C(A🇳 --Pⁱ--> Aⁱ})
+            plan.CausalLinks.Add(new CausalLink(newAction, agendaActionLiteralPair.Item2, agendaActionLiteralPair.Item1));
+
+            // Update the plan's ordering constraints (≺)
+            plan.OrderingConstraints.Add(new Tuple<Action, Action>(newAction, agendaActionLiteralPair.Item1));
+
+            //.....
+
+
 
         }
 
@@ -140,6 +214,10 @@ namespace POP
             return new Literal(l.Name, variables, l.IsPositive);
         }
 
+
+
+
+
         private static string repeat(int n, string? s = null, char? c = null)
         {
             if (s != null)
@@ -148,9 +226,5 @@ namespace POP
                 return new string((char)c, n);
             return "";
         }
-
-
-
-
     }
 }
