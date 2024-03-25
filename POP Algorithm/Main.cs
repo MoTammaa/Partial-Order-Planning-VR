@@ -42,7 +42,7 @@ else
 
 
 PlanningProblem problem = new PlanningProblem(
-    [new("Wear", [new Literal("Worn", ["x"])], [], ["x"]),],
+    [new("Wear", [new Literal("Worn", ["x"])], [new Literal("At", ["Home"])], ["x"]),],
     [new Literal("At", ["Home"])],
     [new("Worn", ["SHIRT"])]
 );

@@ -31,13 +31,13 @@ namespace POP
             this.agenda = new Agenda(problem);
 
             // Initialize the plan
-            Action start = new Action("Start", problem.InitialState, new List<Literal>());
-            Action finish = new Action("Finish", new List<Literal>(), problem.GoalState);
+            Action start = new Action("Start", problem.InitialState, new List<Literal>(), []);
+            Action finish = new Action("Finish", new List<Literal>(), problem.GoalState, []);
             this.plan = new PartialPlan(
                 new HashSet<Action> { start, finish }, // {aₒ, a∞}
                 new HashSet<CausalLink>(),             // ∅ or {}
                 new List<BindingConstraint>(),      // ∅ or {}
-                new List<Tuple<Action, Action>> { new Tuple<Action, Action>(start, finish) } // {aₒ ≺ a∞}
+                new HashSet<Tuple<Action, Action>> { new Tuple<Action, Action>(start, finish) } // {aₒ ≺ a∞}
             );
 
             // Initialize the agenda ==> {a∞} x Preconds(a∞)
@@ -120,7 +120,11 @@ namespace POP
 
                 // Find the list of achievers for the selected literal p
                 // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
-                List<Operator> achievers = problem.GetListOfAchievers(chosenAgendaPair.Item2);
+                List<Operator> achievers =
+                [
+                    .. plan.getListOfActionsAchievers(chosenAgendaPair.Item2),
+                    .. problem.GetListOfAchievers(chosenAgendaPair.Item2),
+                ];
 
                 // Apply each of the achievers to the current node
                 foreach (Operator achiever in achievers)
@@ -157,7 +161,7 @@ namespace POP
             Agenda agenda = node.Item2;
 
             // Create a new action from the operator
-            Action newAction = createAction(achiever);
+            Action newAction = (achiever is Action action) ? action : createAction(achiever);
 
             // Add the new action to the plan
             if (!plan.Actions.Contains(newAction))

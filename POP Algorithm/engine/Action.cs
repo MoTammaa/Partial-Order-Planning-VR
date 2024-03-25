@@ -42,13 +42,23 @@ namespace POP
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(Name, Variables);
+            int hash = Name != null ? Name.GetHashCode() : 0;
+            if (Variables is null)
+                return hash;
+            foreach (var variable in Variables)
+            {
+                hash = hash * 31 + (variable != null ? variable.GetHashCode() : 0);
+            }
+            return hash;
         }
 
         public bool Equals(Action? other)
         {
             if (other is null)
                 return false;
+            if ((this.Variables is null && other.Variables is not null) || (this.Variables is not null && other.Variables is null))
+                return false;
+            if (this.Variables is null || other.Variables is null) return this.Name == other.Name;
             if (this.Variables.Length != other.Variables.Length)
                 return false;
             for (int i = 0; i < this.Variables.Length; i++)

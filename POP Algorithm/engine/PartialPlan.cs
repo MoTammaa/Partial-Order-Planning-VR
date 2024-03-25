@@ -8,7 +8,7 @@ namespace POP
         private HashSet<Action> actions;
         private HashSet<CausalLink> causalLinks;
         private List<BindingConstraint> bindingConstraints;
-        private List<Tuple<Action, Action>> orderingConstraints;
+        private HashSet<Tuple<Action, Action>> orderingConstraints;
 
         public HashSet<Action> Actions
         {
@@ -25,14 +25,14 @@ namespace POP
             get { return bindingConstraints; }
             set { bindingConstraints = value; }
         }
-        public List<Tuple<Action, Action>> OrderingConstraints
+        public HashSet<Tuple<Action, Action>> OrderingConstraints
         {
             get { return orderingConstraints; }
             set { orderingConstraints = value; }
         }
 
 #nullable disable warnings
-        public PartialPlan(HashSet<Action> actions, HashSet<CausalLink> causalLinks, List<BindingConstraint> bindingConstraints, List<Tuple<Action, Action>> orderingConstraints)
+        public PartialPlan(HashSet<Action> actions, HashSet<CausalLink> causalLinks, List<BindingConstraint> bindingConstraints, HashSet<Tuple<Action, Action>> orderingConstraints)
         {
             ThrowIfNull(actions, nameof(actions));
             ThrowIfNull(orderingConstraints, nameof(orderingConstraints));
@@ -47,7 +47,7 @@ namespace POP
         public object Clone()
         {
             var newBindConstraints = this.BindingConstraints.Select(item => (BindingConstraint)item.Clone()).ToList();
-            var newOrderingConstraints = this.OrderingConstraints.Select(item => new Tuple<Action, Action>((Action)item.Item1.Clone(), (Action)item.Item2.Clone())).ToList();
+            var newOrderingConstraints = this.OrderingConstraints.Select(item => new Tuple<Action, Action>((Action)item.Item1.Clone(), (Action)item.Item2.Clone())).ToHashSet();
             var newActions = new HashSet<Action>(this.Actions.Select(action => (Action)action.Clone()));
             var newCausalLinks = new HashSet<CausalLink>(this.CausalLinks.Select(link => (CausalLink)link.Clone()));
 
@@ -62,7 +62,7 @@ namespace POP
 
         public override string ToString()
         {
-            return $"Actions: {string.Join(", ", this.Actions)}\nCausal Links: {string.Join(", ", this.CausalLinks)}\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints)}";
+            return $"Actions: {string.Join(", ", this.Actions)}\nCausal Links: {string.Join(", ", this.CausalLinks)}\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints.Select(item => "(" + item.Item1 + " ≺ " + item.Item2 + ")"))}";
         }
 
         public List<Action> getListOfActionsAchievers(Literal l)
