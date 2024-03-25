@@ -74,6 +74,21 @@ namespace POP
 
         }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Name, Variables);
+        }
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as Operator);
+        }
+        public static bool operator ==(Operator? left, Operator? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Operator? left, Operator? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(Operator? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Operator? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, Operator? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, Operator? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
+
         public override string ToString()
         {
             return $"{Name}({string.Join(", ", Variables)})";

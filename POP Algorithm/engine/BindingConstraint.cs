@@ -7,7 +7,7 @@ namespace POP
 
 
 
-    public class BindingConstraint : ICloneable
+    public class BindingConstraint : ICloneable, IEquatable<BindingConstraint>
     {
         private string variable;
         private List<string> bounds;
@@ -53,6 +53,28 @@ namespace POP
             return $"{Variable} = {string.Join(", ", Bounds)}";
         }
 
+        public bool Equals(BindingConstraint? other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
 
+            return this.Variable.Equals(other.Variable) && this.Bounds.SequenceEqual(other.Bounds) && this.IsEqBelong == other.IsEqBelong;
+        }
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as BindingConstraint);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Variable, Bounds, IsEqBelong);
+        }
+        public static bool operator ==(BindingConstraint? left, BindingConstraint? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(BindingConstraint? left, BindingConstraint? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(BindingConstraint? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(BindingConstraint? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, BindingConstraint? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, BindingConstraint? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
     }
 }

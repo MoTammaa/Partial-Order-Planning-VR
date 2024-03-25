@@ -4,10 +4,10 @@ namespace POP
     using System;
     using static System.ArgumentNullException;
 
-    public class CausalLink : ICloneable
+    public class CausalLink : ICloneable, IEquatable<CausalLink>
     {
         private Action produceri;
-        private Literal linkConditions;
+        private Literal linkCondition;
         private Action consumerj;
 
         public Action Produceri
@@ -15,10 +15,10 @@ namespace POP
             get { return produceri; }
             set { produceri = value; }
         }
-        public Literal LinkConditions
+        public Literal LinkCondition
         {
-            get { return linkConditions; }
-            set { linkConditions = value; }
+            get { return linkCondition; }
+            set { linkCondition = value; }
         }
         public Action Consumerj
         {
@@ -27,26 +27,50 @@ namespace POP
         }
 
 #nullable disable warnings
-        public CausalLink(Action produceri, Literal linkConditions, Action consumerj)
+        public CausalLink(Action produceri, Literal linkCondition, Action consumerj)
         {
             ThrowIfNull(produceri, nameof(produceri));
-            ThrowIfNull(linkConditions, nameof(linkConditions));
+            ThrowIfNull(linkCondition, nameof(linkCondition));
             ThrowIfNull(consumerj, nameof(consumerj));
 
             this.Produceri = produceri;
-            this.LinkConditions = linkConditions;
+            this.LinkCondition = linkCondition;
             this.Consumerj = consumerj;
         }
 
 #nullable restore warnings
         public object Clone()
         {
-            return new CausalLink((Action)this.Produceri.Clone(), new Literal(this.LinkConditions), (Action)this.Consumerj.Clone());
+            return new CausalLink((Action)this.Produceri.Clone(), new Literal(this.LinkCondition), (Action)this.Consumerj.Clone());
         }
 
         public override string ToString()
         {
-            return $"{Produceri} -> {LinkConditions} -> {Consumerj}";
+            return $"{Produceri} --{LinkCondition}--> {Consumerj}";
         }
+
+        public bool Equals(CausalLink? other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
+
+            return this.Produceri.Equals(other.Produceri) && this.LinkCondition.Equals(other.LinkCondition) && this.Consumerj.Equals(other.Consumerj);
+        }
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as CausalLink);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Produceri, LinkCondition, Consumerj);
+        }
+        public static bool operator ==(CausalLink? left, CausalLink? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(CausalLink? left, CausalLink? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(CausalLink? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(CausalLink? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, CausalLink? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, CausalLink? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
     }
 }

@@ -121,6 +121,13 @@ namespace POP
             return true;
         }
 
+        public static bool operator ==(Agenda? left, Agenda? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Agenda? left, Agenda? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(Agenda? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Agenda? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, Agenda? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, Agenda? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
+
         public override string ToString()
         {
             string str = "Agenda: ";

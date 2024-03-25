@@ -6,7 +6,6 @@ namespace POP
     using static System.ArgumentNullException;
 
 
-#pragma warning disable CS0659
     public class Literal : ICloneable, IEquatable<Literal>
     {
         private string name;
@@ -77,17 +76,12 @@ namespace POP
         }
 
 
-        public bool unifiesWith(Literal l)
-        {
-            // TODO: Implement unifiesWith
-            return false;
-        }
-
         public object Clone()
         {
             return new Literal(this);
         }
 
+#nullable restore warnings
         public bool Equals(Literal? other)
         {
             if (other == null) return false;
@@ -97,9 +91,26 @@ namespace POP
 
             return true;
         }
-#nullable restore warnings
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as Literal);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Name, IsPositive, Variables);
+        }
+
+        public static bool operator ==(Literal? left, Literal? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Literal? left, Literal? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(Literal? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Literal? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, Literal? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, Literal? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
+
+
 
 
     }
-#pragma warning restore CS0659
 }

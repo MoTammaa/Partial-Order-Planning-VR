@@ -64,5 +64,24 @@ namespace POP
         {
             return $"Actions: {string.Join(", ", this.Actions)}\nCausal Links: {string.Join(", ", this.CausalLinks)}\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints)}";
         }
+
+        public List<Action> getListOfActionsAchievers(Literal l)
+        {
+            List<Action> actions = new List<Action>();
+            foreach (Action a in this.Actions)
+            {
+                foreach (Literal e in a.Effects)
+                {
+                    if (e == l)
+                    {
+                        Dictionary<Expression, List<Expression>>? μ = Helpers.Unify(l, e, BindingConstraints);
+                        if (μ is not null)
+                            // if (μ.Count == l.Variables.Length)
+                            actions.Add(a);
+                    }
+                }
+            }
+            return actions;
+        }
     }
 }

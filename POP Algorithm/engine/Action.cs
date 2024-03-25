@@ -60,6 +60,13 @@ namespace POP
 
         }
 
+        public static bool operator ==(Action? left, Action? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Action? left, Action? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(Action? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Action? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, Action? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, Action? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
+
         public override string ToString()
         {
             return $"{Name}({(Variables != null ? string.Join(", ", Variables.Select(v => BoundVariables is not null && BoundVariables.ContainsKey(v) ? BoundVariables[v] : v)) : "")})";
