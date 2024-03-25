@@ -48,6 +48,11 @@ namespace POP
             return new BindingConstraint((string)this.Variable.Clone(), new List<string>(this.Bounds), this.IsEqBelong);
         }
 
+        public override string ToString()
+        {
+            return $"{Variable} = {string.Join(", ", Bounds)}";
+        }
+
 
     }
 }

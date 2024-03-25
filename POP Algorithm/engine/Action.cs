@@ -16,8 +16,8 @@ namespace POP
         public Action(string name, List<Literal> effects, List<Literal> preconditions, string[]? variables = null, Dictionary<string, string>? boundVariables = null)
             : base(name, effects, preconditions, variables)
         {
-            if (this.Variables.Length != 0)
-                ThrowIfNull(boundVariables, nameof(boundVariables));
+            // if (this.Variables.Length != 0)
+            //     ThrowIfNull(boundVariables, nameof(boundVariables));
 
             this.BoundVariables = boundVariables ?? new Dictionary<string, string>();
         }
@@ -33,12 +33,23 @@ namespace POP
             List<Literal> effects = Effects.Select(l => new Literal(l)).ToList();
             List<Literal> preconditions = Preconditions.Select(l => new Literal(l)).ToList();
 
-            return new Action(this.Name, effects, preconditions, this.Variables.Clone() as string[] ?? Array.Empty<string>(), new Dictionary<string, string>(this.BoundVariables));
+            return new Action(this.Name, effects, preconditions, this.Variables?.Clone() as string[] ?? Array.Empty<string>(), new Dictionary<string, string>(this.BoundVariables));
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as Action);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Name, Variables);
         }
 
         public bool Equals(Action? other)
         {
             if (other is null)
+                return false;
+            if (this.Variables.Length != other.Variables.Length)
                 return false;
             for (int i = 0; i < this.Variables.Length; i++)
             {
@@ -47,6 +58,11 @@ namespace POP
             }
             return this.Name == other.Name;
 
+        }
+
+        public override string ToString()
+        {
+            return $"{Name}({(Variables != null ? string.Join(", ", Variables.Select(v => BoundVariables is not null && BoundVariables.ContainsKey(v) ? BoundVariables[v] : v)) : "")})";
         }
     }
 }

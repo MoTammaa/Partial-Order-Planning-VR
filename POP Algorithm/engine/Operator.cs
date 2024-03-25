@@ -73,5 +73,10 @@ namespace POP
                 && this.Variables.Length == other.Variables.Length;
 
         }
+
+        public override string ToString()
+        {
+            return $"{Name}({string.Join(", ", Variables)})";
+        }
     }
 }

@@ -80,6 +80,7 @@ namespace POP
         public List<Operator> GetListOfAchievers(Literal l)
         {
             List<Operator> achievers = new List<Operator>();
+            // check if the literal is in the effects of the operator
             foreach (Operator op in operators)
             {
                 foreach (Literal effect in op.Effects)
@@ -93,6 +94,26 @@ namespace POP
                 }
             }
             return achievers;
+        }
+
+        public override string ToString()
+        {
+            string str = "Operators:\n";
+            foreach (Operator op in operators)
+            {
+                str += op.ToString() + "\n";
+            }
+            str += "Initial State:\n";
+            foreach (Literal l in initialState)
+            {
+                str += l.ToString() + "\n";
+            }
+            str += "Goal State:\n";
+            foreach (Literal l in goalState)
+            {
+                str += l.ToString() + "\n";
+            }
+            return str;
         }
     }
 }

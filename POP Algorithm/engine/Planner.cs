@@ -49,29 +49,31 @@ namespace POP
             // Initialize the variable prefixes and counters to all operators and literals
         }
 
-        public PartialPlan POP()
+        public PartialPlan? POP()
         {
             if (agenda == null || agenda.Count == 0)  // If the agenda is empty ∅, return the current plan 
                 return plan; // π
 
             // Select any Pair (a, p) from the agenda (based on heuristic described in the Agenda class)
-            Tuple<Action, Literal> pair = agenda.Remove();
+            // Tuple<Action, Literal> pair = agenda.Remove();
 
-            // Find the list of achievers for the selected literal p
-            // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
-            List<Operator> achievers = problem.GetListOfAchievers(pair.Item2);
+            // // Find the list of achievers for the selected literal p
+            // // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
+            // List<Operator> achievers = problem.GetListOfAchievers(pair.Item2);
 
-            // TODO: Non-deterministically select an operator a from the list of achievers
-            // for now, we just select randomly
-            Operator achiever = achievers[new Random().Next(achievers.Count)];
+            // // TODO: Non-deterministically select an operator a from the list of achievers
+            // // for now, we just select randomly
+            // Operator achiever = achievers[new Random().Next(achievers.Count)];
 
-
-
-
+            return NonDetermenisticAchieverSearch();
 
 
 
-            return POP();
+
+
+
+
+            //return POP();
 
         }
 
@@ -89,7 +91,7 @@ namespace POP
         }
 
 
-        private PartialPlan NonDetermenisticAchieverSearch()
+        private PartialPlan? NonDetermenisticAchieverSearch()
         {
             /* For this function and all non-deterministic searches here, we will implement A* search Algorithm, where each node in the queue will contain a parital plan */
 
@@ -121,8 +123,26 @@ namespace POP
                 List<Operator> achievers = problem.GetListOfAchievers(chosenAgendaPair.Item2);
 
                 // Apply each of the achievers to the current node
+                foreach (Operator achiever in achievers)
+                {
+                    // clone the current plan and agenda
+                    PartialPlan newPlan = (PartialPlan)current.Item1.Clone();
+                    Agenda newAgenda = (Agenda)current.Item2.Clone();
+                    Node newNode = new Node(newPlan, newAgenda, current.Item3 + 1);
 
-                //.........
+                    // Add the new action to the new plan
+                    ApplyAchiever(achiever, chosenAgendaPair, newNode);
+
+                    // return the new node if it is a goal node
+                    if (newNode.Item2.Count == 0)
+                        return newNode.Item1;
+
+                    queue.Enqueue(newNode, Eval_Fn(newNode));
+
+
+                }
+
+
             }
             return null;
 
@@ -130,13 +150,35 @@ namespace POP
         }
 
 
-        private void ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair)
+        private void ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node)
         {
+            // Node => Item1: PartialPlan, Item2: Agenda, Item3: path cost integer
+            PartialPlan plan = node.Item1;
+            Agenda agenda = node.Item2;
+
             // Create a new action from the operator
             Action newAction = createAction(achiever);
 
             // Add the new action to the plan
-            plan.Actions.Add(newAction);
+            if (!plan.Actions.Contains(newAction))
+            {
+                plan.Actions.Add(newAction);
+
+                // add ordering constraints that the new action is after the start action and before the finish action
+                Action? start = plan.GetActionByName("Start"), finish = plan.GetActionByName("Finish");
+                if (start is null || finish is null)
+                    throw new Exception("Start or Finish action not found in the plan");
+
+                plan.OrderingConstraints.Add(new Tuple<Action, Action>(start, newAction));
+                plan.OrderingConstraints.Add(new Tuple<Action, Action>(newAction, finish));
+
+
+                // add the new action preconditions to the agenda
+                foreach (Literal precondition in newAction.Preconditions)
+                {
+                    agenda.Add(newAction, precondition);
+                }
+            }
 
             // Add the new action to the plan's causal links (L ∪ {C(A🇳 --Pⁱ--> Aⁱ})
             plan.CausalLinks.Add(new CausalLink(newAction, agendaActionLiteralPair.Item2, agendaActionLiteralPair.Item1));
@@ -144,10 +186,38 @@ namespace POP
             // Update the plan's ordering constraints (≺)
             plan.OrderingConstraints.Add(new Tuple<Action, Action>(newAction, agendaActionLiteralPair.Item1));
 
-            //.....
+            // Update the plan's binding constraints (B)
+            foreach (Literal effect in newAction.Effects)
+            {
+                if (effect.Name == agendaActionLiteralPair.Item2.Name
+                && effect.IsPositive == agendaActionLiteralPair.Item2.IsPositive
+                && effect.Variables.Length == agendaActionLiteralPair.Item2.Variables.Length)
+                {
 
-
-
+                    Dictionary<Expression, List<Expression>>? μ = Helpers.Unify(effect, agendaActionLiteralPair.Item2, plan.BindingConstraints);
+                    if (μ != null)
+                    {
+                        foreach (KeyValuePair<Expression, List<Expression>> entry in μ)
+                        {
+                            bool found = false;
+                            for (int i = 0; i < plan.BindingConstraints.Count; i++)
+                            {
+                                if (plan.BindingConstraints[i].Variable == entry.Key.Name)
+                                {
+                                    plan.BindingConstraints[i].Bounds.AddRange(entry.Value.Select(e => e.Name));
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found)
+                            {
+                                plan.BindingConstraints.Add(new BindingConstraint(entry.Key.Name, entry.Value.Select(e => e.Name).ToList(), true));
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
         }
 
         public Action createAction(Operator op)

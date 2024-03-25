@@ -43,5 +43,10 @@ namespace POP
         {
             return new CausalLink((Action)this.Produceri.Clone(), new Literal(this.LinkConditions), (Action)this.Consumerj.Clone());
         }
+
+        public override string ToString()
+        {
+            return $"{Produceri} -> {LinkConditions} -> {Consumerj}";
+        }
     }
 }

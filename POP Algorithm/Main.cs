@@ -37,3 +37,24 @@ else
 {
     Console.WriteLine("Unification failed");
 }
+
+
+
+
+PlanningProblem problem = new PlanningProblem(
+    [new("Wear", [new Literal("Worn", ["x"])], [], ["x"]),],
+    [new Literal("At", ["Home"])],
+    [new("Worn", ["SHIRT"])]
+);
+
+Planner planner = new Planner(problem);
+PartialPlan? plan = planner.POP();
+
+if (plan != null)
+{
+    Console.WriteLine("Plan found: \n" + plan);
+}
+else
+{
+    Console.WriteLine("No plan found");
+}

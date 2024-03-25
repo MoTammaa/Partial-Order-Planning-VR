@@ -54,5 +54,15 @@ namespace POP
             return new PartialPlan(newActions, newCausalLinks, newBindConstraints, newOrderingConstraints);
         }
 #nullable restore warnings
+
+        public Action? GetActionByName(string name)
+        {
+            return this.Actions.FirstOrDefault(action => action.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        public override string ToString()
+        {
+            return $"Actions: {string.Join(", ", this.Actions)}\nCausal Links: {string.Join(", ", this.CausalLinks)}\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints)}";
+        }
     }
 }

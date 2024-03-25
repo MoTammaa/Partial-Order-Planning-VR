@@ -7,6 +7,10 @@ namespace POP
 
     public class Helpers
     {
+        public static Dictionary<Expression, List<Expression>>? Unify(Literal l1, Literal l2, List<BindingConstraint> bindingConstraints)
+        {
+            return Unify(Expression.Expressionize(l1, bindingConstraints), Expression.Expressionize(l2, bindingConstraints));
+        }
         public static Dictionary<Expression, List<Expression>>? Unify(Expression e1, Expression e2)
         {
             return Unify(e1, e2, []);
@@ -14,9 +18,9 @@ namespace POP
         }
         public static Dictionary<Expression, List<Expression>>? Unify(Expression? e1, Expression? e2, Dictionary<Expression, List<Expression>>? μ)
         {
-            if (e1 == null || e2 == null)
+            if (e1 is null || e2 is null)
                 return null; // failure
-            if (μ == null)
+            if (μ is null)
                 return null; // failure
             if (e1.Equals(e2))
                 return μ;
@@ -33,7 +37,7 @@ namespace POP
                 for (int i = 0; i < e1.Arguments.Count && i < e2.Arguments.Count; i++)
                 {
                     μ = Unify(e1.Arguments[i], e2.Arguments[i], μ);
-                    if (μ == null)
+                    if (μ is null)
                         return null; // failure
                 }
             }
@@ -85,6 +89,7 @@ namespace POP
         }
 
 
+
     }
 
     public class Expression : IEquatable<Expression>, ICloneable
@@ -112,6 +117,14 @@ namespace POP
             this.IsConstant = isConstant;
         }
 
+        public static bool operator ==(Expression? left, Expression? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Expression? left, Expression? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(Expression? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(Expression? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, Expression? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, Expression? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
+
+
         public override bool Equals(object? obj)
         {
             if (obj is not Expression) return false;
@@ -120,13 +133,13 @@ namespace POP
 
         public bool Equals(Expression? other)
         {
-            if (other == null)
+            if (other is null)
                 return false;
             if (this.Name != other.Name)
                 return false;
-            if (this.Arguments == null && other.Arguments == null)
+            if (this.Arguments is null && other.Arguments is null)
                 return true;
-            if (this.Arguments == null || other.Arguments == null)
+            if (this.Arguments is null || other.Arguments is null)
                 return false;
             if (this.Arguments.Count != other.Arguments.Count)
                 return false;
@@ -142,7 +155,7 @@ namespace POP
         {
             if (this.Equals(e))
                 return true;
-            if (this.Arguments == null)
+            if (this.Arguments is null)
                 return false;
             foreach (Expression arg in this.Arguments)
             {
@@ -154,7 +167,7 @@ namespace POP
 
         public override string ToString()
         {
-            if (this.Arguments == null)
+            if (this.Arguments is null)
                 return this.Name;
             string str = this.Name + "(";
             for (int i = 0; i < this.Arguments.Count; i++)
@@ -182,7 +195,34 @@ namespace POP
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Name, Arguments, Arguments == null ? 0 : Arguments.Count, IsConstant);
+            return HashCode.Combine(Name, Arguments, Arguments is null ? 0 : Arguments.Count, IsConstant);
+        }
+
+        public static Expression Expressionize(Literal l, List<BindingConstraint> bindingConstraints)
+        {
+            List<Expression>? args = new List<Expression>();
+            if (l.Variables != null)
+            {
+                foreach (string var in l.Variables)
+                {
+                    bool foundInConstraints = false;
+                    if (bindingConstraints != null)
+                    {
+                        foreach (BindingConstraint bc in bindingConstraints)
+                        {
+                            if (bc.Variable.Equals(var))
+                            {
+                                args.Add(new Expression(bc.Bounds[0], null, true)); // add the first bound only (TODO: add all bounds or find a better way to handle this)
+                                foundInConstraints = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!foundInConstraints)
+                        args.Add(new Expression(var, null, var[0] >= 'A' && var[0] <= 'Z'));
+                }
+            }
+            return new Expression(l.Name, args);
         }
     }
 }

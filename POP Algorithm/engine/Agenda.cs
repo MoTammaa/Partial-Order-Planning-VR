@@ -4,7 +4,7 @@ namespace POP
     using System.Collections.Generic;
     using static System.ArgumentNullException;
 
-    public class Agenda : IComparer<System.Tuple<POP.Action, POP.Literal>>
+    public class Agenda : IComparer<System.Tuple<POP.Action, POP.Literal>>, ICloneable, IEquatable<Agenda>
     {
         private PlanningProblem problem;
         private PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> priorityQueue;
@@ -61,5 +61,85 @@ namespace POP
             return x.Item1.Preconditions.Count.CompareTo(y.Item1.Preconditions.Count);
         }
 
+        public object Clone()
+        {
+            Agenda newAgenda = new Agenda(this.problem);
+            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new();
+            try
+            {
+                while (this.Count > 0)
+                {
+                    Tuple<POP.Action, POP.Literal> item = this.Remove();
+                    newAgenda.Add(new((Action)item.Item1.Clone(), (Literal)item.Item2.Clone()));
+                    this1.Enqueue(item, item);
+                }
+            }
+            finally
+            {
+                while (this1.Count > 0)
+                    this.Add(this1.Dequeue());
+            }
+            return newAgenda;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as Agenda);
+        }
+        public override int GetHashCode()
+        {
+            return priorityQueue.GetHashCode();
+        }
+
+        public bool Equals(Agenda? other)
+        {
+            if (other is null)
+                return false;
+            if (this.Count != other.Count)
+                return false;
+
+            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(), other1 = new();
+            try
+            {
+                for (int i = 0; i < this.Count; i++)
+                {
+                    Tuple<POP.Action, POP.Literal> item = this.Remove();
+                    this1.Enqueue(item, item);
+                    Tuple<POP.Action, POP.Literal> otherItem = other.Remove();
+                    other1.Enqueue(otherItem, otherItem);
+                    if (!item.Equals(otherItem))
+                        return false;
+                }
+            }
+            finally
+            {
+                while (this1.Count > 0)
+                    this.Add(this1.Dequeue());
+                while (other1.Count > 0)
+                    other.Add(other1.Dequeue());
+            }
+            return true;
+        }
+
+        public override string ToString()
+        {
+            string str = "Agenda: ";
+            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new();
+            try
+            {
+                while (this.Count > 0)
+                {
+                    Tuple<POP.Action, POP.Literal> item = this.Remove();
+                    this1.Enqueue(item, item);
+                    str += item.Item1 + " / " + item.Item2 + (this.Count > 0 ? ", " : "");
+                }
+            }
+            finally
+            {
+                while (this1.Count > 0)
+                    this.Add(this1.Dequeue());
+            }
+            return str;
+        }
     }
 }
