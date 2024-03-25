@@ -210,7 +210,7 @@ namespace POP
                     {
                         foreach (BindingConstraint bc in bindingConstraints)
                         {
-                            if (bc.Variable.Equals(var))
+                            if (bc.Variable.Equals(var) && bc.IsEqBelong)
                             {
                                 args.Add(new Expression(bc.Bounds[0], null, true)); // add the first bound only (TODO: add all bounds or find a better way to handle this)
                                 foundInConstraints = true;
@@ -225,34 +225,50 @@ namespace POP
             return new Expression(l.Name, args);
         }
     }
-    public class Graph
+    public class Graph<T> where T : notnull
     {
-        private Dictionary<POP.Action, List<POP.Action>> adjList;
+        private Dictionary<T, List<T>> adjList;
 
         public Graph()
         {
-            adjList = new Dictionary<POP.Action, List<POP.Action>>();
+            adjList = new Dictionary<T, List<T>>();
         }
 
-        public Graph(HashSet<Tuple<POP.Action, POP.Action>> orderingConstraints)
+        public Graph(HashSet<Tuple<T, T>> orderingConstraints)
         : this() { InitializeGraph(orderingConstraints); }
 
-        public void InitializeGraph(HashSet<Tuple<POP.Action, POP.Action>> orderingConstraints)
+        public void InitializeGraph(HashSet<Tuple<T, T>> orderingConstraints)
         {
-            foreach (Tuple<POP.Action, POP.Action> tuple in orderingConstraints)
+            foreach (Tuple<T, T> tuple in orderingConstraints)
             {
                 AddEdge(tuple.Item1, tuple.Item2);
             }
         }
 
-        public void AddEdge(Action u, Action v)
+        public void AddEdge(T u, T v)
         {
             if (!adjList.ContainsKey(u))
-                adjList[u] = new List<Action>();
+                adjList[u] = new List<T>();
             adjList[u].Add(v);
         }
 
-        private bool IsCyclicUtil(Action v, HashSet<Action> visited, HashSet<Action> recStack)
+
+        /// <summary>
+        /// Removes the edge between two actions
+        /// </summary>
+        /// <param name="u"></param>
+        /// <param name="v"></param>
+        /// <returns> true if the edge was successfully removed and existed, and false otherwise.</returns>
+        public bool RemoveEdge(T u, T v)
+        {
+            if (adjList.ContainsKey(u))
+            {
+                return adjList[u].Remove(v);
+            }
+            return false;
+        }
+
+        private bool IsCyclicUtil(T v, HashSet<T> visited, HashSet<T> recStack)
         {
             if (!visited.Contains(v))
             {
@@ -261,7 +277,7 @@ namespace POP
 
                 if (adjList.ContainsKey(v))
                 {
-                    foreach (Action neighbour in adjList[v])
+                    foreach (T neighbour in adjList[v])
                     {
                         if (!visited.Contains(neighbour) && IsCyclicUtil(neighbour, visited, recStack))
                             return true;
@@ -277,23 +293,29 @@ namespace POP
 
         public bool IsCyclic()
         {
-            HashSet<Action> visited = new HashSet<Action>();
-            HashSet<Action> recStack = new HashSet<Action>();
+            HashSet<T> visited = new HashSet<T>();
+            HashSet<T> recStack = new HashSet<T>();
 
             foreach (var pair in adjList)
             {
-                Action node = pair.Key;
+                T node = pair.Key;
                 if (IsCyclicUtil(node, visited, recStack))
                     return true;
             }
 
             return false;
         }
+
+        public bool IsAcyclic()
+        {
+            return !IsCyclic();
+        }
+
         public static void printTest()
         {
 
             // test acyclicity graph
-            Graph graph = new();
+            Graph<Action> graph = new();
             HashSet<Tuple<Action, Action>> orderingConstraints = [];
             Action a = new("A", [], [], ["x"]);
             Action b = new("B", [], [], ["x"]);
@@ -329,10 +351,10 @@ namespace POP
         public override string ToString()
         {
             string str = "";
-            foreach (Action key in adjList.Keys)
+            foreach (T key in adjList.Keys)
             {
                 str += key + " -> ";
-                foreach (Action value in adjList[key])
+                foreach (T value in adjList[key])
                 {
                     str += value + ", ";
                 }

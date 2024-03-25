@@ -206,7 +206,7 @@ namespace POP
                             bool found = false;
                             for (int i = 0; i < plan.BindingConstraints.Count; i++)
                             {
-                                if (plan.BindingConstraints[i].Variable == entry.Key.Name)
+                                if (plan.BindingConstraints[i].Variable == entry.Key.Name && plan.BindingConstraints[i].IsEqBelong)
                                 {
                                     plan.BindingConstraints[i].Bounds.AddRange(entry.Value.Select(e => e.Name));
                                     found = true;
@@ -291,7 +291,60 @@ namespace POP
             return new Literal(l.Name, variables, l.IsPositive);
         }
 
+        public bool isThreat(Action a, CausalLink cl)
+        {
+            /*  check if the action a is a threat to the causal link cl
+            *   ak is a threat to cl if:
+            *       1- ek unifies with pij, where ~ek ∈ effects(ak);
+            *       2- the MGU of ek and pij is consistent with B; and
+            *       3- (≺) U {ai ≺ ak, ak ≺ aj} is consistent.
+            *       4- ak is not the same as the action that is supposed to achieve the effect of cl
+            */
+            //// 3 can be checked by checking if the ordering constraints are acyclic
 
+
+            // check if the action a is the same as the action that is supposed to achieve the effect of cl
+            if (a.Equals(cl.Produceri))
+                return false;
+
+            bool canUnify = false;
+            // check if the effect of a unifies with the negative effect of cl
+            foreach (Literal effect in a.Effects)
+            {
+                if (effect.Name == cl.LinkCondition.Name
+                && effect.IsPositive == !cl.LinkCondition.IsPositive
+                && effect.Variables.Length == cl.LinkCondition.Variables.Length)
+                {
+                    Dictionary<Expression, List<Expression>>? μ = Helpers.Unify(effect, cl.LinkCondition, plan.BindingConstraints);
+                    if (μ != null)
+                    {
+                        canUnify = true;
+                        // check if the MGU of effect and cl.LinkCondition is consistent with B
+                        foreach (KeyValuePair<Expression, List<Expression>> entry in μ)
+                        {
+                            for (int i = 0; i < plan.BindingConstraints.Count; i++)
+                            {
+                                if (plan.BindingConstraints[i].Variable == entry.Key.Name && !plan.BindingConstraints[i].IsEqBelong)
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!canUnify)
+                return false;
+
+            // check if the ordering constraints are acyclic when adding the new action a between causal link actions
+            Graph<Action> graph = new Graph<Action>();
+            graph.InitializeGraph(plan.OrderingConstraints);
+            graph.AddEdge(cl.Produceri, a);
+            graph.AddEdge(a, cl.Consumerj);
+
+            return graph.IsAcyclic();
+        }
 
 
 
