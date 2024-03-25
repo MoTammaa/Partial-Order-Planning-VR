@@ -225,4 +225,121 @@ namespace POP
             return new Expression(l.Name, args);
         }
     }
+    public class Graph
+    {
+        private Dictionary<POP.Action, List<POP.Action>> adjList;
+
+        public Graph()
+        {
+            adjList = new Dictionary<POP.Action, List<POP.Action>>();
+        }
+
+        public Graph(HashSet<Tuple<POP.Action, POP.Action>> orderingConstraints)
+        : this() { InitializeGraph(orderingConstraints); }
+
+        public void InitializeGraph(HashSet<Tuple<POP.Action, POP.Action>> orderingConstraints)
+        {
+            foreach (Tuple<POP.Action, POP.Action> tuple in orderingConstraints)
+            {
+                AddEdge(tuple.Item1, tuple.Item2);
+            }
+        }
+
+        public void AddEdge(Action u, Action v)
+        {
+            if (!adjList.ContainsKey(u))
+                adjList[u] = new List<Action>();
+            adjList[u].Add(v);
+        }
+
+        private bool IsCyclicUtil(Action v, HashSet<Action> visited, HashSet<Action> recStack)
+        {
+            if (!visited.Contains(v))
+            {
+                visited.Add(v);
+                recStack.Add(v);
+
+                if (adjList.ContainsKey(v))
+                {
+                    foreach (Action neighbour in adjList[v])
+                    {
+                        if (!visited.Contains(neighbour) && IsCyclicUtil(neighbour, visited, recStack))
+                            return true;
+                        else if (recStack.Contains(neighbour))
+                            return true;
+                    }
+                }
+            }
+
+            recStack.Remove(v);
+            return false;
+        }
+
+        public bool IsCyclic()
+        {
+            HashSet<Action> visited = new HashSet<Action>();
+            HashSet<Action> recStack = new HashSet<Action>();
+
+            foreach (var pair in adjList)
+            {
+                Action node = pair.Key;
+                if (IsCyclicUtil(node, visited, recStack))
+                    return true;
+            }
+
+            return false;
+        }
+        public static void printTest()
+        {
+
+            // test acyclicity graph
+            Graph graph = new();
+            HashSet<Tuple<Action, Action>> orderingConstraints = [];
+            Action a = new("A", [], [], ["x"]);
+            Action b = new("B", [], [], ["x"]);
+            Action c = new("C", [], [], ["x"]);
+            Action d = new("D", [], [], ["x"]);
+            Action e = new("E", [], [], ["x"]);
+
+
+            orderingConstraints.Add(new(a, b));
+            orderingConstraints.Add(new(b, c));
+            orderingConstraints.Add(new(c, d));
+            orderingConstraints.Add(new(d, c));
+            orderingConstraints.Add(new(d, e));
+
+            foreach (Tuple<Action, Action> orderingConstraint in orderingConstraints)
+            {
+                Console.WriteLine(orderingConstraint.Item1 + " ≺ " + orderingConstraint.Item2);
+            }
+
+            graph.InitializeGraph(orderingConstraints);
+            if (!graph.IsCyclic())
+            {
+                Console.WriteLine("\nGraph is acyclic");
+            }
+            else
+            {
+                Console.WriteLine("\nGraph is cyclic");
+            }
+
+            Console.WriteLine(graph);
+        }
+
+        public override string ToString()
+        {
+            string str = "";
+            foreach (Action key in adjList.Keys)
+            {
+                str += key + " -> ";
+                foreach (Action value in adjList[key])
+                {
+                    str += value + ", ";
+                }
+                str += "\n";
+            }
+            return str;
+        }
+    }
 }
+
