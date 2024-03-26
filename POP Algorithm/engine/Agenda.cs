@@ -64,7 +64,7 @@ namespace POP
         public object Clone()
         {
             Agenda newAgenda = new Agenda(this.problem);
-            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new();
+            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(newAgenda);
             try
             {
                 while (this.Count > 0)

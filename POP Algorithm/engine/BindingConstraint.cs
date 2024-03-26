@@ -50,7 +50,7 @@ namespace POP
 
         public override string ToString()
         {
-            return $"{Variable} = {string.Join(", ", Bounds)}";
+            return $"{Variable} {(IsEqBelong ? "=" : "!=")} {string.Join(", ", Bounds)}";
         }
 
         public bool Equals(BindingConstraint? other)

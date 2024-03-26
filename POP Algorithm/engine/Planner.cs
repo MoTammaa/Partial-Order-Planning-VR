@@ -78,6 +78,16 @@ namespace POP
         }
 
 
+        public Node createNode(Node? n = null, PartialPlan? plan = null, Agenda? agenda = null, int pathCost = 0)
+        {
+            if (n is not null)
+            {
+                return new Node((PartialPlan)n.Item1.Clone(), (Agenda)n.Item2.Clone(), n.Item3 + 1);
+            }
+            if (plan is null || agenda is null)
+                return new Node(this.plan, this.agenda, 0);
+            return new Node(plan, agenda, pathCost);
+        }
 
         private int Eval_Fn(Node node)
         {
@@ -108,6 +118,17 @@ namespace POP
             {
                 Node current = queue.Dequeue();
 
+                // Check if the current plan DAG is cyclic
+                if (current.Item1.OrderingConstraints.Count > 0)
+                {
+                    Graph<Action> graph = new Graph<Action>();
+                    graph.InitializeGraph(current.Item1.OrderingConstraints);
+                    if (!graph.IsAcyclic())
+                    {
+                        continue; // skip the current node if the plan DAG is cyclic
+                    }
+                }
+
                 // Check if the current node is a goal node
                 if (current.Item2.Count == 0) // if the agenda is empty
                 {
@@ -130,9 +151,7 @@ namespace POP
                 foreach (Operator achiever in achievers)
                 {
                     // clone the current plan and agenda
-                    PartialPlan newPlan = (PartialPlan)current.Item1.Clone();
-                    Agenda newAgenda = (Agenda)current.Item2.Clone();
-                    Node newNode = new Node(newPlan, newAgenda, current.Item3 + 1);
+                    Node newNode = createNode(current);
 
                     // Add the new action to the new plan
                     ApplyAchiever(achiever, chosenAgendaPair, newNode);
@@ -145,6 +164,9 @@ namespace POP
 
 
                 }
+
+                // check for threats
+                searchResolveThreats(chosenAgendaPair.Item1, queue, current);
 
 
             }
@@ -290,6 +312,49 @@ namespace POP
             if (usedCount) variableCounter[l.Name.ToLower()[0] - 'a']++;
             return new Literal(l.Name, variables, l.IsPositive);
         }
+
+        public void searchResolveThreats(Action action, PriorityQueue<Node, int> queue, Node current)
+        {
+            CausalLink threatenedLink;
+            foreach (CausalLink cl in current.Item1.CausalLinks)
+            {
+                if (action.Effects.Contains(cl.LinkCondition))
+                {
+                    threatenedLink = cl;
+
+                    // check if the action is a threat to the causal link
+                    if (isThreat(action, threatenedLink))
+                    {
+                        // try promotion of action
+                        Node promotedNode = createNode(current);
+                        promotedNode.Item1.OrderingConstraints.Add(new Tuple<Action, Action>(threatenedLink.Produceri, action));
+                        queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
+
+
+                        // try demotion of the causal link
+                        Node demotedNode = createNode(current);
+                        demotedNode.Item1.OrderingConstraints.Add(new Tuple<Action, Action>(action, threatenedLink.Consumerj));
+                        queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
+
+
+                        // try adding new Binding Constraints
+                        Node newBindingNode = createNode(current);
+                        foreach (Literal effect in action.Effects)
+                        {
+                            if (effect.Name == threatenedLink.LinkCondition.Name
+                            && effect.IsPositive == !threatenedLink.LinkCondition.IsPositive
+                            && effect.Variables.Length == threatenedLink.LinkCondition.Variables.Length)
+                            {
+                                newBindingNode.Item1.BindingConstraints.Add(new BindingConstraint(effect.Variables[0], [threatenedLink.LinkCondition.Variables[0]], false));
+                            }
+
+                        }
+                        queue.Enqueue(newBindingNode, Eval_Fn(newBindingNode));
+                    }
+                }
+            }
+        }
+
 
         public bool isThreat(Action a, CausalLink cl)
         {

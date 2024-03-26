@@ -10,6 +10,8 @@ namespace POP
         private List<BindingConstraint> bindingConstraints;
         private HashSet<Tuple<Action, Action>> orderingConstraints;
 
+        private static bool PRINT_START_FINISH_ORDERINGS = false;
+
         public HashSet<Action> Actions
         {
             get { return actions; }
@@ -62,7 +64,9 @@ namespace POP
 
         public override string ToString()
         {
-            return $"Actions: {string.Join(", ", this.Actions)}\nCausal Links: {string.Join(", ", this.CausalLinks)}\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints.Select(item => "(" + item.Item1 + " ≺ " + item.Item2 + ")"))}";
+            return $"Actions: {string.Join(", ", this.Actions)}\nCausal Links: {string.Join(", ", this.CausalLinks)}\n\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\n\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints.Select(
+                item => (item.Item1.Name == "Start" || item.Item2.Name == "Start" || item.Item1.Name == "Finish" || item.Item2.Name == "Finish") && !PRINT_START_FINISH_ORDERINGS
+                ? "" : "(" + item.Item1 + " < " + item.Item2 + ")"))}";
         }
 
         public List<Action> getListOfActionsAchievers(Literal l)
