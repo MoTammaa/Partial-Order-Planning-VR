@@ -1,0 +1,33 @@
+
+Plan  found: 
+Actions: Start(), Finish(), Buy(Milk), Buy(Bananas), Buy(Drill)
+
+Causal Links: Buy(Milk) --Have(Milk)--> Finish(),
+ Start() --Sells(SM, Milk)--> Buy(Milk), 
+ Buy(Bananas) --Have(Bananas)--> Finish(),
+  Buy(Drill) --Have(Drill)--> Finish(),
+  Start() --Sells(Home, Bananas)--> Buy(Bananas), 
+   Start() --Sells(Home, Drill)--> Buy(Drill),
+    Start() --At(Home)--> Buy(Drill), 
+    Start() --At(Home)--> Buy(Bananas), 
+    Start() --At(SM)--> Buy(Milk),
+     Start() --At(Home)--> Finish()
+
+Binding Constraints: b0 = Milk, s0 = SM, b3 = Bananas, b5 = Drill, s5 = Home, s3 = Home
+
+----------------------------------------------------------------------------------------------------------------
+Plan  found: 
+Actions: Start(), Finish(), Buy(b0), Buy(b3), Buy(b5)
+
+Causal Links: Buy(b0) --Have(Milk)--> Finish(),
+ Start() --Sells(s0, b0)--> Buy(b0), 
+ Buy(b3) --Have(Bananas)--> Finish(), 
+ Buy(b5) --Have(Drill)--> Finish(), 
+ Start() --Sells(s3, b3)--> Buy(b3), 
+ Start() --Sells(s5, b5)--> Buy(b5), 
+ Start() --At(s5)--> Buy(b5), 
+ Start() --At(s3)--> Buy(b3), 
+ Start() --At(s0)--> Buy(b0), 
+ Start() --At(Home)--> Finish()
+
+Binding Constraints: b0 = Milk, s0 = SM, b3 = Bananas, b5 = Drill, s5 = Home, s3 = Home
