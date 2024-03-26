@@ -1,6 +1,7 @@
 
 namespace POP
 {
+    using System.Text;
     using static System.ArgumentNullException;
 
     public class PartialPlan : ICloneable
@@ -10,7 +11,7 @@ namespace POP
         private List<BindingConstraint> bindingConstraints;
         private HashSet<Tuple<Action, Action>> orderingConstraints;
 
-        private static bool PRINT_START_FINISH_ORDERINGS = false;
+        private static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = true;
 
         public HashSet<Action> Actions
         {
@@ -62,9 +63,33 @@ namespace POP
             return this.Actions.FirstOrDefault(action => action.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
         }
 
+        public bool BindingConstraintsContains(string variable)
+        {
+            return this.BindingConstraints.Any(bc => bc.Variable.Equals(variable) && bc.IsEqBelong);
+        }
+        public List<string> GetBindingConstraintsBounds(string variable)
+        {
+            return this.BindingConstraints.First(bc => bc.Variable.Equals(variable) && bc.IsEqBelong).Bounds;
+        }
+
+        public string ActionToString(Action a)
+        {
+            return a.Name + "(" + string.Join(", ", a.Variables.Select(variable => BindingConstraintsContains(variable) && PRINT_AFTER_CONVERTING_VARIABLES ? GetBindingConstraintsBounds(variable)[0] : variable)) + ")";
+        }
+        public string LiteralToString(Literal l)
+        {
+            return l.Name + "(" + string.Join(", ", l.Variables.Select(variable => BindingConstraintsContains(variable) && PRINT_AFTER_CONVERTING_VARIABLES ? GetBindingConstraintsBounds(variable)[0] : variable)) + ")";
+        }
+
+
         public override string ToString()
         {
-            return $"Actions: {string.Join(", ", this.Actions)}\nCausal Links: {string.Join(", ", this.CausalLinks)}\n\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\n\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints.Select(
+            StringBuilder sb = new();
+            sb.Append("Actions: ");
+            sb.Append(string.Join(", ", this.Actions.Select(action => ActionToString(action))));
+            sb.Append("\n\nCausal Links: ");
+            sb.Append(string.Join(", ", this.CausalLinks.Select(link => ActionToString(link.Produceri) + " --" + LiteralToString(link.LinkCondition) + "--> " + ActionToString(link.Consumerj))));
+            return $"{sb}\n\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\n\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints.Select(
                 item => (item.Item1.Name == "Start" || item.Item2.Name == "Start" || item.Item1.Name == "Finish" || item.Item2.Name == "Finish") && !PRINT_START_FINISH_ORDERINGS
                 ? "" : "(" + item.Item1 + " < " + item.Item2 + ")"))}";
         }
@@ -80,8 +105,11 @@ namespace POP
                     {
                         Dictionary<Expression, List<Expression>>? μ = Helpers.Unify(l, e, BindingConstraints);
                         if (μ is not null)
+                        {
                             // if (μ.Count == l.Variables.Length)
                             actions.Add(a);
+                            break;
+                        }
                     }
                 }
             }

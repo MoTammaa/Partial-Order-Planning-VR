@@ -7,12 +7,14 @@ namespace POP
     public class Agenda : IComparer<System.Tuple<POP.Action, POP.Literal>>, ICloneable, IEquatable<Agenda>
     {
         private PlanningProblem problem;
+        private PartialPlan? partialPlan;
         private PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> priorityQueue;
         // Constructor
-        public Agenda(PlanningProblem problem)
+        public Agenda(PlanningProblem problem, PartialPlan? partialPlan = null)
         {
             ThrowIfNull(problem, nameof(problem));
             this.problem = problem;
+            this.partialPlan = partialPlan;
             this.priorityQueue = new PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>>(this);
         }
 
@@ -51,11 +53,18 @@ namespace POP
             // if the list of achievers is empty, throw an exception to indicate that the literal is not achievable and the problem is unsolvable
             List<Operator> xAchievers = problem.GetListOfAchievers(x.Item2);
             List<Operator> yAchievers = problem.GetListOfAchievers(y.Item2);
+
+            List<Action> xAchieversActions = partialPlan?.getListOfActionsAchievers(x.Item2) ?? [];
+            List<Action> yAchieversActions = partialPlan?.getListOfActionsAchievers(y.Item2) ?? [];
             if (xAchievers.Count == 0 || yAchievers.Count == 0)
-                throw new Exception("Literal " + (xAchievers.Count == 0 ? x.Item2 : y.Item2) + " is not achievable. Problem is unsolvable");
+                if (xAchievers.Count == 0 && xAchieversActions.Count == 0 || yAchievers.Count == 0 && yAchieversActions.Count == 0)
+                    throw new Exception("Literal " + (xAchievers.Count == 0 ? x.Item2 : y.Item2) + " is not achievable. Problem is unsolvable");
 
             if (xAchievers.Count.CompareTo(yAchievers.Count) != 0)
                 return xAchievers.Count.CompareTo(yAchievers.Count);
+
+            if (xAchieversActions.Count.CompareTo(yAchieversActions.Count) != 0)
+                return xAchieversActions.Count.CompareTo(yAchieversActions.Count);
 
             // if list of achievers is the same, compare the number of preconditions for each operator (not searching each time for the open ones to speed up heuristic)
             return x.Item1.Preconditions.Count.CompareTo(y.Item1.Preconditions.Count);
@@ -63,7 +72,7 @@ namespace POP
 
         public object Clone()
         {
-            Agenda newAgenda = new Agenda(this.problem);
+            Agenda newAgenda = new Agenda(this.problem, this.partialPlan);
             PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(newAgenda);
             try
             {

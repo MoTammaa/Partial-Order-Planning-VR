@@ -40,30 +40,6 @@ else
 }
 
 
+// test the POP algorithm
 
-
-PlanningProblem custom = new PlanningProblem(
-    [new("Wear", [new Literal("Worn", ["x"])], [new Literal("At", ["Home"])], ["x"]),],
-    [new Literal("At", ["Home"])],
-    [new("Worn", ["SHIRT"])]
-);
-
-PlanningProblem socksShoes = new PlanningProblem(
-    [
-        new("RightSock", [new ("RightSockOn", [])], [], []),
-        new("LeftSock", [new ("LeftSockOn", [])], [], []),
-        new("RightShoe", [new ("RightShoeOn", [])], [ new ("RightSockOn",[])], []),
-        new("LeftShoe", [new ("LeftShoeOn", [])], [ new ("LeftSockOn",[])], []),
-    ],
-    [],
-    [new("RightShoeOn", []), new("LeftShoeOn", []), new("RightSockOn", []), new("LeftSockOn", [])]
-);
-
-Planner planner = new Planner(custom);
-PartialPlan? plan = planner.POP();
-
-Planner planner2 = new Planner(socksShoes);
-PartialPlan? plan2 = planner2.POP();
-
-
-Console.WriteLine($"Plan {(plan2 is null ? "not" : "")} found: \n" + plan2);
+PlanningProblem.MilkBananasCordlessDrillProblem();

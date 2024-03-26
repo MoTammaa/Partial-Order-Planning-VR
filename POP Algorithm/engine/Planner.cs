@@ -28,7 +28,6 @@ namespace POP
             ThrowIfNull(problem, nameof(problem));
 
             this.problem = problem;
-            this.agenda = new Agenda(problem);
 
             // Initialize the plan
             Action start = new Action("Start", problem.InitialState, new List<Literal>(), []);
@@ -40,6 +39,8 @@ namespace POP
                 new HashSet<Tuple<Action, Action>> { new Tuple<Action, Action>(start, finish) } // {aₒ ≺ a∞}
             );
 
+            this.agenda = new Agenda(problem, plan);
+
             // Initialize the agenda ==> {a∞} x Preconds(a∞)
             foreach (Literal goalPrecondition in problem.GoalState)
             {
@@ -47,6 +48,7 @@ namespace POP
             }
 
             // Initialize the variable prefixes and counters to all operators and literals
+            for (int i = 0; i < variableCounter.Length; i++) variableCounter[i] = 0;
         }
 
         public PartialPlan? POP()
@@ -156,9 +158,9 @@ namespace POP
                     // Add the new action to the new plan
                     ApplyAchiever(achiever, chosenAgendaPair, newNode);
 
-                    // return the new node if it is a goal node
-                    if (newNode.Item2.Count == 0)
-                        return newNode.Item1;
+                    //// return the new node if it is a goal node
+                    //if (newNode.Item2.Count == 0)
+                    //    return newNode.Item1;
 
                     queue.Enqueue(newNode, Eval_Fn(newNode));
 
