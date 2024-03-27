@@ -1,2 +1,50 @@
 \chapter{Background}\label{chap:background}
-  Background
+
+\section{Introduction to Planning}
+Planning in \acs{AI} is a fundamental aspect in the field that allows agents to formulate sequences of actions and strategies
+to achieve a specific goal. It used in a wide range of fields where agents need to make decisions and take actions based on the
+current state of the environment.
+
+Classical planning is a type of planning that is used in \acs{AI} to solve problems that can be represented as a set of states and actions.
+It deals with straightforward actions \& with predictable and deterministic environments, where the agent can predict the outcome of its actions.
+The challenge in classical planning is to construct a sequence of actions that will transform the initial state
+of the environment into a desired goal state, while dealing with exponential growth in the search space, and dealing with the
+actions and steps in chronological order.
+
+Among the different types of planning, we have \textbf{state space planning}, which is a type of planning that is used in \acs{AI} to solve
+problems searching through a set of states and actions,
+and \textbf{plan space planning}, which is a type of planning that is used in \acs{AI} to solve problems searching
+through a set of plans and actions. In this thesis, we will focus on plan space planning, and more specifically on \acf{POP}.
+
+
+\section{Partial Order Planning}
+\acf{POP} is a plan-space search algorithm. Unlike other planning algorithms, \ac{POP} is partially ordered plan search.
+This gives it the advantage over total order planning algorithms that it can use problem decomposition, work
+on several subproblems in parallel independently, solve them with several subplans, and then merge the subplans into a final plan.
+
+
+\ac{POP} uses least commitment strategy. It is a type of planning that does not require the planner to commit to a specific order of actions.
+Instead, the planner can choose to leave some actions unordered, and the planner can choose to order actions only when necessary.
+This allows the planner to explore a larger space of possible plans, and it allows the planner to find plans that
+are more flexible and more robust. Partial Order Planning is a powerful and flexible planning algorithm that has
+been used in a wide range of applications, including robotics, natural language processing, and automated planning.
+
+
+\subsection{Formal Definition of Partial Plans}
+A partial order plan is a tuple $\pi = (A, \prec, B, L)$ where:
+\begin{itemize}
+  \item $A$ is a set of actions, or partially instantiated Operators.
+  \item $\prec$ is a set of ordering constraints between actions in the form of $a_i \prec a_j$
+  \item $B$ is a set of bindings.
+  \item $L$ is a set of causal links.
+\end{itemize}
+are the components of a partial plan.
+
+
+
+\subsection{Consistency of Partial Plans}
+A partial order plan $\pi = (A, \prec, B, L)$ is consistent if it satisfies the following conditions:
+\begin{itemize}
+  \item The transitive closure of the ordering constraints $\prec$ is a strict partial order.
+  \item every subsitution $\sigma $ which binds a variable $x$ to a value in its allowed domain $D_x$ is consistent with the bindings in all other constraints in $B$.
+\end{itemize}
