@@ -48,3 +48,109 @@ A partial order plan $\pi = (A, \prec, B, L)$ is consistent if it satisfies the 
   \item The transitive closure of the ordering constraints $\prec$ is a strict partial order.
   \item every subsitution $\sigma $ which binds a variable $x$ to a value in its allowed domain $D_x$ is consistent with the bindings in all other constraints in $B$.
 \end{itemize}
+
+\subsection{Threats in Partial Plans}
+Last thing to mention before we show the algorithm, is the concept of threats in partial plans.
+A threat in a partial plan is an action (partially instantiated operator) that could potentially undo the effects of another action.
+We can say an action $a_k$ threatens a causal link $(a_i \xrightarrow{\text{$P_j$}}  a_j)$ if it has the following properties:
+\begin{itemize}
+  \item $e_k (\in$ effect of $a_k)$ unifies with $\lnot p_j$.
+  \item the MGU of $e_k$ and $\lnot p_j$ is consistent with the bindings in $B$.
+  \item $\prec \cup \{a_i \prec a_k, a_k \prec a_j\}$ is consistent.
+\end{itemize}
+Once the 3 conditions are met, we can say that $a_k$ threatens the causal link \\$(a_i \xrightarrow{\text{$P_j$}}  a_j)$.
+
+\subsection{POP Algorithm}
+The \acf{POP} algorithm is a plan-space search algorithm that uses a partial order plan representation.
+The algorithm works by incrementally building a partial order plan, and then refining the plan by adding ordering constraints,
+bindings, and causal links to resolve threats and make the plan consistent.
+
+Before we show the algorithm, we need to look at some terminologies and objects used in the algorithm:
+\begin{itemize}
+  \item \textbf{Operator}: is a tuple $o = (name, preconds, effects)$ where:
+        \begin{itemize}
+          \item $name$ is the name of the operator.
+          \item $preconds$ is a set of preconditions.
+          \item $effects$ is a set of effects.
+        \end{itemize}
+  \item \textbf{Action}: as mentioned before, an action is a partially instantiated operator,
+        (i.e. any ground instance of an operator with some of its variables instantiated).
+
+  \item \textbf{Causal Link}: is in the form of $(a_i \xrightarrow{\text{$P_j$}} a_j)$ where:
+        \begin{itemize}
+          \item $a_i$ is an action.
+          \item $a_j$ is another action linked to $a_i$.
+          \item $P_j$ is a precondition of $a_j$, and at the same time an effect of $a_i$.
+        \end{itemize}
+        An action $a_i$ is said to achieve a precondition $p_j$ if $p_j \in$ effects$(a_i)$ \& $p_j \in$ preconds$(a_j)$.
+
+  \item \textbf{Binding}: is a set of constraints that bind variables to values.
+        For example, if we have a binding $B = \{x \leftarrow \{1,5\}, y \leftarrow 2\}$, this means that the variable $x$ is bound to the values 1 or 5,
+        and the variable $y$ is bound to the value 2.
+
+\end{itemize}
+
+\hrule
+Variables used in the algorithm:
+\begin{itemize}
+  \item \textbf{$O$} is the set of operators.
+  \item \textbf{$s_0$} is the initial state.
+  \item \textbf{$g$} is the goal state.
+  \item \textbf{$\pi = (A, L, \prec, B)$} is a partial order plan.
+  \item \textbf{$agenda$} is a set of pairs $(a_i, p_i)$ where $a_i$ is an action and $p_i$ is a precondition of $a_i$.
+  \item \textbf{$achievers$} is the set of operators that can achieve a precondition $p_i$.
+  \item \textbf{$failure$} is a special value that indicates that the algorithm has failed to find a plan.
+\end{itemize}
+\hrule
+Now we can show the \ac{POP} algorithm in Algorithm \ref{alg:pop}:
+
+% code block
+\begin{algorithm}
+  \caption{POP Algorithm}
+  \label{alg:pop}
+  \begin{algorithmic}
+    \STATE \textbf{Function} POP($O$, $s_0$, $g$)
+    \ENSURE a plan
+    \RETURN POP1($\{a_0, a_{\infty}\}, \{a_0 \prec a_{\infty}\}, \emptyset, \emptyset$, $\{a_{\infty}\} \times$ Preconds$(a_{\infty})$)\\
+
+    \STATE
+    \hrule
+    \STATE
+
+    \STATE \textbf{Function} POP1($\pi = (A, L, \prec, B)$, agenda)
+    \ENSURE a plan
+    \IF{agenda == $\emptyset$}
+    \RETURN $\pi$
+    \ENDIF
+    \STATE Select any pair $(a_i, p_i)$ and remove it from agenda
+    \STATE achievers $\leftarrow$ the set of operators achieving $(a_i, p_i)$
+    \IF{achievers == $\emptyset$}
+    \RETURN $failure$
+    \ENDIF
+    \STATE \textcolor{red}{\textbf{\textit{Nondeterministically}}} choose some operator $a_j \in$ achievers
+    \STATE $L \leftarrow L \cup \{\langle a_j \xrightarrow{\text{$P_i$}} a_i\rangle\}$
+    \STATE Update $\prec$ with $a_j \xrightarrow{\text{$P_i$}} a_i$
+    \STATE Update B with binding constraints of this link
+    \IF{$a_j \notin A$}
+    \STATE $A \leftarrow A \cup \{a_j\}$
+    \STATE Update $\prec$ with $a_0 \prec a_j$ and $a_j \prec a_{\infty}$
+    \STATE agenda $\leftarrow$ agenda $\cup \{(a_j, p_j)|p_j \in$ preconds$(a_j)\}$
+    \ENDIF
+    \STATE $\pi \leftarrow$ RESOLVE-THREATS($\pi$, $a_j$, $\langle a_j \prec a_i\rangle$)
+    \RETURN POP1($\pi$, agenda)\\
+
+    \STATE
+    \hrule
+    \STATE
+
+    \STATE \textbf{Function} RESOLVE-THREATS($\pi = (A, L, \prec, B)$, $a_l$, $L$)
+    \ENSURE a plan
+    \FOR{each threat $a_k$ on $(a_i \xrightarrow{\text{$P_j$}} a_j)$, where $a_k = a_l$ or $(a_i \xrightarrow{\text{$P_j$}} a_j) = l$}
+    \STATE \textcolor{red}{\textbf{\textit{Nondeterministically}}} choose one of the following:
+    \STATE - Update $\prec$ with $a_k \prec a_i$
+    \STATE - Update with $a_j \prec a_k$
+    \STATE - Add a binding constraint to $B$ which renders $p_i$ nonunifiable with any threatening effect of $a_k$.
+    \ENDFOR
+    \RETURN $\pi$
+  \end{algorithmic}
+\end{algorithm}
