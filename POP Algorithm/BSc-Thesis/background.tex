@@ -1,19 +1,19 @@
 \chapter{Background}\label{chap:background}
 
 \section{Introduction to Planning}
-Planning in \acs{AI} is a fundamental aspect in the field that allows agents to formulate sequences of actions and strategies
+Planning in \acf{AI} is a fundamental aspect in the field that allows agents to formulate sequences of actions and strategies
 to achieve a specific goal. It used in a wide range of fields where agents need to make decisions and take actions based on the
 current state of the environment.
 
-Classical planning is a type of planning that is used in \acs{AI} to solve problems that can be represented as a set of states and actions.
+Classical planning is a type of planning that is used in \ac{AI} to solve problems that can be represented as a set of states and actions.
 It deals with straightforward actions \& with predictable and deterministic environments, where the agent can predict the outcome of its actions.
 The challenge in classical planning is to construct a sequence of actions that will transform the initial state
 of the environment into a desired goal state, while dealing with exponential growth in the search space, and dealing with the
 actions and steps in chronological order.
 
-Among the different types of planning, we have \textbf{state space planning}, which is a type of planning that is used in \acs{AI} to solve
+Among the different types of planning, we have \textbf{state space planning}, which is a type of planning that is used in \ac{AI} to solve
 problems searching through a set of states and actions,
-and \textbf{plan space planning}, which is a type of planning that is used in \acs{AI} to solve problems searching
+and \textbf{plan space planning}, which is a type of planning that is used in \ac{AI} to solve problems searching
 through a set of plans and actions. In this thesis, we will focus on plan space planning, and more specifically on \acf{POP}.
 
 
@@ -82,7 +82,7 @@ Before we show the algorithm, we need to look at some terminologies and objects 
           \item $a_j$ is another action linked to $a_i$.
           \item $P_j$ is a precondition of $a_j$, and at the same time an effect of $a_i$.
         \end{itemize}
-        An action $a_i$ is said to achieve a precondition $p_j$ if $p_j \in$ effects$(a_i)$ \& $p_j \in$ preconds$(a_j)$.
+        An action $a_i$ is said to achieve a precondition $p_j$ if $p_j \in$ effects($a_i$) and $p_j \in$ preconds($a_j$).
 
   \item \textbf{Binding}: is a set of constraints that bind variables to values.
         For example, if we have a binding $B = \{x \leftarrow \{1,5\}, y \leftarrow 2\}$, this means that the variable $x$ is bound to the values 1 or 5,
