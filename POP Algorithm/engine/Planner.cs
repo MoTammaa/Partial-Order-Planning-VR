@@ -9,6 +9,9 @@ namespace POP
 
     public class Planner
     {
+        public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = true,
+            PRINT_DEBUG_INFO = false;
+
 
         private PlanningProblem problem;
         private PartialPlan plan;
@@ -140,6 +143,8 @@ namespace POP
                 // Expand the current node by applying each of the achievers to the current node
                 // First, select any Pair (a, p) from the agenda (based on heuristic described in the Agenda class)
                 Tuple<Action, Literal> chosenAgendaPair = current.Item2.Remove();
+                Helpers.println("Current Plan:\n" + current.Item1.ToString() + "\n");
+                Helpers.println($"Selected Action: {chosenAgendaPair.Item1} ,,,\n Literal: {chosenAgendaPair.Item2}");
 
                 // Find the list of achievers for the selected literal p
                 // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
@@ -156,12 +161,9 @@ namespace POP
                     Node newNode = createNode(current);
 
                     // Add the new action to the new plan
-                    ApplyAchiever(achiever, chosenAgendaPair, newNode);
+                    bool appliedSuccessfully = ApplyAchiever(achiever, chosenAgendaPair, newNode);
 
-                    //// return the new node if it is a goal node
-                    //if (newNode.Item2.Count == 0)
-                    //    return newNode.Item1;
-
+                    if (!appliedSuccessfully) continue; // skip the current achiever if it couldn't be applied
                     queue.Enqueue(newNode, Eval_Fn(newNode));
 
 
@@ -178,8 +180,9 @@ namespace POP
         }
 
 
-        private void ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node)
+        private bool ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node)
         {
+            // true if the action is added to the plan, false if couldn't satisfy binding constraints or otherwise
             // Node => Item1: PartialPlan, Item2: Agenda, Item3: path cost integer
             PartialPlan plan = node.Item1;
             Agenda agenda = node.Item2;
@@ -215,6 +218,7 @@ namespace POP
             plan.OrderingConstraints.Add(new Tuple<Action, Action>(newAction, agendaActionLiteralPair.Item1));
 
             // Update the plan's binding constraints (B)
+            bool successfullyBinded = false;
             foreach (Literal effect in newAction.Effects)
             {
                 if (effect.Name == agendaActionLiteralPair.Item2.Name
@@ -223,29 +227,39 @@ namespace POP
                 {
 
                     Dictionary<Expression, List<Expression>>? μ = Helpers.Unify(effect, agendaActionLiteralPair.Item2, plan.BindingConstraints);
-                    if (μ != null)
+                    if (μ is not null)
                     {
+                        successfullyBinded = true;
                         foreach (KeyValuePair<Expression, List<Expression>> entry in μ)
                         {
-                            bool found = false;
+                            // let bound be the first constant in the list of expressions or the first variable if there is no constant
+                            string bound = entry.Value[0].Name;
+                            foreach (Expression e in entry.Value)
+                            {
+                                if (e.IsConstant)
+                                {
+                                    bound = e.Name;
+                                    break;
+                                }
+                            }
+                            // check if the variable is already in the binding constraints
                             for (int i = 0; i < plan.BindingConstraints.Count; i++)
                             {
                                 if (plan.BindingConstraints[i].Variable == entry.Key.Name && plan.BindingConstraints[i].IsEqBelong)
                                 {
-                                    plan.BindingConstraints[i].Bounds.AddRange(entry.Value.Select(e => e.Name));
-                                    found = true;
-                                    break;
+                                    // if the variable is already in the binding constraints, but the bound is different, return false
+                                    if (plan.BindingConstraints[i].Bound != bound) return false;
                                 }
                             }
-                            if (!found)
-                            {
-                                plan.BindingConstraints.Add(new BindingConstraint(entry.Key.Name, entry.Value.Select(e => e.Name).ToList(), true));
-                            }
+                            // add the new binding constraint to the plan
+                            plan.BindingConstraints.Add(new BindingConstraint(entry.Key.Name, bound, true));
+
                         }
+                        break;
                     }
-                    break;
                 }
             }
+            return successfullyBinded;
         }
 
         public Action createAction(Operator op)
@@ -347,7 +361,7 @@ namespace POP
                             && effect.IsPositive == !threatenedLink.LinkCondition.IsPositive
                             && effect.Variables.Length == threatenedLink.LinkCondition.Variables.Length)
                             {
-                                newBindingNode.Item1.BindingConstraints.Add(new BindingConstraint(effect.Variables[0], [threatenedLink.LinkCondition.Variables[0]], false));
+                                newBindingNode.Item1.BindingConstraints.Add(new BindingConstraint(effect.Variables[0], threatenedLink.LinkCondition.Variables[0], false));
                             }
 
                         }

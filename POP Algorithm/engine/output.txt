@@ -31,3 +31,36 @@ Causal Links: Buy(b0) --Have(Milk)--> Finish(),
  Start() --At(Home)--> Finish()
 
 Binding Constraints: b0 = Milk, s0 = SM, b3 = Bananas, b5 = Drill, s5 = Home, s3 = Home
+----------------------------------------------------------------------------------------------
+Plan  found: 
+Actions: Start(), Finish(), Buy(Milk), Buy(Bananas), Buy(Drill), Go(HWS), Go(SM), Go(SM)
+
+Causal Links: 
+ Buy(Milk) --Have(Milk)--> Finish(),
+ Buy(Bananas) --Have(Bananas)--> Finish(),
+ Buy(Drill) --Have(Drill)--> Finish(),
+ Start() --At(Home)--> Finish(),
+ Start() --Sells(SM, Milk)--> Buy(Milk),
+ Go(SM) --At(SM)--> Buy(Milk),
+ Start() --Sells(SM, Bananas)--> Buy(Bananas),
+ Go(SM) --At(SM)--> Buy(Bananas),
+ Start() --Sells(HWS, Drill)--> Buy(Drill),
+ Go(HWS) --At(HWS)--> Buy(Drill),
+ Start() --At(Home)--> Go(HWS),
+
+Binding Constraints: 
+b0 = Milk,
+ s0 = SM,
+ b1 = Bananas,
+ s1 = SM,
+ b2 = Drill,
+ s2 = HWS,
+ g0 = HWS,
+ a0 = Home,
+ g2 = SM,
+ g10 = SM,
+ a10 != s1
+
+
+Ordering Constraints: , , , , , , , , , (Go(HWS) < Buy(Drill)), , , (Go(SM) < Buy(Bananas)), 
+                         (Go(SM) < Buy(Drill)), , , (Go(SM) < Buy(Milk))

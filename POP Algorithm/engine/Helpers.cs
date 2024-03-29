@@ -88,6 +88,21 @@ namespace POP
             return e;
         }
 
+        public static void print(object obj)
+        {
+            if (Planner.PRINT_DEBUG_INFO)
+            {
+                Console.Write(obj);
+            }
+        }
+        public static void println(object obj)
+        {
+            if (Planner.PRINT_DEBUG_INFO)
+            {
+                Console.WriteLine(obj);
+            }
+        }
+
 
 
     }
@@ -212,7 +227,7 @@ namespace POP
                         {
                             if (bc.Variable.Equals(var) && bc.IsEqBelong)
                             {
-                                args.Add(new Expression(bc.Bounds[0], null, true)); // add the first bound only (TODO: add all bounds or find a better way to handle this)
+                                args.Add(new Expression(bc.Bound, null, true)); // add the first bound only (TODO: add all bounds or find a better way to handle this)
                                 foundInConstraints = true;
                                 break;
                             }
