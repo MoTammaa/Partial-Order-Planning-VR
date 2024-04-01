@@ -2,9 +2,10 @@ namespace POP
 {
     class BindingConstraints
     {
-        private Dictionary<int, int> pE, rankE, setSizeE, pNE, rankNE, setSizeNE;
+        private Dictionary<int, int> pE, rankE, setSizeE;
+        private Dictionary<int, HashSet<int>> pNEGraph;
         private Dictionary<string, int> map = new Dictionary<string, int>();
-        int numSetsE, numSetsNE;
+        int numSetsE;
         private int count = 0;
 
         public BindingConstraints(int initalCapacity = -1)
@@ -14,18 +15,14 @@ namespace POP
                 pE = new Dictionary<int, int>();
                 rankE = new Dictionary<int, int>();
                 setSizeE = new Dictionary<int, int>();
-                pNE = new Dictionary<int, int>();
-                rankNE = new Dictionary<int, int>();
-                setSizeNE = new Dictionary<int, int>();
+                pNEGraph = new Dictionary<int, HashSet<int>>();
             }
             else
             {
                 pE = new Dictionary<int, int>(initalCapacity);
                 rankE = new Dictionary<int, int>(initalCapacity);
                 setSizeE = new Dictionary<int, int>(initalCapacity);
-                pNE = new Dictionary<int, int>(initalCapacity);
-                rankNE = new Dictionary<int, int>(initalCapacity);
-                setSizeNE = new Dictionary<int, int>(initalCapacity);
+                pNEGraph = new Dictionary<int, HashSet<int>>(initalCapacity);
             }
         }
 
@@ -39,17 +36,30 @@ namespace POP
             return null;
         }
 
+        public HashSet<string> getEqualSet(string variable)
+        {
+            if (!map.ContainsKey(variable))
+                return [];
+            HashSet<string> result = [];
+            int representative = findRepresentativeEq(map[variable]);
+            foreach (var item in map)
+            {
+                if (findRepresentativeEq(item.Value) == representative)
+                    result.Add(item.Key);
+            }
+            return result;
+        }
         public string? getBoundEq(string variable)
         {
             if (!map.ContainsKey(variable))
                 return null;
             return getStringName(findRepresentativeEq(map[variable]));
         }
-        public string? getBoundNE(string variable)
+        public string[] getBoundNE(string variable)
         {
             if (!map.ContainsKey(variable))
-                return null;
-            return getStringName(findRepresentativeNE(map[variable]));
+                return [];
+            return pNEGraph[map[variable]].Select(getStringName).ToArray()!;
         }
 
         private int findRepresentativeEq(int i)
@@ -58,12 +68,55 @@ namespace POP
                 return -1;
             return pE[i] == i ? i : (pE[i] = findRepresentativeEq(pE[i]));
         }
-        private int findRepresentativeNE(int i)
+        public bool isEqual(string a, string b)
         {
-            if (!pNE.ContainsKey(i))
-                return -1;
-            return pNE[i] == i ? i : (pNE[i] = findRepresentativeNE(pNE[i]));
+            if (!map.ContainsKey(a) || !map.ContainsKey(b))
+                return false;
+            return isSameSetEq(map[a], map[b]);
         }
+        public bool isNotEqual(string a, string b, int visited = 0)
+        {
+            if (!map.ContainsKey(a) || !map.ContainsKey(b))
+                return false;
+            if (Helpers.IsUpper(a[0]) && Helpers.IsUpper(b[0]))
+                return a != b;
+
+            if (Helpers.IsUpper(a[0]) && pNEGraph.TryGetValue(map[b], out HashSet<int>? bValue))
+                return bValue.Contains(map[a]);
+            if (Helpers.IsUpper(b[0]) && pNEGraph.TryGetValue(map[a], out HashSet<int>? aValue))
+                return aValue.Contains(map[b]);
+
+            if (pNEGraph.TryGetValue(map[a], out HashSet<int>? aValues) && aValues.Contains(map[b]))
+                return true;
+            if (pNEGraph.TryGetValue(map[b], out HashSet<int>? bValues) && bValues.Contains(map[a]))
+                return true;
+
+            HashSet<string> equivalentSet = getEqualSet(a);
+            if (equivalentSet.Count > 1)
+            {
+                foreach (string item in equivalentSet)
+                {
+                    if (item == a || (visited & 1 << map[item]) != 0)
+                        continue;
+                    if (isNotEqual(item, b, visited | 1 << map[item]))
+                        return true;
+                }
+            }
+
+            equivalentSet = getEqualSet(b);
+            if (equivalentSet.Count > 1)
+            {
+                foreach (string item in equivalentSet)
+                {
+                    if (item == b || (visited & 1 << map[item]) != 0)
+                        continue;
+                    if (isNotEqual(item, a, visited | 1 << map[item]))
+                        return true;
+                }
+            }
+            return false;
+        }
+
 
         private bool setParentEq(string variable, string constant)
         {
@@ -86,7 +139,7 @@ namespace POP
                 numSetsE++;
             }
 
-            if (isSameSetNE(map[variable], map[constant]))
+            if (isNotEqual(variable, constant))
                 return false;
 
             string? varRepresentative = getStringName(findRepresentativeEq(map[variable]));
@@ -114,56 +167,6 @@ namespace POP
 
             return true;
         }
-        private bool setParentNE(string variable, string constant)
-        {
-            if (!map.ContainsKey(variable))
-            {
-                map.Add(variable, count);
-                pNE.Add(count, count);
-                rankNE.Add(count, 0);
-                setSizeNE.Add(count, 1);
-                count++;
-                numSetsNE++;
-            }
-            if (!map.ContainsKey(constant))
-            {
-                map.Add(constant, count);
-                pNE.Add(count, count);
-                rankNE.Add(count, 0);
-                setSizeNE.Add(count, 1);
-                count++;
-                numSetsNE++;
-            }
-
-            if (isSameSetEq(map[variable], map[constant]))
-                return false;
-
-            string? varRepresentative = getStringName(findRepresentativeNE(map[variable]));
-            string? constRepresentative = getStringName(findRepresentativeNE(map[constant]));
-
-            if (varRepresentative == null || constRepresentative == null)
-                return false;
-
-            if (Helpers.IsUpper(varRepresentative[0]) && varRepresentative != constRepresentative) // if the variable is bind to a different constant
-                return false;
-
-            unionSetNE(map[variable], map[constant]);
-
-            // swap and make the constant the representative
-            if (!Helpers.IsUpper(varRepresentative[0]))
-            {
-                string? newVarRepresentative = getStringName(findRepresentativeNE(map[variable]));
-                if (newVarRepresentative == null)
-                    return false;
-
-                int temp = map[newVarRepresentative];
-                map[newVarRepresentative] = map[constRepresentative];
-                map[constRepresentative] = temp;
-            }
-
-            return true;
-        }
-
 
         public bool setEqual(string a, string b)
         {
@@ -201,7 +204,7 @@ namespace POP
                 numSetsE++;
             }
 
-            if (isSameSetNE(map[a], map[b]))
+            if (isNotEqual(a, b))
                 return false;
 
             if (Helpers.IsUpper(a[0]) && Helpers.IsUpper(b[0]))
@@ -222,35 +225,23 @@ namespace POP
             if (!map.ContainsKey(a))
             {
                 map.Add(a, count);
-                pNE.Add(count, count);
-                rankNE.Add(count, 0);
-                setSizeNE.Add(count, 1);
+                pNEGraph.Add(count, new HashSet<int>());
                 count++;
-                numSetsNE++;
             }
-            else if (!pNE.ContainsKey(map[a]) && !Helpers.IsUpper(a[0]))
+            else if (!pNEGraph.ContainsKey(map[a]) && !Helpers.IsUpper(a[0]))
             {
-                pNE.Add(map[a], map[a]);
-                rankNE.Add(map[a], 0);
-                setSizeNE.Add(map[a], 1);
-                numSetsNE++;
+                pNEGraph.Add(map[a], new HashSet<int>());
             }
 
             if (!map.ContainsKey(b))
             {
                 map.Add(b, count);
-                pNE.Add(count, count);
-                rankNE.Add(count, 0);
-                setSizeNE.Add(count, 1);
+                pNEGraph.Add(count, new HashSet<int>());
                 count++;
-                numSetsNE++;
             }
-            else if (!pNE.ContainsKey(map[b]) && !Helpers.IsUpper(b[0]))
+            else if (!pNEGraph.ContainsKey(map[b]) && !Helpers.IsUpper(b[0]))
             {
-                pNE.Add(map[b], map[b]);
-                rankNE.Add(map[b], 0);
-                setSizeNE.Add(map[b], 1);
-                numSetsNE++;
+                pNEGraph.Add(map[b], new HashSet<int>());
             }
 
             if (isSameSetEq(map[a], map[b]))
@@ -259,13 +250,18 @@ namespace POP
             if (Helpers.IsUpper(a[0]) && Helpers.IsUpper(b[0]))
                 return a != b;
 
-            if (Helpers.IsUpper(a[0]))
-                return setParentNE(b, a);
+            if (!Helpers.IsUpper(a[0]))
+                pNEGraph[map[a]].Add(map[b]);
 
-            if (Helpers.IsUpper(b[0]))
-                return setParentNE(a, b);
+            if (!Helpers.IsUpper(b[0]))
+                pNEGraph[map[b]].Add(map[a]);
 
-            unionSetNE(map[a], map[b]);
+            if (!Helpers.IsUpper(a[0]) && !Helpers.IsUpper(b[0]))
+            {
+                pNEGraph[map[a]].UnionWith(pNEGraph[map[b]]);
+                pNEGraph[map[b]].UnionWith(pNEGraph[map[a]]);
+            }
+
             return true;
         }
 
@@ -278,15 +274,6 @@ namespace POP
                 return false;
             return iRep == jRep;
         }
-        private bool isSameSetNE(int i, int j)
-        {
-            int iRep = findRepresentativeNE(i);
-            int jRep = findRepresentativeNE(j);
-            if (iRep == -1 || jRep == -1)
-                return false;
-            return iRep == jRep;
-        }
-
         private bool unionSetEq(int i, int j)
         {
             if (isSameSetEq(i, j))
@@ -307,44 +294,16 @@ namespace POP
             }
             return true;
         }
-        private bool unionSetNE(int i, int j)
-        {
-            if (isSameSetNE(i, j))
-                return false;
-            numSetsNE--;
-            int x = findRepresentativeNE(i), y = findRepresentativeNE(j);
-            if (rankNE[x] > rankNE[y])
-            {
-                pNE[y] = x;
-                setSizeNE[x] += setSizeNE[y];
-            }
-            else
-            {
-                pNE[x] = y;
-                setSizeNE[y] += setSizeNE[x];
-                if (rankNE[x] == rankNE[y])
-                    rankNE[y]++;
-            }
-            return true;
-        }
 
         public int numEqDisjointSets()
         {
             return numSetsE;
         }
-        public int numNEDisjointSets()
-        {
-            return numSetsNE;
-        }
-
         public int sizeOfEqSet(int i)
         {
             return setSizeE[findRepresentativeEq(i)];
         }
-        public int sizeOfNESet(int i)
-        {
-            return setSizeNE[findRepresentativeNE(i)];
-        }
+
     }
 }
 

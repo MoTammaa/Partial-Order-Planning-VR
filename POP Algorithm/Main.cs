@@ -55,5 +55,7 @@ Console.WriteLine(bc.setNotEqual("x", "op"));
 
 Console.WriteLine(bc.setNotEqual("x", "p"));
 Console.WriteLine(bc.setEqual("p", "s"));
+Console.WriteLine(bc.setNotEqual("s", "x"));
+Console.WriteLine(bc.setEqual("w", "s"));
 
-// x = z = w = u  ,  op != u,x  ,  x != p  ,  p = s
+// x = z = w = u  ,  op != u,x  ,  x != p  ,  x != s
