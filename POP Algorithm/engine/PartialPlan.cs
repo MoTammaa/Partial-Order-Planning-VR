@@ -58,6 +58,32 @@ namespace POP
         }
 #nullable restore warnings
 
+        public bool isAllVariablesBound()
+        {
+            foreach (Action a in this.Actions)
+            {
+                if (a.Variables.Any(variable => !BindingConstraintsContains(variable)))
+                {
+                    return false;
+                }
+                foreach (Literal l in a.Preconditions)
+                {
+                    if (l.Variables.Any(variable => !BindingConstraintsContains(variable) && !Helpers.IsUpper(variable[0])))
+                    {
+                        return false;
+                    }
+                }
+                foreach (Literal l in a.Effects)
+                {
+                    if (l.Variables.Any(variable => (!BindingConstraintsContains(variable)) && !Helpers.IsUpper(variable[0])))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         public Action? GetActionByName(string name)
         {
             return this.Actions.FirstOrDefault(action => action.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
@@ -78,7 +104,7 @@ namespace POP
         }
         public string LiteralToString(Literal l)
         {
-            return l.Name + "(" + string.Join(", ", l.Variables.Select(variable => BindingConstraintsContains(variable) && PRINT_AFTER_CONVERTING_VARIABLES ? GetBindingConstraintsBounds(variable) : variable)) + ")";
+            return (l.IsPositive ? "" : " ¬") + l.Name + "(" + string.Join(", ", l.Variables.Select(variable => BindingConstraintsContains(variable) && PRINT_AFTER_CONVERTING_VARIABLES ? GetBindingConstraintsBounds(variable) : variable)) + ")";
         }
 
 
@@ -91,7 +117,7 @@ namespace POP
             sb.Append(string.Join(", \n", this.CausalLinks.Select(link => ActionToString(link.Produceri) + " --" + LiteralToString(link.LinkCondition) + "--> " + ActionToString(link.Consumerj))));
             return $"{sb}\n\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\n\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints.Select(
                 item => (item.Item1.Name == "Start" || item.Item2.Name == "Start" || item.Item1.Name == "Finish" || item.Item2.Name == "Finish") && !PRINT_START_FINISH_ORDERINGS
-                ? "" : "(" + item.Item1 + " < " + item.Item2 + ")"))}";
+                ? "" : "(" + ActionToString(item.Item1) + " < " + ActionToString(item.Item2) + ")"))}";
         }
 
         public List<Action> getListOfActionsAchievers(Literal l)
@@ -108,7 +134,7 @@ namespace POP
                         {
                             // if (μ.Count == l.Variables.Length)
                             actions.Add(a);
-                            break;
+                            // break;
                         }
                     }
                 }

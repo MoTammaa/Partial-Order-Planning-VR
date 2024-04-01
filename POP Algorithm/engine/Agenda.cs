@@ -61,13 +61,13 @@ namespace POP
                     throw new Exception("Literal " + (xAchievers.Count == 0 ? x.Item2 : y.Item2) + " is not achievable. Problem is unsolvable");
 
             if (xAchievers.Count.CompareTo(yAchievers.Count) != 0)
-                return xAchievers.Count.CompareTo(yAchievers.Count);
+                return (xAchievers.Count + (x.Item2.IsPositive ? -2 : 0)).CompareTo(yAchievers.Count + (y.Item2.IsPositive ? -2 : 0));
 
             if (xAchieversActions.Count.CompareTo(yAchieversActions.Count) != 0)
-                return xAchieversActions.Count.CompareTo(yAchieversActions.Count);
+                return (xAchievers.Count + (x.Item2.IsPositive ? -2 : 0)).CompareTo(yAchieversActions.Count + (y.Item2.IsPositive ? -2 : 0));
 
             // if list of achievers is the same, compare the number of preconditions for each operator (not searching each time for the open ones to speed up heuristic)
-            return x.Item1.Preconditions.Count.CompareTo(y.Item1.Preconditions.Count);
+            return (x.Item1.Preconditions.Count + (x.Item2.IsPositive ? -2 : 0)).CompareTo(y.Item1.Preconditions.Count + (y.Item2.IsPositive ? -2 : 0));
         }
 
         public object Clone()
@@ -140,7 +140,7 @@ namespace POP
         public override string ToString()
         {
             string str = "Agenda: ";
-            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new();
+            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
             try
             {
                 while (this.Count > 0)

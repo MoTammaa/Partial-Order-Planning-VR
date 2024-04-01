@@ -88,6 +88,19 @@ namespace POP
             return e;
         }
 
+        public static bool IsUpper(char c = '\0', string s = "")
+        {
+            if (c != '\0')
+            {
+                return c >= 'A' && c <= 'Z';
+            }
+            if (s != "")
+            {
+                return s[0] >= 'A' && s[0] <= 'Z';
+            }
+            return false;
+        }
+
         public static void print(object obj)
         {
             if (Planner.PRINT_DEBUG_INFO)
@@ -105,6 +118,27 @@ namespace POP
 
 
 
+    }
+
+    public class Node
+    {
+        public PartialPlan partialPlan;
+        public Agenda agenda;
+        public int pathCost;
+        public Node? parent;
+
+        public Node(PartialPlan partialPlan, Agenda agenda, int pathCost, Node? parent)
+        {
+            this.partialPlan = partialPlan;
+            this.agenda = agenda;
+            this.pathCost = pathCost;
+            this.parent = parent;
+        }
+
+        public override string ToString()
+        {
+            return $"Partial Plan: {partialPlan}\n\nAgenda: {agenda}\n\nPath Cost: {pathCost}\n";
+        }
     }
 
     public class Expression : IEquatable<Expression>, ICloneable

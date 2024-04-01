@@ -4,13 +4,12 @@ namespace POP
     using System;
     using System.Collections.Generic;
     using static System.ArgumentNullException;
-
-    using Node = Tuple<PartialPlan, Agenda, int>;
+    using static Helpers;
 
     public class Planner
     {
         public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = true,
-            PRINT_DEBUG_INFO = false;
+            PRINT_DEBUG_INFO = true;
 
 
         private PlanningProblem problem;
@@ -87,11 +86,11 @@ namespace POP
         {
             if (n is not null)
             {
-                return new Node((PartialPlan)n.Item1.Clone(), (Agenda)n.Item2.Clone(), n.Item3 + 1);
+                return new Node((PartialPlan)n.partialPlan.Clone(), (Agenda)n.agenda.Clone(), n.pathCost + 1, n);
             }
             if (plan is null || agenda is null)
-                return new Node(this.plan, this.agenda, 0);
-            return new Node(plan, agenda, pathCost);
+                return new Node(this.plan, this.agenda, 0, null);
+            return new Node(plan, agenda, pathCost, null);
         }
 
         private int Eval_Fn(Node node)
@@ -101,8 +100,7 @@ namespace POP
              *      h(n) = open preconditions of the partial plan (inside the agenda) 
              *      g(n) = path cost from the start node to the current node
             */
-            // Node => Item1: PartialPlan, Item2: Agenda, Item3: path cost integer
-            return node.Item3 + node.Item2.Count;
+            return node.pathCost + node.agenda.Count;
         }
 
 
@@ -116,18 +114,19 @@ namespace POP
             PriorityQueue<Node, int> queue = new PriorityQueue<Node, int>();
 
             // Use the initial plan as the root node
-            Node root = new Node(plan, agenda, 0);
+            Node root = new Node(plan, agenda, 0, null);
             queue.Enqueue(root, Eval_Fn(root));
 
             while (queue.Count > 0)
             {
+                Console.WriteLine("============================\nSearching...\n===========================\n");
                 Node current = queue.Dequeue();
 
                 // Check if the current plan DAG is cyclic
-                if (current.Item1.OrderingConstraints.Count > 0)
+                if (current.partialPlan.OrderingConstraints.Count > 0)
                 {
                     Graph<Action> graph = new Graph<Action>();
-                    graph.InitializeGraph(current.Item1.OrderingConstraints);
+                    graph.InitializeGraph(current.partialPlan.OrderingConstraints);
                     if (!graph.IsAcyclic())
                     {
                         continue; // skip the current node if the plan DAG is cyclic
@@ -135,22 +134,31 @@ namespace POP
                 }
 
                 // Check if the current node is a goal node
-                if (current.Item2.Count == 0) // if the agenda is empty
+                if (current.agenda.Count == 0) // if the agenda is empty
                 {
-                    return current.Item1; // return the partial plan
+                    // Helpers.println("----------------------\n\n\n\n\n\n----------------------");
+                    // while (current.parent is not null)
+                    // {
+                    //     Helpers.println("\n++++++++++++++++++++Plan:\n" + current.partialPlan.ToString() + "\n");
+                    //     Helpers.println("\n++++++++++++++++++++Agenda:\n" + current.agenda.ToString() + "\n+++++++++++++++\n");
+                    //     current = current.parent;
+                    // }
+                    // if (!current.partialPlan.isAllVariablesBound()) continue;
+                    return current.partialPlan; // return the partial plan
                 }
 
                 // Expand the current node by applying each of the achievers to the current node
                 // First, select any Pair (a, p) from the agenda (based on heuristic described in the Agenda class)
-                Tuple<Action, Literal> chosenAgendaPair = current.Item2.Remove();
-                Helpers.println("Current Plan:\n" + current.Item1.ToString() + "\n");
-                Helpers.println($"Selected Action: {chosenAgendaPair.Item1} ,,,\n Literal: {chosenAgendaPair.Item2}");
+                Helpers.println(current.agenda.ToString() + "\n");
+                Tuple<Action, Literal> chosenAgendaPair = current.agenda.Remove();
+                Helpers.println("--------\nCurrent Plan:\n" + current.partialPlan.ToString() + "\n");
+                Helpers.println($"****\nSelected Action: {chosenAgendaPair.Item1} ,,,\n Literal: {chosenAgendaPair.Item2}\n-----------------\n");
 
                 // Find the list of achievers for the selected literal p
                 // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
                 List<Operator> achievers =
                 [
-                    .. plan.getListOfActionsAchievers(chosenAgendaPair.Item2),
+                    .. current.partialPlan.getListOfActionsAchievers(chosenAgendaPair.Item2),
                     .. problem.GetListOfAchievers(chosenAgendaPair.Item2),
                 ];
 
@@ -161,17 +169,18 @@ namespace POP
                     Node newNode = createNode(current);
 
                     // Add the new action to the new plan
-                    bool appliedSuccessfully = ApplyAchiever(achiever, chosenAgendaPair, newNode);
+                    Action? newAction = null;
+                    bool appliedSuccessfully = ApplyAchiever(achiever, chosenAgendaPair, newNode, ref newAction);
 
                     if (!appliedSuccessfully) continue; // skip the current achiever if it couldn't be applied
+
+                    // check for threats
+                    if (newAction is null) continue;
+                    // if there is a threat, skip the unresolved one, as some trial nodes were pushed in the resolve function
+                    if (searchResolveThreats(newAction, queue, newNode)) continue;
+
                     queue.Enqueue(newNode, Eval_Fn(newNode));
-
-
                 }
-
-                // check for threats
-                searchResolveThreats(chosenAgendaPair.Item1, queue, current);
-
 
             }
             return null;
@@ -180,15 +189,15 @@ namespace POP
         }
 
 
-        private bool ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node)
+        private bool ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node, ref Action? newActionToReturn)
         {
             // true if the action is added to the plan, false if couldn't satisfy binding constraints or otherwise
-            // Node => Item1: PartialPlan, Item2: Agenda, Item3: path cost integer
-            PartialPlan plan = node.Item1;
-            Agenda agenda = node.Item2;
+            PartialPlan plan = node.partialPlan;
+            Agenda agenda = node.agenda;
 
             // Create a new action from the operator
-            Action newAction = (achiever is Action action) ? action : createAction(achiever);
+            Action newAction = (achiever is Action action) ? action : createAction(achiever, node.partialPlan.BindingConstraints);
+            newActionToReturn = newAction;
 
             // Add the new action to the plan
             if (!plan.Actions.Contains(newAction))
@@ -262,7 +271,7 @@ namespace POP
             return successfullyBinded;
         }
 
-        public Action createAction(Operator op)
+        public Action createAction(Operator op, List<BindingConstraint> bindingConstraints)
         {
             //////////////
             ///// TODO: add the BindingConstraints to the set
@@ -282,16 +291,25 @@ namespace POP
                 boundedVariablesSoFar.Add(var, boundedVar + count.ToString());
             }
 
+            // Before creating the new literals of preconditions and effects, let's add the binded constants from the binding constraints
+            foreach (BindingConstraint bc in bindingConstraints)
+            {
+                if (IsUpper(bc.Bound[0]))
+                {
+                    boundedVariablesSoFar.Add(bc.Variable, bc.Bound);
+                }
+            }
+
             // Create the preconditions and effects of the new action
             foreach (Literal l in op.Preconditions)
             {
-                Literal newPreCondLiteral = createLiteral(l, boundedVariablesSoFar);
+                Literal newPreCondLiteral = createLiteral(l, boundedVariablesSoFar, bindingConstraints);
 
                 preconditions.Add(newPreCondLiteral);
             }
             foreach (Literal l in op.Effects)
             {
-                Literal newEffectLiteral = createLiteral(l, boundedVariablesSoFar);
+                Literal newEffectLiteral = createLiteral(l, boundedVariablesSoFar, bindingConstraints);
 
                 effects.Add(newEffectLiteral);
             }
@@ -304,13 +322,15 @@ namespace POP
             return new Action(op.Name, effects, preconditions, variables);
         }
 
-        private Literal createLiteral(Literal l, Dictionary<string, string> boundedVariablesSoFar)
+        private Literal createLiteral(Literal l, Dictionary<string, string> boundedVariablesSoFar, List<BindingConstraint> bindingConstraints)
         {
             string varPrefix = l.Name.ToLower()[0].ToString();
             int count = variableCounter[l.Name.ToLower()[0] - 'a'];
             bool usedCount = false;
 
             string[] variables = new string[l.Variables.Length];
+            bool[] isAlreadyBound = new bool[l.Variables.Length];
+
             for (int i = 0; i < l.Variables.Length; i++)
             {
                 if (!boundedVariablesSoFar.TryGetValue(l.Variables[i], out string? value)) // this syntax is to avoid double lookup again in Dictionary in the else part
@@ -322,17 +342,29 @@ namespace POP
                 else
                 {
                     variables[i] = value;
+                    isAlreadyBound[i] = true;
                 }
             }
 
+            // if the variable was originally a constant, then we should add it to the binding constraints
+            for (int i = 0; i < l.Variables.Length; i++)
+            {
+                if (IsUpper(l.Variables[i][0]) && !isAlreadyBound[i])
+                {
+                    bindingConstraints.Add(new BindingConstraint(variables[i], l.Variables[i], true));
+                }
+            }
+
+            // increment the variable counter if the count was used
             if (usedCount) variableCounter[l.Name.ToLower()[0] - 'a']++;
             return new Literal(l.Name, variables, l.IsPositive);
         }
 
-        public void searchResolveThreats(Action action, PriorityQueue<Node, int> queue, Node current)
+        public bool searchResolveThreats(Action action, PriorityQueue<Node, int> queue, Node current)
         {
             CausalLink threatenedLink;
-            foreach (CausalLink cl in current.Item1.CausalLinks)
+            bool threatFound = false;
+            foreach (CausalLink cl in current.partialPlan.CausalLinks)
             {
                 if (action.Effects.Contains(cl.LinkCondition))
                 {
@@ -341,16 +373,20 @@ namespace POP
                     // check if the action is a threat to the causal link
                     if (isThreat(action, threatenedLink))
                     {
+                        Helpers.println($"***\nThreatened Link: {current.partialPlan.ActionToString(threatenedLink.Produceri)} --{current.partialPlan.LiteralToString(threatenedLink.LinkCondition)}--> {current.partialPlan.ActionToString(threatenedLink.Consumerj)} Action: {current.partialPlan.ActionToString(action)} \n****\n");
+
                         // try promotion of action
                         Node promotedNode = createNode(current);
-                        promotedNode.Item1.OrderingConstraints.Add(new Tuple<Action, Action>(threatenedLink.Produceri, action));
-                        queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
+                        promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threatenedLink.Consumerj, action));
+                        if (threatenedLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, []))
+                            queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
 
 
                         // try demotion of the causal link
                         Node demotedNode = createNode(current);
-                        demotedNode.Item1.OrderingConstraints.Add(new Tuple<Action, Action>(action, threatenedLink.Consumerj));
-                        queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
+                        demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(action, threatenedLink.Produceri));
+                        if (threatenedLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
+                            queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
 
 
                         // try adding new Binding Constraints
@@ -361,14 +397,17 @@ namespace POP
                             && effect.IsPositive == !threatenedLink.LinkCondition.IsPositive
                             && effect.Variables.Length == threatenedLink.LinkCondition.Variables.Length)
                             {
-                                newBindingNode.Item1.BindingConstraints.Add(new BindingConstraint(effect.Variables[0], threatenedLink.LinkCondition.Variables[0], false));
+                                newBindingNode.partialPlan.BindingConstraints.Add(new BindingConstraint(effect.Variables[0], threatenedLink.LinkCondition.Variables[0], false));
                             }
 
                         }
-                        queue.Enqueue(newBindingNode, Eval_Fn(newBindingNode));
+                        // queue.Enqueue(newBindingNode, Eval_Fn(newBindingNode));
+
+                        threatFound = true;
                     }
                 }
             }
+            return threatFound;
         }
 
 

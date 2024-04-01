@@ -42,4 +42,4 @@ else
 
 // test the POP algorithm
 
-PlanningProblem.MilkBananasCordlessDrillProblem();
+PlanningProblem.GroceriesBuyProblem();
