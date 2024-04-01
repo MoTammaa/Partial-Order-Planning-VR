@@ -111,24 +111,31 @@ namespace POP
         public override string ToString()
         {
             StringBuilder sb = new();
-            sb.Append("Actions: ");
-            sb.Append(string.Join(", ", this.Actions.Select(ActionToString)));
-            sb.Append("\n\nCausal Links: \n");
+            // sb.Append("Actions: ");
+            // sb.Append(string.Join(", ", this.Actions.Select(ActionToString)));
+            sb.Append(/*"\n\nCausal */"\n\nLinks: \n");
             sb.Append(string.Join(", \n", this.CausalLinks.Select(link => ActionToString(link.Produceri) + " --" + LiteralToString(link.LinkCondition) + "--> " + ActionToString(link.Consumerj))));
             return $"{sb}\n\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\n\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints.Select(
                 item => (item.Item1.Name == "Start" || item.Item2.Name == "Start" || item.Item1.Name == "Finish" || item.Item2.Name == "Finish") && !PRINT_START_FINISH_ORDERINGS
                 ? "" : "(" + ActionToString(item.Item1) + " < " + ActionToString(item.Item2) + ")"))}";
         }
 
-        public List<Action> getListOfActionsAchievers(Literal l)
+        public List<Action> getListOfActionsAchievers(Literal l, Action neededAction)
         {
             List<Action> actions = new List<Action>();
             foreach (Action a in this.Actions)
-            {
+            {   // check if they are equal by reference
+                if (a == neededAction)
+                {
+                    continue;
+                }
                 foreach (Literal e in a.Effects)
                 {
                     if (e == l)
                     {
+
+
+
                         Dictionary<Expression, List<Expression>>? μ = Helpers.Unify(l, e, BindingConstraints);
                         if (μ is not null)
                         {

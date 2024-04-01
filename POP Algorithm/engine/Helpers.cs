@@ -137,7 +137,7 @@ namespace POP
 
         public override string ToString()
         {
-            return $"Partial Plan: {partialPlan}\n\nAgenda: {agenda}\n\nPath Cost: {pathCost}\n";
+            return /*$"Partial Plan: */$"{partialPlan}\n\nAgenda: {agenda}\n\nPath Cost: {pathCost}\n";
         }
     }
 
@@ -268,7 +268,7 @@ namespace POP
                         }
                     }
                     if (!foundInConstraints)
-                        args.Add(new Expression(var, null, var[0] >= 'A' && var[0] <= 'Z'));
+                        args.Add(new Expression(var, null, Helpers.IsUpper(var[0])));
                 }
             }
             return new Expression(l.Name, args);

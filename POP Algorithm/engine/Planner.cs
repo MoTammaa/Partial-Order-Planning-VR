@@ -149,16 +149,16 @@ namespace POP
 
                 // Expand the current node by applying each of the achievers to the current node
                 // First, select any Pair (a, p) from the agenda (based on heuristic described in the Agenda class)
-                Helpers.println(current.agenda.ToString() + "\n");
+                Helpers.println(current.agenda.ToString(current.partialPlan) + "\n");
                 Tuple<Action, Literal> chosenAgendaPair = current.agenda.Remove();
                 Helpers.println("--------\nCurrent Plan:\n" + current.partialPlan.ToString() + "\n");
-                Helpers.println($"****\nSelected Action: {chosenAgendaPair.Item1} ,,,\n Literal: {chosenAgendaPair.Item2}\n-----------------\n");
+                Helpers.println($"****\nSelected Action: {current.partialPlan.ActionToString(chosenAgendaPair.Item1)} ,,,\n Literal: {current.partialPlan.LiteralToString(chosenAgendaPair.Item2)}\n-----------------\n");
 
                 // Find the list of achievers for the selected literal p
                 // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
                 List<Operator> achievers =
                 [
-                    .. current.partialPlan.getListOfActionsAchievers(chosenAgendaPair.Item2),
+                    .. current.partialPlan.getListOfActionsAchievers(chosenAgendaPair.Item2, chosenAgendaPair.Item1),
                     .. problem.GetListOfAchievers(chosenAgendaPair.Item2),
                 ];
 
