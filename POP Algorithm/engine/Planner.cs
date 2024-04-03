@@ -8,8 +8,8 @@ namespace POP
 
     public class Planner
     {
-        public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = true,
-            PRINT_DEBUG_INFO = true;
+        public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = false,
+            PRINT_DEBUG_INFO = false;
 
 
         private PlanningProblem problem;
@@ -37,7 +37,7 @@ namespace POP
             this.plan = new PartialPlan(
                 new HashSet<Action> { start, finish }, // {aₒ, a∞}
                 new HashSet<CausalLink>(),             // ∅ or {}
-                new List<BindingConstraint>(),      // ∅ or {}
+                new BindingConstraints(),      // ∅ or {}
                 new HashSet<Tuple<Action, Action>> { new Tuple<Action, Action>(start, finish) } // {aₒ ≺ a∞}
             );
 
@@ -154,6 +154,9 @@ namespace POP
                 Helpers.println("--------\nCurrent Plan:\n" + current.partialPlan.ToString() + "\n");
                 Helpers.println($"****\nSelected Action: {current.partialPlan.ActionToString(chosenAgendaPair.Item1)} ,,,\n Literal: {current.partialPlan.LiteralToString(chosenAgendaPair.Item2)}\n-----------------\n");
 
+                if (!current.partialPlan.ToString().Contains("Start() --At(Home)--> Go(Home)"))
+                    Console.WriteLine("ok");
+
                 // Find the list of achievers for the selected literal p
                 // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
                 List<Operator> achievers =
@@ -197,6 +200,7 @@ namespace POP
 
             // Create a new action from the operator
             Action newAction = (achiever is Action action) ? action : createAction(achiever, node.partialPlan.BindingConstraints);
+            if (newAction.Name == "") return false;
             newActionToReturn = newAction;
 
             // Add the new action to the plan
@@ -252,16 +256,15 @@ namespace POP
                                 }
                             }
                             // check if the variable is already in the binding constraints
-                            for (int i = 0; i < plan.BindingConstraints.Count; i++)
+                            string? boundEq = plan.BindingConstraints.getBoundEq(entry.Key.Name);
+                            if (boundEq is not null && boundEq != bound)
                             {
-                                if (plan.BindingConstraints[i].Variable == entry.Key.Name && plan.BindingConstraints[i].IsEqBelong)
-                                {
-                                    // if the variable is already in the binding constraints, but the bound is different, return false
-                                    if (plan.BindingConstraints[i].Bound != bound) return false;
-                                }
+                                if (IsUpper(boundEq[0]) && IsUpper(bound[0]))
+                                    return false;
                             }
                             // add the new binding constraint to the plan
-                            plan.BindingConstraints.Add(new BindingConstraint(entry.Key.Name, bound, true));
+                            bool successful = plan.BindingConstraints.setEqual(entry.Key.Name, bound);
+                            if (!successful) return false;
 
                         }
                         break;
@@ -271,7 +274,7 @@ namespace POP
             return successfullyBinded;
         }
 
-        public Action createAction(Operator op, List<BindingConstraint> bindingConstraints)
+        public Action createAction(Operator op, BindingConstraints bindingConstraints)
         {
             //////////////
             ///// TODO: add the BindingConstraints to the set
@@ -292,11 +295,12 @@ namespace POP
             }
 
             // Before creating the new literals of preconditions and effects, let's add the binded constants from the binding constraints
-            foreach (BindingConstraint bc in bindingConstraints)
+            foreach (string vr in bindingConstraints.Variables)
             {
-                if (IsUpper(bc.Bound[0]))
+                string? bound = bindingConstraints.getBoundEq(vr);
+                if (bound is not null && IsUpper(bound[0]))
                 {
-                    boundedVariablesSoFar.Add(bc.Variable, bc.Bound);
+                    boundedVariablesSoFar.Add(vr, bound);
                 }
             }
 
@@ -304,12 +308,14 @@ namespace POP
             foreach (Literal l in op.Preconditions)
             {
                 Literal newPreCondLiteral = createLiteral(l, boundedVariablesSoFar, bindingConstraints);
+                if (newPreCondLiteral.Name == "") return new Action("", [], [], []);
 
                 preconditions.Add(newPreCondLiteral);
             }
             foreach (Literal l in op.Effects)
             {
                 Literal newEffectLiteral = createLiteral(l, boundedVariablesSoFar, bindingConstraints);
+                if (newEffectLiteral.Name == "") return new Action("", [], [], []);
 
                 effects.Add(newEffectLiteral);
             }
@@ -322,7 +328,7 @@ namespace POP
             return new Action(op.Name, effects, preconditions, variables);
         }
 
-        private Literal createLiteral(Literal l, Dictionary<string, string> boundedVariablesSoFar, List<BindingConstraint> bindingConstraints)
+        private Literal createLiteral(Literal l, Dictionary<string, string> boundedVariablesSoFar, BindingConstraints bindingConstraints)
         {
             string varPrefix = l.Name.ToLower()[0].ToString();
             int count = variableCounter[l.Name.ToLower()[0] - 'a'];
@@ -351,7 +357,9 @@ namespace POP
             {
                 if (IsUpper(l.Variables[i][0]) && !isAlreadyBound[i])
                 {
-                    bindingConstraints.Add(new BindingConstraint(variables[i], l.Variables[i], true));
+                    // bindingConstraints.Add(new BindingConstraint(variables[i], l.Variables[i], true));
+                    bool successful = bindingConstraints.setEqual(variables[i], l.Variables[i]);
+                    if (!successful) return new Literal("", [], false);
                 }
             }
 
@@ -391,16 +399,20 @@ namespace POP
 
                         // try adding new Binding Constraints
                         Node newBindingNode = createNode(current);
+                        bool noconflict = true;
                         foreach (Literal effect in action.Effects)
                         {
                             if (effect.Name == threatenedLink.LinkCondition.Name
                             && effect.IsPositive == !threatenedLink.LinkCondition.IsPositive
                             && effect.Variables.Length == threatenedLink.LinkCondition.Variables.Length)
                             {
-                                newBindingNode.partialPlan.BindingConstraints.Add(new BindingConstraint(effect.Variables[0], threatenedLink.LinkCondition.Variables[0], false));
+                                bool successful = newBindingNode.partialPlan.BindingConstraints.setNotEqual(effect.Variables[0], threatenedLink.LinkCondition.Variables[0]);
+                                noconflict = noconflict && successful;
+                                if (!successful) break;
                             }
 
                         }
+                        // if (noconflict) 
                         // queue.Enqueue(newBindingNode, Eval_Fn(newBindingNode));
 
                         threatFound = true;
@@ -442,12 +454,29 @@ namespace POP
                         // check if the MGU of effect and cl.LinkCondition is consistent with B
                         foreach (KeyValuePair<Expression, List<Expression>> entry in μ)
                         {
-                            for (int i = 0; i < plan.BindingConstraints.Count; i++)
+                            // for (int i = 0; i < plan.BindingConstraints.Count; i++)
+                            // {
+                            //     if (plan.BindingConstraints[i].Variable == entry.Key.Name && !plan.BindingConstraints[i].IsEqBelong)
+                            //     {
+                            //         return false;
+                            //     }
+                            // }
+                            string? boundEq = plan.BindingConstraints.getBoundEq(entry.Key.Name);
+                            // get first constant in the list of expressions or the first variable if there is no constant
+                            string bound = entry.Value[0].Name;
+                            foreach (Expression e in entry.Value)
                             {
-                                if (plan.BindingConstraints[i].Variable == entry.Key.Name && !plan.BindingConstraints[i].IsEqBelong)
+                                if (e.IsConstant)
                                 {
-                                    return false;
+                                    bound = e.Name;
+                                    break;
                                 }
+                            }
+                            // check if the variable is already in the binding constraints and is bound to a different constant
+                            // (the variable is bound to x and the new binding is to y, and x is constant or y is constant, then it is false not a threat)
+                            if (boundEq is not null && boundEq != bound && IsUpper(boundEq[0]) && IsUpper(bound[0]))
+                            {
+                                return false;
                             }
                         }
                     }

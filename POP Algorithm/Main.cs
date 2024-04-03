@@ -41,21 +41,21 @@ else
 
 
 // test the POP algorithm
-// PlanningProblem.GroceriesBuyProblem();
-BindingConstraints bc = new();
+PlanningProblem.GroceriesBuyProblem();
+// BindingConstraints bc = new();
 
-bc.setEqual("x", "z");
-bc.setEqual("z", "w");
-bc.setEqual("w", "u");
-bc.setEqual("z", "Umbrella");
+// bc.setEqual("x", "z");
+// bc.setEqual("z", "w");
+// bc.setEqual("w", "u");
+// bc.setEqual("z", "Umbrella");
 
-Console.WriteLine(bc.getBoundEq("x") + " " + bc.getBoundEq("u"));
-bc.setNotEqual("op", "u");
-Console.WriteLine(bc.setNotEqual("x", "op"));
+// Console.WriteLine(bc.getBoundEq("x") + " " + bc.getBoundEq("u"));
+// bc.setNotEqual("op", "u");
+// Console.WriteLine(bc.setNotEqual("x", "op"));
 
-Console.WriteLine(bc.setNotEqual("x", "p"));
-Console.WriteLine(bc.setEqual("p", "s"));
-Console.WriteLine(bc.setNotEqual("s", "x"));
-Console.WriteLine(bc.setEqual("w", "s"));
+// Console.WriteLine(bc.setNotEqual("x", "p"));
+// Console.WriteLine(bc.setEqual("p", "s"));
+// Console.WriteLine(bc.setNotEqual("s", "x"));
+// Console.WriteLine(bc.numEqDisjointSets());
 
 // x = z = w = u  ,  op != u,x  ,  x != p  ,  x != s

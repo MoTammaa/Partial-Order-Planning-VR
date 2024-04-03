@@ -7,7 +7,7 @@ namespace POP
 
     public class Helpers
     {
-        public static Dictionary<Expression, List<Expression>>? Unify(Literal l1, Literal l2, List<BindingConstraint> bindingConstraints)
+        public static Dictionary<Expression, List<Expression>>? Unify(Literal l1, Literal l2, BindingConstraints bindingConstraints)
         {
             return Unify(Expression.Expressionize(l1, bindingConstraints), Expression.Expressionize(l2, bindingConstraints));
         }
@@ -247,7 +247,7 @@ namespace POP
             return HashCode.Combine(Name, Arguments, Arguments is null ? 0 : Arguments.Count, IsConstant);
         }
 
-        public static Expression Expressionize(Literal l, List<BindingConstraint> bindingConstraints)
+        public static Expression Expressionize(Literal l, BindingConstraints bindingConstraints)
         {
             List<Expression>? args = new List<Expression>();
             if (l.Variables != null)
@@ -257,15 +257,19 @@ namespace POP
                     bool foundInConstraints = false;
                     if (bindingConstraints != null)
                     {
-                        foreach (BindingConstraint bc in bindingConstraints)
+                        // foreach (BindingConstraint bc in bindingConstraints)
+                        // {
+                        //     if (bc.Variable.Equals(var) && bc.IsEqBelong)
+                        //     {
+                        string? bc = bindingConstraints.getBoundEq(var);
+                        if (bc is not null)
                         {
-                            if (bc.Variable.Equals(var) && bc.IsEqBelong)
-                            {
-                                args.Add(new Expression(bc.Bound, null, true)); // add the first bound only (TODO: add all bounds or find a better way to handle this)
-                                foundInConstraints = true;
-                                break;
-                            }
+                            args.Add(new Expression(bc, null, Helpers.IsUpper(bc[0]))); // add the one var bound or the const only (TODO: add all bounds or find a better way to handle this)
+                            foundInConstraints = true;
+                            break;
                         }
+                        //     }
+                        // }
                     }
                     if (!foundInConstraints)
                         args.Add(new Expression(var, null, Helpers.IsUpper(var[0])));

@@ -8,7 +8,7 @@ namespace POP
     {
         private HashSet<Action> actions;
         private HashSet<CausalLink> causalLinks;
-        private List<BindingConstraint> bindingConstraints;
+        private BindingConstraints bindingConstraints;
         private HashSet<Tuple<Action, Action>> orderingConstraints;
 
         private static bool PRINT_START_FINISH_ORDERINGS = Planner.PRINT_START_FINISH_ORDERINGS, PRINT_AFTER_CONVERTING_VARIABLES = Planner.PRINT_AFTER_CONVERTING_VARIABLES;
@@ -23,7 +23,7 @@ namespace POP
             get { return causalLinks; }
             set { causalLinks = value; }
         }
-        public List<BindingConstraint> BindingConstraints
+        public BindingConstraints BindingConstraints
         {
             get { return bindingConstraints; }
             set { bindingConstraints = value; }
@@ -35,7 +35,7 @@ namespace POP
         }
 
 #nullable disable warnings
-        public PartialPlan(HashSet<Action> actions, HashSet<CausalLink> causalLinks, List<BindingConstraint> bindingConstraints, HashSet<Tuple<Action, Action>> orderingConstraints)
+        public PartialPlan(HashSet<Action> actions, HashSet<CausalLink> causalLinks, BindingConstraints bindingConstraints, HashSet<Tuple<Action, Action>> orderingConstraints)
         {
             ThrowIfNull(actions, nameof(actions));
             ThrowIfNull(orderingConstraints, nameof(orderingConstraints));
@@ -49,7 +49,7 @@ namespace POP
 
         public object Clone()
         {
-            var newBindConstraints = this.BindingConstraints.Select(item => (BindingConstraint)item.Clone()).ToList();
+            var newBindConstraints = this.BindingConstraints.Clone() as BindingConstraints;
             var newOrderingConstraints = this.OrderingConstraints.Select(item => new Tuple<Action, Action>((Action)item.Item1.Clone(), (Action)item.Item2.Clone())).ToHashSet();
             var newActions = new HashSet<Action>(this.Actions.Select(action => (Action)action.Clone()));
             var newCausalLinks = new HashSet<CausalLink>(this.CausalLinks.Select(link => (CausalLink)link.Clone()));
@@ -91,11 +91,12 @@ namespace POP
 
         public bool BindingConstraintsContains(string variable)
         {
-            return this.BindingConstraints.Any(bc => bc.Variable.Equals(variable) && bc.IsEqBelong);
+            return this.BindingConstraints.getBoundEq(variable) is not null
+                    || this.BindingConstraints.getBoundNE(variable) is not null;
         }
         public string GetBindingConstraintsBounds(string variable)
         {
-            return this.BindingConstraints.First(bc => bc.Variable.Equals(variable) && bc.IsEqBelong).Bound;
+            return this.BindingConstraints.getBoundEq(variable) ?? variable;
         }
 
         public string ActionToString(Action a)

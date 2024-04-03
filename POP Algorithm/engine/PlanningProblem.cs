@@ -192,7 +192,7 @@ namespace POP
                                 effects:        [new ("At", ["any"], false), new("At", ["x"])]
                             )
                 ],
-                initialState: [new("At", ["Home"])],
+                initialState: [new("At", ["Home"]), new("At", ["SM"], false)],
                 goalState: [new("At", ["Home"]), new("Have", ["Groceries"])]
             );
 
