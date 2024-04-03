@@ -92,6 +92,35 @@ namespace POP
             return true;
         }
 
+        public bool absoluteEquals(Literal? other)
+        {
+            if (other == null) return false;
+
+            if (Name != other.Name || Variables.Length != other.Variables.Length)
+                return false;
+
+            return true;
+        }
+
+        public bool exactEquals(Literal? other)
+        {
+            if (other == null) return false;
+
+            if (Name != other.Name || IsPositive != other.IsPositive || Variables.Length != other.Variables.Length)
+                return false;
+
+            for (int i = 0; i < Variables.Length; i++)
+            {
+                if (Variables[i] != other.Variables[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+
         public override bool Equals(object? obj)
         {
             return Equals(obj as Literal);

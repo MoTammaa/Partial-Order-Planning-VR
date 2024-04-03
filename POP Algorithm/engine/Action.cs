@@ -28,6 +28,46 @@ namespace POP
             this.BoundVariables = boundVariables;
         }
 
+        public bool hasConflictingPreconditionsOrEffects(BindingConstraints bc)
+        {
+            for (int i = 0; i < Preconditions.Count; i++)
+            {
+                for (int j = i + 1; j < Preconditions.Count; j++)
+                {
+                    if (Preconditions[i].Equals(Preconditions[j]))
+                    {
+                        for (int k = 0; k < Preconditions[i].Variables.Length; k++)
+                        {
+                            if (bc.getBoundEq(Preconditions[i].Variables[k]) == bc.getBoundEq(Preconditions[j].Variables[k])
+                                && Preconditions[i].IsPositive != Preconditions[j].IsPositive)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < Effects.Count; i++)
+            {
+                for (int j = i + 1; j < Effects.Count; j++)
+                {
+                    if (Effects[i].absoluteEquals(Effects[j]))
+                    {
+                        for (int k = 0; k < Effects[i].Variables.Length; k++)
+                        {
+                            if (bc.getBoundEq(Effects[i].Variables[k]) == bc.getBoundEq(Effects[j].Variables[k]))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public new object Clone()
         {
             List<Literal> effects = Effects.Select(l => new Literal(l)).ToList();

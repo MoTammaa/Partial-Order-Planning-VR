@@ -8,8 +8,8 @@ namespace POP
 
     public class Planner
     {
-        public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = false,
-            PRINT_DEBUG_INFO = false;
+        public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = true,
+            PRINT_DEBUG_INFO = true;
 
 
         private PlanningProblem problem;
@@ -271,6 +271,9 @@ namespace POP
                     }
                 }
             }
+            if (agendaActionLiteralPair.Item1.hasConflictingPreconditionsOrEffects(plan.BindingConstraints))
+                return false;
+
             return successfullyBinded;
         }
 

@@ -134,11 +134,19 @@ namespace POP
         {
             PlanningProblem milkBananasCordlessDrill = new PlanningProblem(
                 operators: [
-                    new ("Buy", [ new ("Have", [ "x"] ) ], [ new ("Sells", [ "store", "x"] ) , new("At", ["store"])], [ "x" ]),
-                    new ("Go", [ new ("At", ["there"]), new("At", ["here"], false) ], [ new ("At", ["here"]) ], ["there"]),
-
+                    new Operator("Buy",
+                        variables:      [ "x" ],
+                        preconditions:  [ new ("Sells", [ "store", "x" ]), new ("At", [ "store" ]) ],
+                        effects:        [ new ("Have", [ "x" ]) ]
+                    ),
+                    new Operator("Go",
+                        variables:      [ "there" ],
+                        preconditions:  [ new ("At", [ "here" ]),       new ("At", [ "there" ], false) ],
+                        effects:        [ new ("At", [ "here" ], false), new ("At", [ "there" ]) ]
+                    )
                 ],
-                initialState: [new("At", ["Home"]), new("Sells", ["SM", "Milk"]), new("Sells", ["SM", "Bananas"]), new("Sells", ["HWS", "Drill"])],
+                initialState: [new("At", ["Home"]), new("Sells", ["SM", "Milk"]), new("Sells", ["SM", "Bananas"]), new("Sells", ["HWS", "Drill"])
+                                , new("At",["HWS"], false), new("At", ["SM"], false)],
                 goalState: [new("At", ["Home"]), new("Have", ["Milk"]), new("Have", ["Bananas"]), new("Have", ["Drill"])]
             );
 

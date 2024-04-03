@@ -266,7 +266,7 @@ namespace POP
                         {
                             args.Add(new Expression(bc, null, Helpers.IsUpper(bc[0]))); // add the one var bound or the const only (TODO: add all bounds or find a better way to handle this)
                             foundInConstraints = true;
-                            break;
+                            //break;
                         }
                         //     }
                         // }

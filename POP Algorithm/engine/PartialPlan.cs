@@ -112,8 +112,8 @@ namespace POP
         public override string ToString()
         {
             StringBuilder sb = new();
-            // sb.Append("Actions: ");
-            // sb.Append(string.Join(", ", this.Actions.Select(ActionToString)));
+            sb.Append("Actions: ");
+            sb.Append(string.Join(", ", this.Actions.Select(ActionToString)));
             sb.Append(/*"\n\nCausal */"\n\nLinks: \n");
             sb.Append(string.Join(", \n", this.CausalLinks.Select(link => ActionToString(link.Produceri) + " --" + LiteralToString(link.LinkCondition) + "--> " + ActionToString(link.Consumerj))));
             return $"{sb}\n\nBinding Constraints: {string.Join(", ", this.BindingConstraints)}\n\nOrdering Constraints: {string.Join(", ", this.OrderingConstraints.Select(

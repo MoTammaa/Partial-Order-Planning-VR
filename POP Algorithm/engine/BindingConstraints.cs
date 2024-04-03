@@ -59,7 +59,11 @@ namespace POP
         public string? getBoundEq(string variable)
         {
             if (!variablesMap.ContainsKey(variable))
+            {
+                if (Helpers.IsUpper(variable[0]))
+                    return variable;
                 return null;
+            }
             return getStringName(findRepresentativeEq(variablesMap[variable]));
         }
         public string[] getBoundNE(string variable)
