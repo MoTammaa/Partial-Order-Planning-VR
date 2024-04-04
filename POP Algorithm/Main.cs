@@ -41,7 +41,7 @@ else
 
 
 // test the POP algorithm
-PlanningProblem.GroceriesBuyProblem();
+PlanningProblem.MilkBananasCordlessDrillProblem();
 // BindingConstraints bc = new();
 
 // bc.setEqual("x", "z");

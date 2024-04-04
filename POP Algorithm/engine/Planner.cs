@@ -283,9 +283,6 @@ namespace POP
 
         public Action createAction(Operator op, BindingConstraints bindingConstraints)
         {
-            //////////////
-            ///// TODO: add the BindingConstraints to the set
-            //////////////
             List<Literal> preconditions = new List<Literal>();
             List<Literal> effects = new List<Literal>();
 
