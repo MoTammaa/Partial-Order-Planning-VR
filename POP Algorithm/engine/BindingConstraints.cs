@@ -2,7 +2,7 @@ using System.Text;
 
 namespace POP
 {
-    public class BindingConstraints : ICloneable
+    public class BindingConstraints : ICloneable, IEquatable<BindingConstraints>
     {
         private Dictionary<int, int> pE, rankE, setSizeE;
         private Dictionary<int, HashSet<int>> pNEGraph;
@@ -370,6 +370,38 @@ namespace POP
             }
             return sb.Append("}\n").ToString();
         }
+
+        public bool Equals(BindingConstraints? other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
+            return this.pE.SequenceEqual(other.pE)
+                && this.rankE.SequenceEqual(other.rankE)
+                && this.setSizeE.SequenceEqual(other.setSizeE)
+                && this.pNEGraph.SequenceEqual(other.pNEGraph)
+                && this.variablesMap.SequenceEqual(other.variablesMap);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is BindingConstraints constraints && this.Equals(constraints);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(pE, rankE, setSizeE, pNEGraph, variablesMap);
+        }
+
+
+        public static bool operator ==(BindingConstraints? left, BindingConstraints? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(BindingConstraints? left, BindingConstraints? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(BindingConstraints? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(BindingConstraints? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, BindingConstraints? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, BindingConstraints? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
+
     }
 }
 

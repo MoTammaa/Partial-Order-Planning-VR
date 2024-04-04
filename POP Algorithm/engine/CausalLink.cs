@@ -56,7 +56,7 @@ namespace POP
                 return false;
             }
 
-            return this.Produceri.Equals(other.Produceri) && this.LinkCondition.Equals(other.LinkCondition) && this.Consumerj.Equals(other.Consumerj);
+            return this.Produceri.Equals(other.Produceri) && this.LinkCondition.exactEquals(other.LinkCondition) && this.Consumerj.Equals(other.Consumerj);
         }
         public override bool Equals(object? obj)
         {

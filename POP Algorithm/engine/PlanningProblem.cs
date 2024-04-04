@@ -109,7 +109,7 @@ namespace POP
 
             Planner planner = new Planner(custom);
             PartialPlan? plan = planner.POP();
-            Console.WriteLine($"Plan {(plan is null ? "not" : "")} found: \n" + plan);
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
         public static void SocksShoesProblem()
@@ -127,7 +127,7 @@ namespace POP
 
             Planner planner = new Planner(socksShoes);
             PartialPlan? plan = planner.POP();
-            Console.WriteLine($"Plan {(plan is null ? "not" : "")} found: \n" + plan);
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
         public static void MilkBananasCordlessDrillProblem()
@@ -152,7 +152,7 @@ namespace POP
 
             Planner planner = new Planner(milkBananasCordlessDrill);
             PartialPlan? plan = planner.POP();
-            Console.WriteLine($"Plan {(plan is null ? "not" : "")} found: \n" + plan);
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
         public static void SpareTiresProblem()
@@ -182,7 +182,7 @@ namespace POP
 
             Planner planner = new Planner(spareTires);
             PartialPlan? plan = planner.POP();
-            Console.WriteLine($"Plan {(plan is null ? "not" : "")} found: \n" + plan);
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
         public static void GroceriesBuyProblem()
@@ -206,7 +206,7 @@ namespace POP
 
             Planner planner = new Planner(groceriesBuy);
             PartialPlan? plan = planner.POP();
-            Console.WriteLine($"Plan {(plan is null ? "not" : "")} found: \n" + plan);
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
 

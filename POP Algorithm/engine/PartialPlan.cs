@@ -4,7 +4,7 @@ namespace POP
     using System.Text;
     using static System.ArgumentNullException;
 
-    public class PartialPlan : ICloneable
+    public class PartialPlan : ICloneable, IEquatable<PartialPlan>
     {
         private HashSet<Action> actions;
         private HashSet<CausalLink> causalLinks;
@@ -149,5 +149,35 @@ namespace POP
             }
             return actions;
         }
+
+        public bool Equals(PartialPlan? other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
+            return this.Actions.SetEquals(other.Actions)
+                && this.CausalLinks.SetEquals(other.CausalLinks)
+                && this.BindingConstraints.Equals(other.BindingConstraints)
+                && this.OrderingConstraints.SetEquals(other.OrderingConstraints);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is PartialPlan plan && this.Equals(plan);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.Actions, this.CausalLinks, this.BindingConstraints, this.OrderingConstraints);
+        }
+
+        public static bool operator ==(PartialPlan? left, PartialPlan? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(PartialPlan? left, PartialPlan? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(PartialPlan? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(PartialPlan? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, PartialPlan? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, PartialPlan? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
+
     }
 }

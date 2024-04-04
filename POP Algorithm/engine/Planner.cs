@@ -9,7 +9,7 @@ namespace POP
     public class Planner
     {
         public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = true,
-            PRINT_DEBUG_INFO = true;
+            PRINT_DEBUG_INFO = false;
 
 
         private PlanningProblem problem;
@@ -68,7 +68,7 @@ namespace POP
             // // TODO: Non-deterministically select an operator a from the list of achievers
             // // for now, we just select randomly
             // Operator achiever = achievers[new Random().Next(achievers.Count)];
-
+            Console.Write("Searching");
             return NonDetermenisticAchieverSearch();
 
 
@@ -119,7 +119,8 @@ namespace POP
 
             while (queue.Count > 0)
             {
-                Console.WriteLine("============================\nSearching...\n===========================\n");
+                Console.Write(".");
+                Helpers.println("============================\nSearching...\n===========================\n");
                 Node current = queue.Dequeue();
 
                 // Check if the current plan DAG is cyclic
@@ -155,7 +156,7 @@ namespace POP
                 Helpers.println($"****\nSelected Action: {current.partialPlan.ActionToString(chosenAgendaPair.Item1)} ,,,\n Literal: {current.partialPlan.LiteralToString(chosenAgendaPair.Item2)}\n-----------------\n");
 
                 if (!current.partialPlan.ToString().Contains("Start() --At(Home)--> Go(Home)"))
-                    Console.WriteLine("ok");
+                    Helpers.println("ok");
 
                 // Find the list of achievers for the selected literal p
                 // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
@@ -173,14 +174,15 @@ namespace POP
 
                     // Add the new action to the new plan
                     Action? newAction = null;
-                    bool appliedSuccessfully = ApplyAchiever(achiever, chosenAgendaPair, newNode, ref newAction);
+                    CausalLink? newCausalLink = null;
+                    bool appliedSuccessfully = ApplyAchiever(achiever, chosenAgendaPair, newNode, ref newAction, ref newCausalLink);
 
                     if (!appliedSuccessfully) continue; // skip the current achiever if it couldn't be applied
 
                     // check for threats
-                    if (newAction is null) continue;
+                    if (newAction is null || newCausalLink is null) continue;
                     // if there is a threat, skip the unresolved one, as some trial nodes were pushed in the resolve function
-                    if (searchResolveThreats(newAction, queue, newNode)) continue;
+                    if (searchResolveThreats(newAction, newCausalLink, queue, newNode)) continue;
 
                     queue.Enqueue(newNode, Eval_Fn(newNode));
                 }
@@ -192,7 +194,7 @@ namespace POP
         }
 
 
-        private bool ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node, ref Action? newActionToReturn)
+        private bool ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node, ref Action? newActionToReturn, ref CausalLink? newCausalLinkToReturn)
         {
             // true if the action is added to the plan, false if couldn't satisfy binding constraints or otherwise
             PartialPlan plan = node.partialPlan;
@@ -225,7 +227,9 @@ namespace POP
             }
 
             // Add the new action to the plan's causal links (L ∪ {C(A🇳 --Pⁱ--> Aⁱ})
-            plan.CausalLinks.Add(new CausalLink(newAction, agendaActionLiteralPair.Item2, agendaActionLiteralPair.Item1));
+            CausalLink newCausalLink = new CausalLink(newAction, agendaActionLiteralPair.Item2, agendaActionLiteralPair.Item1);
+            plan.CausalLinks.Add(newCausalLink);
+            newCausalLinkToReturn = newCausalLink;
 
             // Update the plan's ordering constraints (≺)
             plan.OrderingConstraints.Add(new Tuple<Action, Action>(newAction, agendaActionLiteralPair.Item1));
@@ -371,7 +375,7 @@ namespace POP
             return new Literal(l.Name, variables, l.IsPositive);
         }
 
-        public bool searchResolveThreats(Action action, PriorityQueue<Node, int> queue, Node current)
+        public bool searchResolveThreats(Action action, CausalLink causalLink, PriorityQueue<Node, int> queue, Node current)
         {
             CausalLink threatenedLink;
             bool threatFound = false;
@@ -382,7 +386,7 @@ namespace POP
                     threatenedLink = cl;
 
                     // check if the action is a threat to the causal link
-                    if (isThreat(action, threatenedLink))
+                    if (isThreat(action, threatenedLink, current))
                     {
                         Helpers.println($"***\nThreatened Link: {current.partialPlan.ActionToString(threatenedLink.Produceri)} --{current.partialPlan.LiteralToString(threatenedLink.LinkCondition)}--> {current.partialPlan.ActionToString(threatenedLink.Consumerj)} Action: {current.partialPlan.ActionToString(action)} \n****\n");
 
@@ -390,15 +394,25 @@ namespace POP
                         Node promotedNode = createNode(current);
                         promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threatenedLink.Consumerj, action));
                         if (threatenedLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, []))
-                            queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
-
+                        {
+                            // queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
+                            // before queuing the promoted node, check if there is a threat to the new causal link
+                            if (!searchResolveThreatsForNewCausalLink(causalLink, queue, promotedNode))
+                                //if (promotedNode.partialPlan != current.partialPlan)
+                                queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
+                        }
 
                         // try demotion of the causal link
                         Node demotedNode = createNode(current);
                         demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(action, threatenedLink.Produceri));
                         if (threatenedLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
-                            queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
-
+                        {
+                            // queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
+                            // before queuing the demoted node, check if there is a threat to the new causal link
+                            if (!searchResolveThreatsForNewCausalLink(causalLink, queue, demotedNode))
+                                //if (demotedNode.partialPlan != current.partialPlan)
+                                queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
+                        }
 
                         // try adding new Binding Constraints
                         Node newBindingNode = createNode(current);
@@ -416,8 +430,73 @@ namespace POP
 
                         }
                         // if (noconflict) 
-                        // queue.Enqueue(newBindingNode, Eval_Fn(newBindingNode));
+                        // {
+                        //      //before queuing the new binding node, check if there is a threat to the new causal link
+                        //      if (!searchResolveThreatsForNewCausalLink(causalLink, queue, newBindingNode))
+                        //      queue.Enqueue(newBindingNode, Eval_Fn(newBindingNode));
+                        // }
 
+                        threatFound = true;
+                    }
+                }
+            }
+            if (!threatFound)
+            {
+                // check if there is a threat to the new causal link
+                threatFound = threatFound || searchResolveThreatsForNewCausalLink(causalLink, queue, current);
+            }
+            return threatFound;
+        }
+
+        public bool searchResolveThreatsForNewCausalLink(CausalLink causalLink, PriorityQueue<Node, int> queue, Node current)
+        {
+            Action threateningAction;
+            bool threatFound = false;
+            foreach (Action a in current.partialPlan.Actions)
+            {
+                if (a.Effects.Contains(causalLink.LinkCondition))
+                {
+                    threateningAction = a;
+
+                    // check if the action is a threat to the new causal link
+                    if (isThreat(threateningAction, causalLink, current))
+                    {
+                        Helpers.println($"***\n Action: {current.partialPlan.ActionToString(threateningAction)},\nThreatened Link: {current.partialPlan.ActionToString(causalLink.Produceri)} --{current.partialPlan.LiteralToString(causalLink.LinkCondition)}--> {current.partialPlan.ActionToString(causalLink.Consumerj)} \n****\n");
+
+                        // try promotion of action
+                        Node promotedNode = createNode(current);
+                        promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(causalLink.Consumerj, threateningAction));
+                        if (causalLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, [])
+                                    && threateningAction != new Action("Start", problem.InitialState, new List<Literal>(), []))
+                            // if (promotedNode.partialPlan != current.partialPlan)
+                            queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
+
+
+                        // try demotion of the causal link
+                        Node demotedNode = createNode(current);
+                        demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threateningAction, causalLink.Produceri));
+                        if (causalLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
+                            // if (!demotedNode.partialPlan.Equals( current.partialPlan))
+                            queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
+
+
+                        // try adding new Binding Constraints
+                        Node newBindingNode = createNode(current);
+                        bool noconflict = true;
+                        foreach (Literal effect in threateningAction.Effects)
+                        {
+                            if (effect.Name == causalLink.LinkCondition.Name
+                            && effect.IsPositive == !causalLink.LinkCondition.IsPositive
+                            && effect.Variables.Length == causalLink.LinkCondition.Variables.Length)
+                            {
+                                bool successful = newBindingNode.partialPlan.BindingConstraints.setNotEqual(effect.Variables[0], causalLink.LinkCondition.Variables[0]);
+                                noconflict = noconflict && successful;
+                                if (!successful) break;
+                            }
+
+                        }
+                        // if (noconflict)
+                        // {queue.Enqueue(newBindingNode, Eval_Fn(newBindingNode));}
                         threatFound = true;
                     }
                 }
@@ -426,7 +505,7 @@ namespace POP
         }
 
 
-        public bool isThreat(Action a, CausalLink cl)
+        public bool isThreat(Action a, CausalLink cl, Node current)
         {
             /*  check if the action a is a threat to the causal link cl
             *   ak is a threat to cl if:
@@ -441,6 +520,8 @@ namespace POP
             // check if the action a is the same as the action that is supposed to achieve the effect of cl
             if (a.Equals(cl.Produceri))
                 return false;
+
+            PartialPlan plan = current.partialPlan;
 
             bool canUnify = false;
             // check if the effect of a unifies with the negative effect of cl

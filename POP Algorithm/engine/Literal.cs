@@ -128,7 +128,12 @@ namespace POP
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Name, IsPositive, Variables);
+            int hash = HashCode.Combine(Name, IsPositive);
+            foreach (var variable in Variables)
+            {
+                hash = HashCode.Combine(hash, variable);
+            }
+            return hash;
         }
 
         public static bool operator ==(Literal? left, Literal? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
