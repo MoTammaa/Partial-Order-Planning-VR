@@ -58,27 +58,46 @@ namespace POP
             if (agenda == null || agenda.Count == 0)  // If the agenda is empty ∅, return the current plan 
                 return plan; // π
 
-            // Select any Pair (a, p) from the agenda (based on heuristic described in the Agenda class)
-            // Tuple<Action, Literal> pair = agenda.Remove();
+            /*  
+            *   For this function and all non-deterministic searches here, we will implement A* search Algorithm, 
+            *   where each node in the queue will contain a parital plan
+            */
+            // Node => (PartialPlan, Agenda, pathCost, parent)
 
-            // // Find the list of achievers for the selected literal p
-            // // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
-            // List<Operator> achievers = problem.GetListOfAchievers(pair.Item2);
+            // Create a new PriorityQueue to store the partial plans with the cost of the path from the start node (root) to the current node -> (partial plan, agenda, path cost, parent node)
+            PriorityQueue<Node, int> aStarQueue = new();
 
-            // // TODO: Non-deterministically select an operator a from the list of achievers
-            // // for now, we just select randomly
-            // Operator achiever = achievers[new Random().Next(achievers.Count)];
+            // Use the initial plan as the root node
+            Node root = new Node(plan, agenda, 0, null);
+            aStarQueue.Enqueue(root, Eval_Fn(root));
+
             Console.Write("Searching");
-            return NonDetermenisticAchieverSearch();
+
+            while (aStarQueue.Count > 0)
+            {
+                Console.Write(".");
+                Helpers.println("============================\nSearching...\n===========================\n");
+                Node current = aStarQueue.Dequeue();
 
 
+                // Check if the current plan DAG is cyclic
+                if (current.partialPlan.OrderingConstraints.Count > 0)
+                {
+                    Graph<Action> graph = new Graph<Action>();
+                    graph.InitializeGraph(current.partialPlan.OrderingConstraints);
+
+                    if (graph.IsCyclic()) continue; // skip the current node if the plan DAG is cyclic
+                }
+
+                // Check if the current node is a goal node
+                if (current.agenda.Count == 0) // if the agenda is empty
+                    return current.partialPlan; // return the partial plan
 
 
+                EXPAND(current, aStarQueue);
 
-
-
-            //return POP();
-
+            }
+            return null;
         }
 
 
@@ -104,92 +123,44 @@ namespace POP
         }
 
 
-        private PartialPlan? NonDetermenisticAchieverSearch()
+        private void EXPAND(Node current, PriorityQueue<Node, int> aStarQueue)
         {
-            /* For this function and all non-deterministic searches here, we will implement A* search Algorithm, where each node in the queue will contain a parital plan */
+            // Expand the current node by applying each of the achievers to the current node
 
-            // using Node = Tuple<PartialPlan, Agenda, int>;
+            // First, select any Pair (a, p) from the agenda (based on heuristic described in the Agenda class)
+            Helpers.println(current.agenda.ToString(current.partialPlan) + "\n");
+            Tuple<Action, Literal> chosenAgendaPair = current.agenda.Remove();
+            Helpers.println("--------\nCurrent Plan:\n" + current.partialPlan.ToString() + "\n");
+            Helpers.println($"****\nSelected Action: {current.partialPlan.ActionToString(chosenAgendaPair.Item1)} ,,,\n Literal: {current.partialPlan.LiteralToString(chosenAgendaPair.Item2)}\n-----------------\n");
 
-            // Create a new PriorityQueue to store the partial plans with the cost of the path from the start node (root) to the current node -> Pair (partial plan, path cost, agenda)
-            PriorityQueue<Node, int> aStarQueue = new PriorityQueue<Node, int>();
 
-            // Use the initial plan as the root node
-            Node root = new Node(plan, agenda, 0, null);
-            aStarQueue.Enqueue(root, Eval_Fn(root));
+            // Find the list of achievers for the selected literal p
+            // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
+            List<Operator> achievers =
+            [
+                .. current.partialPlan.getListOfActionsAchievers(chosenAgendaPair.Item2, chosenAgendaPair.Item1),
+                .. problem.GetListOfAchievers(chosenAgendaPair.Item2),
+            ];
 
-            while (aStarQueue.Count > 0)
+            // Apply each of the achievers to the current node
+            foreach (Operator achiever in achievers)
             {
-                Console.Write(".");
-                Helpers.println("============================\nSearching...\n===========================\n");
-                Node current = aStarQueue.Dequeue();
+                // clone the current plan and agenda
+                Node newNode = createNode(current);
 
-                // Check if the current plan DAG is cyclic
-                if (current.partialPlan.OrderingConstraints.Count > 0)
-                {
-                    Graph<Action> graph = new Graph<Action>();
-                    graph.InitializeGraph(current.partialPlan.OrderingConstraints);
-                    if (!graph.IsAcyclic())
-                    {
-                        continue; // skip the current node if the plan DAG is cyclic
-                    }
-                }
+                // Add the new action to the new plan
+                Action? newAction = null;
+                CausalLink? newCausalLink = null;
+                bool appliedSuccessfully = ApplyAchiever(achiever, chosenAgendaPair, newNode, ref newAction, ref newCausalLink);
 
-                // Check if the current node is a goal node
-                if (current.agenda.Count == 0) // if the agenda is empty
-                {
-                    // Helpers.println("----------------------\n\n\n\n\n\n----------------------");
-                    // while (current.parent is not null)
-                    // {
-                    //     Helpers.println("\n++++++++++++++++++++Plan:\n" + current.partialPlan.ToString() + "\n");
-                    //     Helpers.println("\n++++++++++++++++++++Agenda:\n" + current.agenda.ToString() + "\n+++++++++++++++\n");
-                    //     current = current.parent;
-                    // }
-                    // if (!current.partialPlan.isAllVariablesBound()) continue;
-                    return current.partialPlan; // return the partial plan
-                }
+                if (!appliedSuccessfully) continue; // skip the current achiever if it couldn't be applied
 
-                // Expand the current node by applying each of the achievers to the current node
-                // First, select any Pair (a, p) from the agenda (based on heuristic described in the Agenda class)
-                Helpers.println(current.agenda.ToString(current.partialPlan) + "\n");
-                Tuple<Action, Literal> chosenAgendaPair = current.agenda.Remove();
-                Helpers.println("--------\nCurrent Plan:\n" + current.partialPlan.ToString() + "\n");
-                Helpers.println($"****\nSelected Action: {current.partialPlan.ActionToString(chosenAgendaPair.Item1)} ,,,\n Literal: {current.partialPlan.LiteralToString(chosenAgendaPair.Item2)}\n-----------------\n");
+                // check for threats
+                if (newAction is null || newCausalLink is null) continue;
 
-                if (!current.partialPlan.ToString().Contains("Start() --At(Home)--> Go(Home)"))
-                    Helpers.println("ok");
-
-                // Find the list of achievers for the selected literal p
-                // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
-                List<Operator> achievers =
-                [
-                    .. current.partialPlan.getListOfActionsAchievers(chosenAgendaPair.Item2, chosenAgendaPair.Item1),
-                    .. problem.GetListOfAchievers(chosenAgendaPair.Item2),
-                ];
-
-                // Apply each of the achievers to the current node
-                foreach (Operator achiever in achievers)
-                {
-                    // clone the current plan and agenda
-                    Node newNode = createNode(current);
-
-                    // Add the new action to the new plan
-                    Action? newAction = null;
-                    CausalLink? newCausalLink = null;
-                    bool appliedSuccessfully = ApplyAchiever(achiever, chosenAgendaPair, newNode, ref newAction, ref newCausalLink);
-
-                    if (!appliedSuccessfully) continue; // skip the current achiever if it couldn't be applied
-
-                    // check for threats
-                    if (newAction is null || newCausalLink is null) continue;
-
-                    // if there is a threat, resolve it and push the nodes with the new plans to the queue
-                    searchResolveThreats(newAction, newCausalLink, aStarQueue, newNode);
-                }
-
+                // if there is a threat, resolve it and push the nodes with the new plans to the queue
+                searchResolveThreats(newAction, newCausalLink, aStarQueue, newNode);
             }
-            return null;
-
-
         }
 
 
@@ -414,20 +385,20 @@ namespace POP
                             }
 
                             // try adding new Binding Constraints
-                            Node newBindingNode = createNode(current);
-                            bool noconflict = true;
-                            foreach (Literal effect in action.Effects)
-                            {
-                                if (effect.Name == threatenedLink.LinkCondition.Name
-                                && effect.IsPositive == !threatenedLink.LinkCondition.IsPositive
-                                && effect.Variables.Length == threatenedLink.LinkCondition.Variables.Length)
-                                {
-                                    bool successful = newBindingNode.partialPlan.BindingConstraints.setNotEqual(effect.Variables[0], threatenedLink.LinkCondition.Variables[0]);
-                                    noconflict = noconflict && successful;
-                                    if (!successful) break;
-                                }
+                            // Node newBindingNode = createNode(current);
+                            // bool noconflict = true;
+                            // foreach (Literal effect in action.Effects)
+                            // {
+                            //     if (effect.Name == threatenedLink.LinkCondition.Name
+                            //     && effect.IsPositive == !threatenedLink.LinkCondition.IsPositive
+                            //     && effect.Variables.Length == threatenedLink.LinkCondition.Variables.Length)
+                            //     {
+                            //         bool successful = newBindingNode.partialPlan.BindingConstraints.setNotEqual(effect.Variables[0], threatenedLink.LinkCondition.Variables[0]);
+                            //         noconflict = noconflict && successful;
+                            //         if (!successful) break;
+                            //     }
 
-                            }
+                            // }
                             // if (noconflict) 
                             // {
                             //      //before queuing the new binding node, check if there is a threat to the new causal link
@@ -479,20 +450,20 @@ namespace POP
 
 
                         // try adding new Binding Constraints
-                        Node newBindingNode = createNode(current);
-                        bool noconflict = true;
-                        foreach (Literal effect in threateningAction.Effects)
-                        {
-                            if (effect.Name == causalLink.LinkCondition.Name
-                            && effect.IsPositive == !causalLink.LinkCondition.IsPositive
-                            && effect.Variables.Length == causalLink.LinkCondition.Variables.Length)
-                            {
-                                bool successful = newBindingNode.partialPlan.BindingConstraints.setNotEqual(effect.Variables[0], causalLink.LinkCondition.Variables[0]);
-                                noconflict = noconflict && successful;
-                                if (!successful) break;
-                            }
+                        // Node newBindingNode = createNode(current);
+                        // bool noconflict = true;
+                        // foreach (Literal effect in threateningAction.Effects)
+                        // {
+                        //     if (effect.Name == causalLink.LinkCondition.Name
+                        //     && effect.IsPositive == !causalLink.LinkCondition.IsPositive
+                        //     && effect.Variables.Length == causalLink.LinkCondition.Variables.Length)
+                        //     {
+                        //         bool successful = newBindingNode.partialPlan.BindingConstraints.setNotEqual(effect.Variables[0], causalLink.LinkCondition.Variables[0]);
+                        //         noconflict = noconflict && successful;
+                        //         if (!successful) break;
+                        //     }
 
-                        }
+                        // }
                         // if (noconflict)
                         // {queue.Enqueue(newBindingNode, Eval_Fn(newBindingNode));}
                         threatFound = true;
@@ -536,13 +507,6 @@ namespace POP
                         // check if the MGU of effect and cl.LinkCondition is consistent with B
                         foreach (KeyValuePair<Expression, List<Expression>> entry in μ)
                         {
-                            // for (int i = 0; i < plan.BindingConstraints.Count; i++)
-                            // {
-                            //     if (plan.BindingConstraints[i].Variable == entry.Key.Name && !plan.BindingConstraints[i].IsEqBelong)
-                            //     {
-                            //         return false;
-                            //     }
-                            // }
                             string? boundEq = plan.BindingConstraints.getBoundEq(entry.Key.Name);
                             // get first constant in the list of expressions or the first variable if there is no constant
                             string bound = entry.Value[0].Name;
