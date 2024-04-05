@@ -7,7 +7,7 @@ namespace POP
 
     public class Helpers
     {
-        public static Dictionary<Expression, List<Expression>>? Unify(Literal l1, Literal l2, List<BindingConstraint> bindingConstraints)
+        public static Dictionary<Expression, List<Expression>>? Unify(Literal l1, Literal l2, BindingConstraints bindingConstraints)
         {
             return Unify(Expression.Expressionize(l1, bindingConstraints), Expression.Expressionize(l2, bindingConstraints));
         }
@@ -88,6 +88,19 @@ namespace POP
             return e;
         }
 
+        public static bool IsUpper(char c = '\0', string s = "")
+        {
+            if (c != '\0')
+            {
+                return c >= 'A' && c <= 'Z';
+            }
+            if (s != "")
+            {
+                return s[0] >= 'A' && s[0] <= 'Z';
+            }
+            return false;
+        }
+
         public static void print(object obj)
         {
             if (Planner.PRINT_DEBUG_INFO)
@@ -105,6 +118,27 @@ namespace POP
 
 
 
+    }
+
+    public class Node
+    {
+        public PartialPlan partialPlan;
+        public Agenda agenda;
+        public int pathCost;
+        public Node? parent;
+
+        public Node(PartialPlan partialPlan, Agenda agenda, int pathCost, Node? parent)
+        {
+            this.partialPlan = partialPlan;
+            this.agenda = agenda;
+            this.pathCost = pathCost;
+            this.parent = parent;
+        }
+
+        public override string ToString()
+        {
+            return /*$"Partial Plan: */$"{partialPlan}\n\nAgenda: {agenda}\n\nPath Cost: {pathCost}\n";
+        }
     }
 
     public class Expression : IEquatable<Expression>, ICloneable
@@ -213,7 +247,7 @@ namespace POP
             return HashCode.Combine(Name, Arguments, Arguments is null ? 0 : Arguments.Count, IsConstant);
         }
 
-        public static Expression Expressionize(Literal l, List<BindingConstraint> bindingConstraints)
+        public static Expression Expressionize(Literal l, BindingConstraints bindingConstraints)
         {
             List<Expression>? args = new List<Expression>();
             if (l.Variables != null)
@@ -223,18 +257,22 @@ namespace POP
                     bool foundInConstraints = false;
                     if (bindingConstraints != null)
                     {
-                        foreach (BindingConstraint bc in bindingConstraints)
+                        // foreach (BindingConstraint bc in bindingConstraints)
+                        // {
+                        //     if (bc.Variable.Equals(var) && bc.IsEqBelong)
+                        //     {
+                        string? bc = bindingConstraints.getBoundEq(var);
+                        if (bc is not null)
                         {
-                            if (bc.Variable.Equals(var) && bc.IsEqBelong)
-                            {
-                                args.Add(new Expression(bc.Bound, null, true)); // add the first bound only (TODO: add all bounds or find a better way to handle this)
-                                foundInConstraints = true;
-                                break;
-                            }
+                            args.Add(new Expression(bc, null, Helpers.IsUpper(bc[0]))); // add the one var bound or the const only (TODO: add all bounds or find a better way to handle this)
+                            foundInConstraints = true;
+                            //break;
                         }
+                        //     }
+                        // }
                     }
                     if (!foundInConstraints)
-                        args.Add(new Expression(var, null, var[0] >= 'A' && var[0] <= 'Z'));
+                        args.Add(new Expression(var, null, Helpers.IsUpper(var[0])));
                 }
             }
             return new Expression(l.Name, args);

@@ -2,6 +2,7 @@
 namespace POP
 {
     using System.Collections.Generic;
+    using System.Text;
     using static System.ArgumentNullException;
 
     public class Agenda : IComparer<System.Tuple<POP.Action, POP.Literal>>, ICloneable, IEquatable<Agenda>
@@ -54,20 +55,20 @@ namespace POP
             List<Operator> xAchievers = problem.GetListOfAchievers(x.Item2);
             List<Operator> yAchievers = problem.GetListOfAchievers(y.Item2);
 
-            List<Action> xAchieversActions = partialPlan?.getListOfActionsAchievers(x.Item2) ?? [];
-            List<Action> yAchieversActions = partialPlan?.getListOfActionsAchievers(y.Item2) ?? [];
+            List<Action> xAchieversActions = partialPlan?.getListOfActionsAchievers(x.Item2, x.Item1) ?? [];
+            List<Action> yAchieversActions = partialPlan?.getListOfActionsAchievers(y.Item2, x.Item1) ?? [];
             if (xAchievers.Count == 0 || yAchievers.Count == 0)
                 if (xAchievers.Count == 0 && xAchieversActions.Count == 0 || yAchievers.Count == 0 && yAchieversActions.Count == 0)
                     throw new Exception("Literal " + (xAchievers.Count == 0 ? x.Item2 : y.Item2) + " is not achievable. Problem is unsolvable");
 
             if (xAchievers.Count.CompareTo(yAchievers.Count) != 0)
-                return xAchievers.Count.CompareTo(yAchievers.Count);
+                return (xAchievers.Count + (x.Item2.IsPositive ? -2 : 0)).CompareTo(yAchievers.Count + (y.Item2.IsPositive ? -2 : 0));
 
             if (xAchieversActions.Count.CompareTo(yAchieversActions.Count) != 0)
-                return xAchieversActions.Count.CompareTo(yAchieversActions.Count);
+                return (xAchievers.Count + (x.Item2.IsPositive ? -2 : 0)).CompareTo(yAchieversActions.Count + (y.Item2.IsPositive ? -2 : 0));
 
             // if list of achievers is the same, compare the number of preconditions for each operator (not searching each time for the open ones to speed up heuristic)
-            return x.Item1.Preconditions.Count.CompareTo(y.Item1.Preconditions.Count);
+            return (x.Item1.Preconditions.Count + (x.Item2.IsPositive ? -2 : 0)).CompareTo(y.Item1.Preconditions.Count + (y.Item2.IsPositive ? -2 : 0));
         }
 
         public object Clone()
@@ -139,15 +140,15 @@ namespace POP
 
         public override string ToString()
         {
-            string str = "Agenda: ";
-            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new();
+            StringBuilder str = new("Agenda: ");
+            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
             try
             {
                 while (this.Count > 0)
                 {
                     Tuple<POP.Action, POP.Literal> item = this.Remove();
                     this1.Enqueue(item, item);
-                    str += item.Item1 + " / " + item.Item2 + (this.Count > 0 ? ", " : "");
+                    str.Append(item.Item1 + " / ").Append(item.Item2 + (this.Count > 0 ? ", " : ""));
                 }
             }
             finally
@@ -155,7 +156,28 @@ namespace POP
                 while (this1.Count > 0)
                     this.Add(this1.Dequeue());
             }
-            return str;
+            return str.ToString();
+        }
+        public string ToString(PartialPlan partialPlan)
+
+        {
+            StringBuilder str = new("Agenda: ");
+            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
+            try
+            {
+                while (this.Count > 0)
+                {
+                    Tuple<POP.Action, POP.Literal> item = this.Remove();
+                    this1.Enqueue(item, item);
+                    str.Append(partialPlan.ActionToString(item.Item1) + " / ").Append(partialPlan.LiteralToString(item.Item2) + (this.Count > 0 ? ", " : ""));
+                }
+            }
+            finally
+            {
+                while (this1.Count > 0)
+                    this.Add(this1.Dequeue());
+            }
+            return str.ToString();
         }
     }
 }

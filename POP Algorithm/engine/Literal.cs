@@ -92,6 +92,35 @@ namespace POP
             return true;
         }
 
+        public bool absoluteEquals(Literal? other)
+        {
+            if (other == null) return false;
+
+            if (Name != other.Name || Variables.Length != other.Variables.Length)
+                return false;
+
+            return true;
+        }
+
+        public bool exactEquals(Literal? other)
+        {
+            if (other == null) return false;
+
+            if (Name != other.Name || IsPositive != other.IsPositive || Variables.Length != other.Variables.Length)
+                return false;
+
+            for (int i = 0; i < Variables.Length; i++)
+            {
+                if (Variables[i] != other.Variables[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+
         public override bool Equals(object? obj)
         {
             return Equals(obj as Literal);
@@ -99,7 +128,12 @@ namespace POP
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Name, IsPositive, Variables);
+            int hash = HashCode.Combine(Name, IsPositive);
+            foreach (var variable in Variables)
+            {
+                hash = HashCode.Combine(hash, variable);
+            }
+            return hash;
         }
 
         public static bool operator ==(Literal? left, Literal? right) { return left is null ? (left is null && right is null) : left.Equals(right); }

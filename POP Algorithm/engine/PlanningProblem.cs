@@ -10,7 +10,7 @@ namespace POP
         private readonly HashSet<Operator> operators;
         private List<Literal> initialState;
         private List<Literal> goalState;
-        private readonly HashSet<Literal> literals = new HashSet<Literal>();
+        private readonly HashSet<Literal> literals = [];
 
         public HashSet<Operator> Operators
         {
@@ -79,7 +79,7 @@ namespace POP
 
         public List<Operator> GetListOfAchievers(Literal l)
         {
-            List<Operator> achievers = new List<Operator>();
+            List<Operator> achievers = [];
             // check if the literal is in the effects of the operator
             foreach (Operator op in operators)
             {
@@ -100,54 +100,113 @@ namespace POP
         public static void WearShirtProblem()
         {
             PlanningProblem custom = new PlanningProblem(
-                new HashSet<Operator>
-                {
-                    new Operator("Wear", new List<Literal> { new Literal("Worn", new string[] { "x" }) }, new List<Literal> { new Literal("At", new string[] { "Home" }) }, new string[] { "x" }),
-                },
-                new List<Literal> { new Literal("At", new string[] { "Home" }) },
-                new List<Literal> { new Literal("Worn", new string[] { "SHIRT" }) }
+                [
+                    new Operator("Wear", [new Literal("Worn", ["x"])], [new Literal("At", ["Home"])], ["x"]),
+                ],
+                [new Literal("At", ["Home"])],
+                [new Literal("Worn", ["SHIRT"])]
             );
 
             Planner planner = new Planner(custom);
             PartialPlan? plan = planner.POP();
-            Console.WriteLine($"Plan {(plan is null ? "not" : "")} found: \n" + plan);
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
         public static void SocksShoesProblem()
         {
             PlanningProblem socksShoes = new PlanningProblem(
-                new HashSet<Operator>
-                {
-                    new Operator("RightSock", new List<Literal> { new Literal("RightSockOn", new string[] { }) }, new List<Literal> { }, new string[] { }),
-                    new Operator("LeftSock", new List<Literal> { new Literal("LeftSockOn", new string[] { }) }, new List<Literal> { }, new string[] { }),
-                    new Operator("RightShoe", new List<Literal> { new Literal("RightShoeOn", new string[] { }) }, new List<Literal> { new Literal("RightSockOn", new string[] { }) }, new string[] { }),
-                    new Operator("LeftShoe", new List<Literal> { new Literal("LeftShoeOn", new string[] { }) }, new List<Literal> { new Literal("LeftSockOn", new string[] { }) }, new string[] { }),
-                },
-                new List<Literal> { },
-                new List<Literal> { new Literal("RightShoeOn", new string[] { }), new Literal("LeftShoeOn", new string[] { }), new Literal("RightSockOn", new string[] { }), new Literal("LeftSockOn", new string[] { }) }
+                operators: [
+                    new Operator("RightSock", [new ("RightSockOn", [])], [], []),
+                    new Operator("LeftSock", [new ("LeftSockOn", [])], [], []),
+                    new Operator("RightShoe", [new ("RightShoeOn", [])], [new ("RightSockOn", [])], []),
+                    new Operator("LeftShoe", [new ("LeftShoeOn", [])], [new ("LeftSockOn", [])], []),
+                ],
+                initialState: [],
+                goalState: [new("RightShoeOn", []), new("LeftShoeOn", []), new("RightSockOn", []), new("LeftSockOn", [])]
             );
 
             Planner planner = new Planner(socksShoes);
             PartialPlan? plan = planner.POP();
-            Console.WriteLine($"Plan {(plan is null ? "not" : "")} found: \n" + plan);
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
         public static void MilkBananasCordlessDrillProblem()
         {
             PlanningProblem milkBananasCordlessDrill = new PlanningProblem(
-                new HashSet<Operator>
-                {
-                    new ("Buy", [ new ("Have", [ "x"] ) ], [ new ("Sells", [ "store", "x"] ) , new("At", ["store"])], [ "x" ]),
-                    new ("Go", [ new ("At", ["there"]), new("At", ["here"], false) ], [ new ("At", ["here"]) ], ["there"]),
-
-                },
-                [new("At", ["Home"]), new("Sells", ["SM", "Milk"]), new("Sells", ["SM", "Bananas"]), new("Sells", ["HWS", "Drill"])],
-                [new("At", ["Home"]), new("Have", ["Milk"]), new("Have", ["Bananas"]), new("Have", ["Drill"])]
+                operators: [
+                    new Operator("Buy",
+                        variables:      [ "x" ],
+                        preconditions:  [ new ("Sells", [ "store", "x" ]), new ("At", [ "store" ]) ],
+                        effects:        [ new ("Have", [ "x" ]) ]
+                    ),
+                    new Operator("Go",
+                        variables:      [ "there" ],
+                        preconditions:  [ new ("At", [ "here" ]),       new ("At", [ "there" ], false) ],
+                        effects:        [ new ("At", [ "here" ], false), new ("At", [ "there" ]) ]
+                    )
+                ],
+                initialState: [new("At", ["Home"]), new("Sells", ["SM", "Milk"]), new("Sells", ["SM", "Bananas"]), new("Sells", ["HWS", "Drill"])
+                                , new("At",["HWS"], false), new("At", ["SM"], false)],
+                goalState: [new("At", ["Home"]), new("Have", ["Milk"]), new("Have", ["Bananas"]), new("Have", ["Drill"])]
             );
 
             Planner planner = new Planner(milkBananasCordlessDrill);
             PartialPlan? plan = planner.POP();
-            Console.WriteLine($"Plan {(plan is null ? "not" : "")} found: \n" + plan);
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
+        }
+
+        public static void SpareTiresProblem()
+        {
+            PlanningProblem spareTires = new PlanningProblem(
+                operators: [
+                    new Operator("Remove",
+                                variables:      ["obj", "loc"],
+                                preconditions:  [new ("At", ["obj", "loc"]), new("Tire", ["obj"])],
+                                effects:        [new ("At", ["obj", "Ground"]), new("At", ["obj", "loc"], false)]
+                            ),
+                    new Operator("PutOn",
+                                variables:      ["t", "Axle"],
+                                preconditions:  [new ("At", ["t", "Ground"]), new("At", ["Flat", "Axle"], false), new("Tire", ["t"])],
+                                effects:        [new ("At", ["t", "Axle"]), new("At", ["t", "Ground"], false)]
+                            ),
+                    new Operator("LeaveOvernight",
+                                variables:      [],
+                                preconditions:  [],
+                                effects:        [new ("At", ["Spare", "Axle"], false), new("At", ["Spare", "Trunk"], false), new("At", ["Spare", "Ground"], false)
+                                                ,new("At", ["Flat", "Axle"], false), new("At", ["Flat", "Trunk"], false), new("At", ["Flat", "Ground"], false)]
+                            )
+                ],
+                initialState: [new("At", ["Flat", "Axle"]), new("At", ["Spare", "Trunk"]), new("Tire", ["Spare"]), new("Tire", ["Flat"])],
+                goalState: [new("At", ["Spare", "Axle"]), new("At", ["Flat", "Ground"])]
+            );
+
+            Planner planner = new Planner(spareTires);
+            PartialPlan? plan = planner.POP();
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
+        }
+
+        public static void GroceriesBuyProblem()
+        {
+            PlanningProblem groceriesBuy = new PlanningProblem(
+                operators: [
+                    new Operator("Buy",
+                                variables:      ["x"],
+                                preconditions:  [new ("At", ["SM"]) , new("At", ["Home"], false)],
+                                effects:        [new ("Have", ["x"])]
+                            ),
+                    new Operator("Go",
+                                variables:      ["x"],
+                                preconditions:  [new ("At", ["any"]), new("At", ["x"], false)],
+                                effects:        [new ("At", ["any"], false), new("At", ["x"])]
+                            )
+                ],
+                initialState: [new("At", ["Home"]), new("At", ["SM"], false)],
+                goalState: [new("At", ["Home"]), new("Have", ["Groceries"])]
+            );
+
+            Planner planner = new Planner(groceriesBuy);
+            PartialPlan? plan = planner.POP();
+            Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
 
