@@ -9,7 +9,7 @@ namespace POP
     public class Planner
     {
         public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = true,
-            PRINT_DEBUG_INFO = true;
+            PRINT_DEBUG_INFO = false;
 
 
         private PlanningProblem problem;
@@ -111,17 +111,17 @@ namespace POP
             // using Node = Tuple<PartialPlan, Agenda, int>;
 
             // Create a new PriorityQueue to store the partial plans with the cost of the path from the start node (root) to the current node -> Pair (partial plan, path cost, agenda)
-            PriorityQueue<Node, int> queue = new PriorityQueue<Node, int>();
+            PriorityQueue<Node, int> aStarQueue = new PriorityQueue<Node, int>();
 
             // Use the initial plan as the root node
             Node root = new Node(plan, agenda, 0, null);
-            queue.Enqueue(root, Eval_Fn(root));
+            aStarQueue.Enqueue(root, Eval_Fn(root));
 
-            while (queue.Count > 0)
+            while (aStarQueue.Count > 0)
             {
                 Console.Write(".");
                 Helpers.println("============================\nSearching...\n===========================\n");
-                Node current = queue.Dequeue();
+                Node current = aStarQueue.Dequeue();
 
                 // Check if the current plan DAG is cyclic
                 if (current.partialPlan.OrderingConstraints.Count > 0)
@@ -181,10 +181,9 @@ namespace POP
 
                     // check for threats
                     if (newAction is null || newCausalLink is null) continue;
-                    // if there is a threat, skip the unresolved one, as some trial nodes were pushed in the resolve function
-                    if (searchResolveThreats(newAction, newCausalLink, queue, newNode)) continue;
 
-                    queue.Enqueue(newNode, Eval_Fn(newNode));
+                    // if there is a threat, resolve it and push the nodes with the new plans to the queue
+                    searchResolveThreats(newAction, newCausalLink, aStarQueue, newNode);
                 }
 
             }
@@ -372,76 +371,84 @@ namespace POP
             return new Literal(l.Name, variables, l.IsPositive);
         }
 
-        public bool searchResolveThreats(Action action, CausalLink causalLink, PriorityQueue<Node, int> queue, Node current)
+        public void searchResolveThreats(Action action, CausalLink causalLink, PriorityQueue<Node, int> aStarQueue, Node node)
         {
-            CausalLink threatenedLink;
-            bool threatFound = false;
-            foreach (CausalLink cl in current.partialPlan.CausalLinks)
+            Queue<Node> nodes = new Queue<Node>();
+            nodes.Enqueue(node);
+            while (nodes.Count > 0)
             {
-                if (action.hasPossibleNegatedEffectOf(cl.LinkCondition))
+                Node current = nodes.Dequeue();
+
+
+                CausalLink threatenedLink;
+                bool threatFound = false;
+                foreach (CausalLink cl in current.partialPlan.CausalLinks)
                 {
-                    threatenedLink = cl;
-
-                    // check if the action is a threat to the causal link
-                    if (isThreat(action, threatenedLink, current))
+                    if (action.hasPossibleNegatedEffectOf(cl.LinkCondition))
                     {
-                        Helpers.println($"***\nThreatened Link: {current.partialPlan.ActionToString(threatenedLink.Produceri)} --{current.partialPlan.LiteralToString(threatenedLink.LinkCondition)}--> {current.partialPlan.ActionToString(threatenedLink.Consumerj)} Action: {current.partialPlan.ActionToString(action)} \n****\n");
+                        threatenedLink = cl;
 
-                        // try promotion of action
-                        Node promotedNode = createNode(current);
-                        promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threatenedLink.Consumerj, action));
-                        if (threatenedLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, []))
+                        // check if the action is a threat to the causal link
+                        if (isThreat(action, threatenedLink, current))
                         {
-                            // before queuing the promoted node, check if there is a threat to the new causal link
-                            if (!searchResolveThreatsForNewCausalLink(causalLink, queue, promotedNode))
-                                queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
-                        }
+                            Helpers.println($"***\nThreatened Link: {current.partialPlan.ActionToString(threatenedLink.Produceri)} --{current.partialPlan.LiteralToString(threatenedLink.LinkCondition)}--> {current.partialPlan.ActionToString(threatenedLink.Consumerj)} Action: {current.partialPlan.ActionToString(action)} \n****\n");
 
-                        // try demotion of the causal link
-                        Node demotedNode = createNode(current);
-                        demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(action, threatenedLink.Produceri));
-                        if (threatenedLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
-                        {
-                            // before queuing the demoted node, check if there is a threat to the new causal link
-                            if (!searchResolveThreatsForNewCausalLink(causalLink, queue, demotedNode))
-                                queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
-                        }
-
-                        // try adding new Binding Constraints
-                        Node newBindingNode = createNode(current);
-                        bool noconflict = true;
-                        foreach (Literal effect in action.Effects)
-                        {
-                            if (effect.Name == threatenedLink.LinkCondition.Name
-                            && effect.IsPositive == !threatenedLink.LinkCondition.IsPositive
-                            && effect.Variables.Length == threatenedLink.LinkCondition.Variables.Length)
+                            // try promotion of action
+                            Node promotedNode = createNode(current);
+                            promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threatenedLink.Consumerj, action));
+                            if (threatenedLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, []))
                             {
-                                bool successful = newBindingNode.partialPlan.BindingConstraints.setNotEqual(effect.Variables[0], threatenedLink.LinkCondition.Variables[0]);
-                                noconflict = noconflict && successful;
-                                if (!successful) break;
+                                // before queuing the promoted node, check if there is a threat to the new causal link
+                                if (!searchResolveThreatsForNewCausalLink(causalLink, nodes, promotedNode))
+                                    nodes.Enqueue(promotedNode);
                             }
 
-                        }
-                        // if (noconflict) 
-                        // {
-                        //      //before queuing the new binding node, check if there is a threat to the new causal link
-                        //      if (!searchResolveThreatsForNewCausalLink(causalLink, queue, newBindingNode))
-                        //      queue.Enqueue(newBindingNode, Eval_Fn(newBindingNode));
-                        // }
+                            // try demotion of the causal link
+                            Node demotedNode = createNode(current);
+                            demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(action, threatenedLink.Produceri));
+                            if (threatenedLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
+                            {
+                                // before queuing the demoted node, check if there is a threat to the new causal link
+                                if (!searchResolveThreatsForNewCausalLink(causalLink, nodes, demotedNode))
+                                    nodes.Enqueue(demotedNode);
+                            }
 
-                        threatFound = true;
+                            // try adding new Binding Constraints
+                            Node newBindingNode = createNode(current);
+                            bool noconflict = true;
+                            foreach (Literal effect in action.Effects)
+                            {
+                                if (effect.Name == threatenedLink.LinkCondition.Name
+                                && effect.IsPositive == !threatenedLink.LinkCondition.IsPositive
+                                && effect.Variables.Length == threatenedLink.LinkCondition.Variables.Length)
+                                {
+                                    bool successful = newBindingNode.partialPlan.BindingConstraints.setNotEqual(effect.Variables[0], threatenedLink.LinkCondition.Variables[0]);
+                                    noconflict = noconflict && successful;
+                                    if (!successful) break;
+                                }
+
+                            }
+                            // if (noconflict) 
+                            // {
+                            //      //before queuing the new binding node, check if there is a threat to the new causal link
+                            //      if (!searchResolveThreatsForNewCausalLink(causalLink, nodes, newBindingNode))
+                            //      nodes.Enqueue(newBindingNode);
+                            // }
+
+                            threatFound = true;
+                        }
                     }
                 }
+                if (!threatFound)
+                {
+                    // check if there is a threat to the new causal link
+                    threatFound = threatFound || searchResolveThreatsForNewCausalLink(causalLink, nodes, current);
+                }
+                if (!threatFound) aStarQueue.Enqueue(current, Eval_Fn(current));
             }
-            if (!threatFound)
-            {
-                // check if there is a threat to the new causal link
-                threatFound = threatFound || searchResolveThreatsForNewCausalLink(causalLink, queue, current);
-            }
-            return threatFound;
         }
 
-        public bool searchResolveThreatsForNewCausalLink(CausalLink causalLink, PriorityQueue<Node, int> queue, Node current)
+        public bool searchResolveThreatsForNewCausalLink(CausalLink causalLink, Queue<Node> queue, Node current)
         {
             Action threateningAction;
             bool threatFound = false;
@@ -461,14 +468,14 @@ namespace POP
                         promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(causalLink.Consumerj, threateningAction));
                         if (causalLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, [])
                                     && threateningAction != new Action("Start", problem.InitialState, new List<Literal>(), []))
-                            queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
+                            queue.Enqueue(promotedNode);
 
 
                         // try demotion of the causal link
                         Node demotedNode = createNode(current);
                         demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threateningAction, causalLink.Produceri));
                         if (causalLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
-                            queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
+                            queue.Enqueue(demotedNode);
 
 
                         // try adding new Binding Constraints
