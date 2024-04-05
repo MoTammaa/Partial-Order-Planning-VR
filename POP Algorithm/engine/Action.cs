@@ -34,37 +34,57 @@ namespace POP
             {
                 for (int j = i + 1; j < Preconditions.Count; j++)
                 {
-                    if (Preconditions[i].Equals(Preconditions[j]))
+                    if (Preconditions[i].absoluteEquals(Preconditions[j]))
                     {
+                        if (Preconditions[i].IsPositive == Preconditions[j].IsPositive)
+                            continue;
+                        bool allequal = true;
                         for (int k = 0; k < Preconditions[i].Variables.Length; k++)
                         {
-                            if (bc.getBoundEq(Preconditions[i].Variables[k]) == bc.getBoundEq(Preconditions[j].Variables[k])
-                                && Preconditions[i].IsPositive != Preconditions[j].IsPositive)
+                            if (bc.getBoundEq(Preconditions[i].Variables[k]) != bc.getBoundEq(Preconditions[j].Variables[k]))
                             {
-                                return true;
+                                allequal = false;
+                                break;
                             }
                         }
+                        if (allequal) return true;
                     }
                 }
             }
-
             for (int i = 0; i < Effects.Count; i++)
             {
                 for (int j = i + 1; j < Effects.Count; j++)
                 {
                     if (Effects[i].absoluteEquals(Effects[j]))
                     {
+                        if (Effects[i].IsPositive == Effects[j].IsPositive)
+                            continue;
+                        bool allequal = true;
                         for (int k = 0; k < Effects[i].Variables.Length; k++)
                         {
-                            if (bc.getBoundEq(Effects[i].Variables[k]) == bc.getBoundEq(Effects[j].Variables[k]))
+                            if (bc.getBoundEq(Effects[i].Variables[k]) != bc.getBoundEq(Effects[j].Variables[k]))
                             {
-                                return true;
+                                allequal = false;
+                                break;
                             }
                         }
+                        if (allequal) return true;
                     }
                 }
             }
 
+            return false;
+        }
+
+        public bool hasPossibleNegatedEffectOf(Literal l)
+        {
+            foreach (Literal effect in Effects)
+            {
+                if (effect.absoluteEquals(l) && effect.IsPositive != l.IsPositive)
+                {
+                    return true;
+                }
+            }
             return false;
         }
 

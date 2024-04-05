@@ -9,7 +9,7 @@ namespace POP
     public class Planner
     {
         public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = true,
-            PRINT_DEBUG_INFO = false;
+            PRINT_DEBUG_INFO = true;
 
 
         private PlanningProblem problem;
@@ -304,7 +304,7 @@ namespace POP
                 string? bound = bindingConstraints.getBoundEq(vr);
                 if (bound is not null && IsUpper(bound[0]))
                 {
-                    boundedVariablesSoFar.Add(vr, bound);
+                    boundedVariablesSoFar.TryAdd(vr, bound);
                 }
             }
 
@@ -378,7 +378,7 @@ namespace POP
             bool threatFound = false;
             foreach (CausalLink cl in current.partialPlan.CausalLinks)
             {
-                if (action.Effects.Contains(cl.LinkCondition))
+                if (action.hasPossibleNegatedEffectOf(cl.LinkCondition))
                 {
                     threatenedLink = cl;
 
@@ -392,10 +392,8 @@ namespace POP
                         promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threatenedLink.Consumerj, action));
                         if (threatenedLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, []))
                         {
-                            // queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
                             // before queuing the promoted node, check if there is a threat to the new causal link
                             if (!searchResolveThreatsForNewCausalLink(causalLink, queue, promotedNode))
-                                //if (promotedNode.partialPlan != current.partialPlan)
                                 queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
                         }
 
@@ -404,10 +402,8 @@ namespace POP
                         demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(action, threatenedLink.Produceri));
                         if (threatenedLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
                         {
-                            // queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
                             // before queuing the demoted node, check if there is a threat to the new causal link
                             if (!searchResolveThreatsForNewCausalLink(causalLink, queue, demotedNode))
-                                //if (demotedNode.partialPlan != current.partialPlan)
                                 queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
                         }
 
@@ -451,7 +447,7 @@ namespace POP
             bool threatFound = false;
             foreach (Action a in current.partialPlan.Actions)
             {
-                if (a.Effects.Contains(causalLink.LinkCondition))
+                if (a.hasPossibleNegatedEffectOf(causalLink.LinkCondition))
                 {
                     threateningAction = a;
 
@@ -465,7 +461,6 @@ namespace POP
                         promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(causalLink.Consumerj, threateningAction));
                         if (causalLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, [])
                                     && threateningAction != new Action("Start", problem.InitialState, new List<Literal>(), []))
-                            // if (promotedNode.partialPlan != current.partialPlan)
                             queue.Enqueue(promotedNode, Eval_Fn(promotedNode));
 
 
@@ -473,7 +468,6 @@ namespace POP
                         Node demotedNode = createNode(current);
                         demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threateningAction, causalLink.Produceri));
                         if (causalLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
-                            // if (!demotedNode.partialPlan.Equals( current.partialPlan))
                             queue.Enqueue(demotedNode, Eval_Fn(demotedNode));
 
 
