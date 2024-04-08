@@ -122,3 +122,7 @@ x86/
 *.log
 *.fdb_latexmk
 *.synctex.gz
+
+
+# others
+*.wav
