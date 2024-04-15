@@ -7,106 +7,136 @@ namespace POP
     using System.Linq;
     using System.Text;
     using static System.ArgumentNullException;
-    public class PriorityQ<T> : IEquatable<PriorityQ<T>>, IEnumerable<T> where T : notnull
+    public class PriorityQ<TElement, TPriority> : IEquatable<PriorityQ<TElement, TPriority>>, IEnumerable<TElement> where TElement : notnull where TPriority : notnull
     {
-        private SortedSet<T> sortedSet;
-        public IComparer<T> Comparer { get; }
+        private SortedDictionary<TPriority, Queue<TElement>> sortedDict;
+        public IComparer<TPriority> Comparer { get; }
 
         public int Count
         {
-            get { return sortedSet.Count; }
+            get { return sortedDict.Count + sortedDict.Values.Sum(q => q.Count - 1); }
         }
 
-        public PriorityQ(IComparer<T> comparer)
+        public PriorityQ(IComparer<TPriority> comparer)
         {
             this.Comparer = comparer;
-            this.sortedSet = new SortedSet<T>(Comparer);
+            this.sortedDict = new SortedDictionary<TPriority, Queue<TElement>>(Comparer);
         }
 
-        public PriorityQ() : this(Comparer<T>.Default) { }
+        public PriorityQ() : this(Comparer<TPriority>.Default) { Console.WriteLine("PriorityQ null"); }
 
-        public void Enqueue(T item)
+        public void Enqueue(TElement item, TPriority priority)
         {
-            sortedSet.Add(item);
+            if (!sortedDict.ContainsKey(priority))
+            {
+                sortedDict.Add(priority, new Queue<TElement>());
+            }
+            sortedDict[priority].Enqueue(item);
         }
 
-        public T Dequeue()
+
+        public void Enqueue(TElement item)
         {
-            T item = sortedSet.Min;
-            sortedSet.Remove(item);
+            Enqueue(item, this.Count == 0 ? default! : sortedDict.Keys.Last());
+        }
+
+        public TElement Dequeue()
+        {
+            TPriority priority = sortedDict.Keys.First();
+            TElement item = sortedDict[priority].Dequeue() ?? throw new InvalidOperationException("Queue is empty");
+            if (sortedDict[priority].Count == 0)
+            {
+                sortedDict.Remove(priority);
+            }
             return item;
         }
 
-        public void EnqueueRange(IEnumerable<T> items)
+        public void EnqueueRange(IEnumerable<TElement> items)
         {
-            foreach (T item in items)
+            foreach (TElement item in items)
             {
-                sortedSet.Add(item);
+                Enqueue(item);
             }
         }
 
-        public T Peek()
+        public void EnqueueRange(IEnumerable<TElement> items, TPriority priority)
         {
-            return sortedSet.Min;
+            foreach (TElement item in items)
+            {
+                Enqueue(item, priority);
+            }
+        }
+
+        public void EnqueueRange(IEnumerable<TElement> items, IEnumerable<TPriority> priorities)
+        {
+            IEnumerator<TPriority> priorityEnum = priorities.GetEnumerator();
+            foreach (TElement item in items)
+            {
+                priorityEnum.MoveNext();
+                Enqueue(item, priorityEnum.Current);
+            }
+        }
+
+        public TElement Peek()
+        {
+            return sortedDict.Values.First().Peek();
         }
 
         public void Clear()
         {
-            sortedSet.Clear();
+            sortedDict.Clear();
         }
 
-        public bool Contains(T item)
+        public bool Contains(TElement item)
         {
-            return sortedSet.Contains(item);
+            return sortedDict.Values.Any(q => q.Contains(item));
         }
 
-        public T DequeueEnqueue(T item)
+        public TElement DequeueEnqueue(TElement item)
         {
-            T min = sortedSet.Min;
-            sortedSet.Remove(min);
-            sortedSet.Add(item);
+            TElement min = Dequeue();
+            Enqueue(item);
             return min;
         }
 
-        public T EnqueueDequeue(T item)
+        public TElement EnqueueDequeue(TElement item)
         {
-            sortedSet.Add(item);
-            T min = sortedSet.Min;
-            sortedSet.Remove(min);
-            return min;
+            Enqueue(item);
+            return Dequeue();
         }
 
-        public bool Equals(PriorityQ<T> other)
+        public bool Equals(PriorityQ<TElement, TPriority>? other)
         {
             if (other is null)
                 return false;
-            return this.sortedSet.SetEquals(other.sortedSet);
+            return this.sortedDict.SequenceEqual(other.sortedDict);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            return obj is PriorityQ<T> q && this.Equals(q);
+            return obj is PriorityQ<TElement, TPriority> q && this.Equals(q);
         }
 
         public override int GetHashCode()
         {
-            return sortedSet.GetHashCode();
+            return sortedDict.GetHashCode();
         }
 
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            foreach (T item in sortedSet)
+            foreach (var item in this)
             {
-                sb.Append(item.ToString());
+                sb.Append(item);
                 sb.Append(", ");
             }
             return sb.ToString();
         }
 
-        public bool TryDequeue(out T item)
+#nullable disable
+        public bool TryDequeue(out TElement item)
         {
-            if (sortedSet.Count > 0)
+            if (sortedDict.Count > 0)
             {
                 item = Dequeue();
                 return true;
@@ -114,10 +144,9 @@ namespace POP
             item = default;
             return false;
         }
-
-        public bool TryPeek(out T item)
+        public bool TryPeek(out TElement item)
         {
-            if (sortedSet.Count > 0)
+            if (sortedDict.Count > 0)
             {
                 item = Peek();
                 return true;
@@ -126,9 +155,9 @@ namespace POP
             return false;
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<TElement> GetEnumerator()
         {
-            return sortedSet.GetEnumerator();
+            return sortedDict.Values.SelectMany(q => q).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -138,55 +167,20 @@ namespace POP
 
 #nullable enable
 
-        public static bool operator ==(PriorityQ<T>? left, PriorityQ<T>? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
-        public static bool operator !=(PriorityQ<T>? left, PriorityQ<T>? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
-        public static bool operator ==(PriorityQ<T>? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
-        public static bool operator !=(PriorityQ<T>? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
-        public static bool operator ==(object left, PriorityQ<T>? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
-        public static bool operator !=(object left, PriorityQ<T>? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
+        public static bool operator ==(PriorityQ<TElement, TPriority>? left, PriorityQ<TElement, TPriority>? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(PriorityQ<TElement, TPriority>? left, PriorityQ<TElement, TPriority>? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(PriorityQ<TElement, TPriority>? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
+        public static bool operator !=(PriorityQ<TElement, TPriority>? left, object right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
+        public static bool operator ==(object left, PriorityQ<TElement, TPriority>? right) { return right is null ? (left is null && right is null) : right.Equals(left); }
+        public static bool operator !=(object left, PriorityQ<TElement, TPriority>? right) { return !(right is null ? (left is null && right is null) : right.Equals(left)); }
     }
-
 
 
     public enum SearchStrategy
     {
         BFS,
+        DFS,
         AStar
     }
 
-    public class NodeComparer : IComparer<Node>
-    {
-        public SearchStrategy SearchStrategy { get; }
-        public NodeComparer(SearchStrategy searchStrategy) { SearchStrategy = searchStrategy; }
-
-        public int Eval_Fn(Node node)
-        {
-            /* 
-             *      A* search algorithm:::
-             *
-             *      f(n) = h(n) + g(n)
-             *      h(n) = open preconditions of the partial plan (inside the agenda) 
-             *      g(n) = path cost from the start node to the current node
-            */
-
-            /* 
-             *      BFS search algorithm:::
-             *
-             *      f(n) = g(n)
-             *      g(n) = path cost (level) from the start node to the current node
-            */
-
-            return SearchStrategy switch
-            {
-                SearchStrategy.AStar => node.pathCost + node.agenda.Count,
-                SearchStrategy.BFS => node.pathCost,
-                _ => throw new NotImplementedException()
-            };
-        }
-
-        public int Compare(Node x, Node y)
-        {
-            return Eval_Fn(x) - Eval_Fn(y);
-        }
-    }
 }

@@ -27,9 +27,17 @@ namespace POP
             set { problem = value; }
         }
 
-        public Planner(PlanningProblem problem)
+        public SearchStrategy SearchStrategy { get; set; }
+        public int MaxDepth { get; } = 400;
+
+        public Planner(PlanningProblem problem, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
         {
             Helpers.ThrowIfNull(problem, nameof(problem));
+
+            this.SearchStrategy = searchStrategy;
+            this.MaxDepth = (maxDepth == -1) ? 400 : maxDepth;
+            if (SearchStrategy == SearchStrategy.DFS && maxDepth == -1)
+                throw new Exception("MaxDepth must be set in the constructor for DFS search");
 
             this.problem = problem;
 
@@ -67,11 +75,12 @@ namespace POP
             // Node => (PartialPlan, Agenda, pathCost, parent)
 
             // Create a new PriorityQueue to store the partial plans with the cost of the path from the start node (root) to the current node -> (partial plan, agenda, path cost, parent node)
-            PriorityQ<Node> aStarQueue = new(new NodeComparer(SearchStrategy.AStar));
+            PriorityQ<Node, int> aStarQueue = new();
 
             // Use the initial plan as the root node
             Node root = new Node(plan, agenda, 0, null);
-            aStarQueue.Enqueue(root);
+            if (SearchStrategy == SearchStrategy.DFS) { aStarQueue.Enqueue(root); }
+            else { aStarQueue.Enqueue(root, Eval_Fn(root)); }
 
             Console.Write("Searching");
 
@@ -80,7 +89,10 @@ namespace POP
                 Console.Write(".");
                 Helpers.println("============================\nSearching...\n===========================\n");
                 Node current = aStarQueue.Dequeue();
+                // Console.WriteLine(/*Eval_Fn(current) + "  " +*/ current.pathCost + "  " + MaxDepth);
 
+                if (current.pathCost > MaxDepth) continue;
+                // Console.WriteLine("Normal");
 
                 // Check if the current plan DAG is cyclic
                 if (current.partialPlan.OrderingConstraints.Count > 0)
@@ -109,6 +121,33 @@ namespace POP
             return null;
         }
 
+        public int Eval_Fn(Node node)
+        {
+            /* 
+             *      A* search algorithm:::
+             *
+             *      f(n) = h(n) + g(n)
+             *      h(n) = open preconditions of the partial plan (inside the agenda) 
+             *      g(n) = path cost from the start node to the current node
+            */
+
+            /* 
+             *      BFS search algorithm:::
+             *
+             *      f(n) = g(n)
+             *      g(n) = path cost (level) from the start node to the current node
+            */
+
+
+
+            return SearchStrategy switch
+            {
+                SearchStrategy.AStar => node.pathCost + node.agenda.Count,
+                SearchStrategy.BFS => node.pathCost,
+                _ => throw new NotImplementedException($"Search Strategy '{SearchStrategy}' not implemented")
+            };
+        }
+
 
         public Node createNode(Node? n = null, PartialPlan? plan = null, Agenda? agenda = null, int pathCost = 0)
         {
@@ -122,7 +161,7 @@ namespace POP
         }
 
 
-        private void EXPAND(Node current, PriorityQ<Node> aStarQueue)
+        private void EXPAND(Node current, PriorityQ<Node, int> aStarQueue)
         {
             // Expand the current node by applying each of the achievers to the current node
 
@@ -339,7 +378,7 @@ namespace POP
             return new Literal(l.Name, variables, l.IsPositive);
         }
 
-        public void searchResolveThreats(Action action, CausalLink causalLink, PriorityQ<Node> aStarQueue, Node node)
+        public void searchResolveThreats(Action action, CausalLink causalLink, PriorityQ<Node, int> aStarQueue, Node node)
         {
             Queue<Node> nodes = new Queue<Node>();
             nodes.Enqueue(node);
@@ -412,7 +451,9 @@ namespace POP
                     // check if there is a threat to the new causal link
                     threatFound = threatFound || searchResolveThreatsForNewCausalLink(causalLink, nodes, current);
                 }
-                if (!threatFound) aStarQueue.Enqueue(current);
+                if (!threatFound)
+                    if (SearchStrategy == SearchStrategy.DFS) { if (current.pathCost < MaxDepth) aStarQueue.Enqueue(current); }
+                    else { aStarQueue.Enqueue(current, Eval_Fn(current)); }
             }
         }
 

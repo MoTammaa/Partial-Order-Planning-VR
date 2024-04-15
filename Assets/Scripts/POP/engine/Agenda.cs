@@ -12,19 +12,19 @@ namespace POP
 #nullable enable
         private PlanningProblem problem;
         private PartialPlan? partialPlan;
-        private PriorityQ<System.Tuple<POP.Action, POP.Literal>> priorityQueue;
+        private PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> priorityQueue;
         // Constructor
         public Agenda(PlanningProblem problem, PartialPlan? partialPlan = null)
         {
             Helpers.ThrowIfNull(problem, nameof(problem));
             this.problem = problem;
             this.partialPlan = partialPlan;
-            this.priorityQueue = new PriorityQ<System.Tuple<POP.Action, POP.Literal>>(this);
+            this.priorityQueue = new PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>>(this);
         }
 
         public void Add(Tuple<POP.Action, POP.Literal> item)
         {
-            priorityQueue.Enqueue(item);
+            priorityQueue.Enqueue(item, item);
         }
         public void Add(POP.Action action, POP.Literal literal)
         {
@@ -77,11 +77,11 @@ namespace POP
         public object Clone()
         {
             Agenda newAgenda = new Agenda(this.problem, this.partialPlan);
-            PriorityQ<System.Tuple<POP.Action, POP.Literal>> this1 = new(newAgenda);
+            PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(newAgenda);
             foreach (Tuple<POP.Action, POP.Literal> item in this.priorityQueue)
             {
                 newAgenda.Add(new((Action)item.Item1.Clone(), (Literal)item.Item2.Clone()));
-                this1.Enqueue(item);
+                this1.Enqueue(item, item);
             }
             // try
             // {
@@ -89,7 +89,7 @@ namespace POP
             //     {
             //         Tuple<POP.Action, POP.Literal> item = this.Remove();
             //         newAgenda.Add(new((Action)item.Item1.Clone(), (Literal)item.Item2.Clone()));
-            //         this1.Enqueue(item);
+            //         this1.Enqueue(item, item);
             //     }
             // }
             // finally
@@ -116,13 +116,13 @@ namespace POP
             if (this.Count != other.Count)
                 return false;
 
-            PriorityQ<System.Tuple<POP.Action, POP.Literal>> this1 = new(), other1 = new();
+            PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(), other1 = new();
             try
             {
                 for (int i = 0; i < this.Count; i++)
                 {
                     Tuple<POP.Action, POP.Literal> item = this.Remove();
-                    this1.Enqueue(item);
+                    this1.Enqueue(item, item);
                     Tuple<POP.Action, POP.Literal> otherItem = other.Remove();
                     other1.Enqueue(otherItem);
                     if (!item.Equals(otherItem))
@@ -154,13 +154,13 @@ namespace POP
             {
                 str.Append(item.Item1 + " / ").Append(item.Item2 + (this.Count > 0 ? ", " : ""));
             }
-            // PriorityQ<System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
+            // PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
             // try
             // {
             //     while (this.Count > 0)
             //     {
             //         Tuple<POP.Action, POP.Literal> item = this.Remove();
-            //         this1.Enqueue(item);
+            //         this1.Enqueue(item, item);
             //         str.Append(item.Item1 + " / ").Append(item.Item2 + (this.Count > 0 ? ", " : ""));
             //     }
             // }
@@ -180,7 +180,7 @@ namespace POP
             {
                 str.Append(partialPlan.ActionToString(item.Item1) + " / ").Append(partialPlan.LiteralToString(item.Item2) + (this.Count > 0 ? ", " : ""));
             }
-            // PriorityQ<System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
+            // PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
             //     try
             //     {
             //         while (this.Count > 0)

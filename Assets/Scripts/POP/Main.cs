@@ -1,4 +1,5 @@
-﻿/*using global::System;
+﻿/*
+using global::System;
 using global::System.Collections.Generic;
 using POP;
 using Action = POP.Action;
@@ -44,7 +45,7 @@ else
 
 
 // test the POP algorithm
-PlanningProblem.MilkBananasCordlessDrillProblem();
+PlanningProblem.GroceriesBuyProblem(SearchStrategy.DFS, 13);
 // BindingConstraints bc = new();
 
 // bc.setEqual("x", "z");
@@ -62,4 +63,4 @@ PlanningProblem.MilkBananasCordlessDrillProblem();
 // Console.WriteLine(bc.numEqDisjointSets());
 
 // x = z = w = u  ,  op != u,x  ,  x != p  ,  x != s
-*/
+//*/

@@ -100,7 +100,7 @@ namespace POP
         }
 
 
-        public static void WearShirtProblem()
+        public static void WearShirtProblem(SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
         {
             PlanningProblem custom = new PlanningProblem(
                 new HashSet<Operator> {
@@ -110,12 +110,12 @@ namespace POP
                 new List<Literal> { new Literal("Worn", new[] { "SHIRT" }) }
             );
 
-            Planner planner = new Planner(custom);
+            Planner planner = new Planner(custom, searchStrategy, maxDepth);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
-        public static void SocksShoesProblem()
+        public static void SocksShoesProblem(SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
         {
             PlanningProblem socksShoes = new PlanningProblem(
                 operators: new HashSet<Operator> {
@@ -128,12 +128,12 @@ namespace POP
                 goalState: new List<Literal> { new("RightShoeOn", new string[] { }), new("LeftShoeOn", new string[] { }), new("RightSockOn", new string[] { }), new("LeftSockOn", new string[] { }) }
             );
 
-            Planner planner = new Planner(socksShoes);
+            Planner planner = new Planner(socksShoes, searchStrategy, maxDepth);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
-        public static void MilkBananasCordlessDrillProblem()
+        public static void MilkBananasCordlessDrillProblem(SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
         {
             PlanningProblem milkBananasCordlessDrill = new PlanningProblem(
                 operators: new HashSet<Operator> {
@@ -153,12 +153,12 @@ namespace POP
                 goalState: new List<Literal> { new("At", new string[] { "Home" }), new("Have", new[] { "Milk" }), new("Have", new[] { "Bananas" }), new("Have", new[] { "Drill" }) }
             );
 
-            Planner planner = new Planner(milkBananasCordlessDrill);
+            Planner planner = new Planner(milkBananasCordlessDrill, searchStrategy, maxDepth);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
-        public static void SpareTiresProblem()
+        public static void SpareTiresProblem(SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
         {
             PlanningProblem spareTires = new PlanningProblem(
                 operators: new HashSet<Operator> {
@@ -183,12 +183,12 @@ namespace POP
                 goalState: new List<Literal> { new("At", new[] { "Spare", "Axle" }), new("At", new[] { "Flat", "Ground" }) }
         );
 
-            Planner planner = new Planner(spareTires);
+            Planner planner = new Planner(spareTires, searchStrategy, maxDepth);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
 
-        public static void GroceriesBuyProblem()
+        public static void GroceriesBuyProblem(SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
         {
             PlanningProblem groceriesBuy = new PlanningProblem(
                 operators: new HashSet<Operator> {
@@ -207,7 +207,7 @@ namespace POP
                 goalState: new List<Literal> { new("At", new string[] { "Home" }), new("Have", new[] { "Groceries" }) }
             );
 
-            Planner planner = new Planner(groceriesBuy);
+            Planner planner = new Planner(groceriesBuy, searchStrategy, maxDepth);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
         }
