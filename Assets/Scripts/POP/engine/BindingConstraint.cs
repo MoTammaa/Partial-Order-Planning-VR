@@ -9,6 +9,7 @@ namespace POP
 
     public class BindingConstraint : ICloneable, IEquatable<BindingConstraint>
     {
+#nullable enable
         private string variable;
         private string bound;
 
@@ -34,8 +35,8 @@ namespace POP
 #nullable disable warnings
         public BindingConstraint(string variable, string bound, bool isEqBelong)
         {
-            ThrowIfNull(variable, nameof(variable));
-            ThrowIfNull(bound, nameof(bound));
+            Helpers.ThrowIfNull(variable, nameof(variable));
+            Helpers.ThrowIfNull(bound, nameof(bound));
 
             this.Variable = variable;
             this.Bound = bound;

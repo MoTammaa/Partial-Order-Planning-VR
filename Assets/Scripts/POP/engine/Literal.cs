@@ -8,6 +8,7 @@ namespace POP
 
     public class Literal : ICloneable, IEquatable<Literal>
     {
+#nullable enable
         private string name;
         private bool isPositive = true;
         private string[] variables;
@@ -36,9 +37,9 @@ namespace POP
 #nullable disable warnings
         public Literal(string name, string[] variables, bool isPositive = true)/*, Dictionary<string, string> boundVariables*/
         {
-            ThrowIfNull(name, nameof(name));
-            ThrowIfNull(variables, nameof(variables));
-            // ThrowIfNull(boundVariables, nameof(boundVariables));
+            Helpers.ThrowIfNull(name, nameof(name));
+            Helpers.ThrowIfNull(variables, nameof(variables));
+            // Helpers.ThrowIfNull(boundVariables, nameof(boundVariables));
 
             this.Name = name;
             this.IsPositive = isPositive;
@@ -48,7 +49,7 @@ namespace POP
         }
         public Literal(Literal l, Dictionary<string, string>? boundVariables = null)
         {
-            ThrowIfNull(l, nameof(l));
+            Helpers.ThrowIfNull(l, nameof(l));
             this.Name = l.Name.Clone() as string ?? "";
             this.IsPositive = l.IsPositive;
             this.Variables = l.Variables.Clone() as string[] ?? Array.Empty<string>();

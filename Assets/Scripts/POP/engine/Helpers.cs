@@ -1,10 +1,13 @@
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Action = POP.Action;
+
 namespace POP
 {
-    using System;
-    using System.Collections.Generic;
-    using static System.ArgumentNullException;
 
+#nullable enable
     public class Helpers
     {
         public static Dictionary<Expression, List<Expression>>? Unify(Literal l1, Literal l2, BindingConstraints bindingConstraints)
@@ -13,7 +16,7 @@ namespace POP
         }
         public static Dictionary<Expression, List<Expression>>? Unify(Expression e1, Expression e2)
         {
-            return Unify(e1, e2, []);
+            return Unify(e1, e2, new());
 
         }
         public static Dictionary<Expression, List<Expression>>? Unify(Expression? e1, Expression? e2, Dictionary<Expression, List<Expression>>? μ)
@@ -58,9 +61,9 @@ namespace POP
 
             // compose {t/xvar} with μ <==> {t/xvar} ∘ μ
 
-            μ[(Expression)xvar.Clone()] = [t];
+            μ[(Expression)xvar.Clone()] = new List<Expression> { t };
             // create a new dictionary and add t/xvar
-            Dictionary<Expression, List<Expression>> μ2 = new() { [xvar] = [t] };
+            Dictionary<Expression, List<Expression>> μ2 = new() { [xvar] = new List<Expression> { t } };
             // update each occurrence of xvar in μ values to t
             foreach (Expression key in μ.Keys)
             {
@@ -78,7 +81,7 @@ namespace POP
                 return μ[e][0];
             if (e.IsPredicate && e.Arguments != null)
             {
-                List<Expression> args = [];
+                List<Expression> args = new();
                 foreach (Expression arg in e.Arguments)
                 {
                     args.Add(Subst(μ, arg));
@@ -108,12 +111,19 @@ namespace POP
                 Console.Write(obj);
             }
         }
+
         public static void println(object obj)
         {
             if (Planner.PRINT_DEBUG_INFO)
             {
                 Console.WriteLine(obj);
             }
+        }
+
+        public static void ThrowIfNull([NotNull] object? argument, string? paramName = null)
+        {
+            if (argument is null)
+                throw new ArgumentNullException(paramName);
         }
 
 
@@ -321,6 +331,53 @@ namespace POP
             return false;
         }
 
+        public List<T> Linearize()
+        {
+            List<T> linearized = new List<T>();
+            HashSet<T> visited = new HashSet<T>();
+            HashSet<T> recStack = new HashSet<T>();
+
+            foreach (var pair in adjList)
+            {
+                T node = pair.Key;
+                if (IsCyclicUtil(node, visited, recStack))
+                    throw new Exception("Graph is cyclic");
+            }
+
+            visited.Clear();
+            recStack.Clear();
+
+            foreach (var pair in adjList)
+            {
+                T node = pair.Key;
+                if (!visited.Contains(node))
+                    LinearizeUtil(node, visited, recStack, linearized);
+            }
+
+            linearized.Reverse();
+            return linearized;
+        }
+
+        private void LinearizeUtil(T v, HashSet<T> visited, HashSet<T> recStack, List<T> linearized)
+        {
+            visited.Add(v);
+            recStack.Add(v);
+
+            if (adjList.ContainsKey(v))
+            {
+                foreach (T neighbour in adjList[v])
+                {
+                    if (!visited.Contains(neighbour))
+                        LinearizeUtil(neighbour, visited, recStack, linearized);
+                    else if (recStack.Contains(neighbour))
+                        throw new Exception("Graph is cyclic");
+                }
+            }
+
+            recStack.Remove(v);
+            linearized.Add(v);
+        }
+
         private bool IsCyclicUtil(T v, HashSet<T> visited, HashSet<T> recStack)
         {
             if (!visited.Contains(v))
@@ -369,12 +426,12 @@ namespace POP
 
             // test acyclicity graph
             Graph<Action> graph = new();
-            HashSet<Tuple<Action, Action>> orderingConstraints = [];
-            Action a = new("A", [], [], ["x"]);
-            Action b = new("B", [], [], ["x"]);
-            Action c = new("C", [], [], ["x"]);
-            Action d = new("D", [], [], ["x"]);
-            Action e = new("E", [], [], ["x"]);
+            HashSet<Tuple<Action, Action>> orderingConstraints = new();
+            Action a = new("A", new(), new(), new[] { "x" });
+            Action b = new("B", new(), new(), new[] { "x" });
+            Action c = new("C", new(), new(), new[] { "x" });
+            Action d = new("D", new(), new(), new[] { "x" });
+            Action e = new("E", new(), new(), new[] { "x" });
 
 
             orderingConstraints.Add(new(a, b));

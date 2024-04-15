@@ -1,5 +1,8 @@
-﻿using POP;
+﻿/*using global::System;
+using global::System.Collections.Generic;
+using POP;
 using Action = POP.Action;
+#nullable enable
 // See https://aka.ms/new-console-template for more information
 Console.WriteLine("Hello, World! hahaha");
 Console.WriteLine("Hello, World! hahahax2");
@@ -7,18 +10,18 @@ Console.WriteLine("Hello, World! hahahax2");
 // test the unification algorithm
 bool variable = false;
 Expression e1 = new("P",
-    [
+    new List<Expression> {
         new("x", null, variable),
-        new("g", [new("x", null, variable)]),
-        new("g", [new("f", [new("A", null, !variable)])]),
-    ]
+        new("g", new List<Expression>{ new("x", null, variable)}),
+        new("g", new List<Expression>{ new("f", new List<Expression>{ new("A", null, !variable)})}),
+    }
 );
 Expression e2 = new("P",
-    [
-        new("f", [new("u", null, variable)]),
+    new List<Expression> {
+        new("f", new List<Expression> { new("u", null, variable)}),
         new("v", null, variable),
         new("v", null, variable),
-    ]
+    }
 );
 
 Dictionary<Expression, List<Expression>>? μ = Helpers.Unify(e1, e2);
@@ -59,3 +62,4 @@ PlanningProblem.MilkBananasCordlessDrillProblem();
 // Console.WriteLine(bc.numEqDisjointSets());
 
 // x = z = w = u  ,  op != u,x  ,  x != p  ,  x != s
+*/

@@ -6,6 +6,7 @@ namespace POP
 
     public class CausalLink : ICloneable, IEquatable<CausalLink>
     {
+#nullable enable
         private Action produceri;
         private Literal linkCondition;
         private Action consumerj;
@@ -29,9 +30,9 @@ namespace POP
 #nullable disable warnings
         public CausalLink(Action produceri, Literal linkCondition, Action consumerj)
         {
-            ThrowIfNull(produceri, nameof(produceri));
-            ThrowIfNull(linkCondition, nameof(linkCondition));
-            ThrowIfNull(consumerj, nameof(consumerj));
+            Helpers.ThrowIfNull(produceri, nameof(produceri));
+            Helpers.ThrowIfNull(linkCondition, nameof(linkCondition));
+            Helpers.ThrowIfNull(consumerj, nameof(consumerj));
 
             this.Produceri = produceri;
             this.LinkCondition = linkCondition;

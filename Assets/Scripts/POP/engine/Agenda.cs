@@ -1,27 +1,30 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using static System.ArgumentNullException;
+using Action = POP.Action;
 
 namespace POP
 {
-    using System.Collections.Generic;
-    using System.Text;
-    using static System.ArgumentNullException;
 
     public class Agenda : IComparer<System.Tuple<POP.Action, POP.Literal>>, ICloneable, IEquatable<Agenda>
     {
+#nullable enable
         private PlanningProblem problem;
         private PartialPlan? partialPlan;
-        private PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> priorityQueue;
+        private PriorityQ<System.Tuple<POP.Action, POP.Literal>> priorityQueue;
         // Constructor
         public Agenda(PlanningProblem problem, PartialPlan? partialPlan = null)
         {
-            ThrowIfNull(problem, nameof(problem));
+            Helpers.ThrowIfNull(problem, nameof(problem));
             this.problem = problem;
             this.partialPlan = partialPlan;
-            this.priorityQueue = new PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>>(this);
+            this.priorityQueue = new PriorityQ<System.Tuple<POP.Action, POP.Literal>>(this);
         }
 
         public void Add(Tuple<POP.Action, POP.Literal> item)
         {
-            priorityQueue.Enqueue(item, item);
+            priorityQueue.Enqueue(item);
         }
         public void Add(POP.Action action, POP.Literal literal)
         {
@@ -55,8 +58,8 @@ namespace POP
             List<Operator> xAchievers = problem.GetListOfAchievers(x.Item2);
             List<Operator> yAchievers = problem.GetListOfAchievers(y.Item2);
 
-            List<Action> xAchieversActions = partialPlan?.getListOfActionsAchievers(x.Item2, x.Item1) ?? [];
-            List<Action> yAchieversActions = partialPlan?.getListOfActionsAchievers(y.Item2, x.Item1) ?? [];
+            List<Action> xAchieversActions = partialPlan?.getListOfActionsAchievers(x.Item2, x.Item1) ?? new();
+            List<Action> yAchieversActions = partialPlan?.getListOfActionsAchievers(y.Item2, x.Item1) ?? new();
             if (xAchievers.Count == 0 || yAchievers.Count == 0)
                 if (xAchievers.Count == 0 && xAchieversActions.Count == 0 || yAchievers.Count == 0 && yAchieversActions.Count == 0)
                     throw new Exception("Literal " + (xAchievers.Count == 0 ? x.Item2 : y.Item2) + " is not achievable. Problem is unsolvable");
@@ -74,21 +77,26 @@ namespace POP
         public object Clone()
         {
             Agenda newAgenda = new Agenda(this.problem, this.partialPlan);
-            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(newAgenda);
-            try
+            PriorityQ<System.Tuple<POP.Action, POP.Literal>> this1 = new(newAgenda);
+            foreach (Tuple<POP.Action, POP.Literal> item in this.priorityQueue)
             {
-                while (this.Count > 0)
-                {
-                    Tuple<POP.Action, POP.Literal> item = this.Remove();
-                    newAgenda.Add(new((Action)item.Item1.Clone(), (Literal)item.Item2.Clone()));
-                    this1.Enqueue(item, item);
-                }
+                newAgenda.Add(new((Action)item.Item1.Clone(), (Literal)item.Item2.Clone()));
+                this1.Enqueue(item);
             }
-            finally
-            {
-                while (this1.Count > 0)
-                    this.Add(this1.Dequeue());
-            }
+            // try
+            // {
+            //     while (this.Count > 0)
+            //     {
+            //         Tuple<POP.Action, POP.Literal> item = this.Remove();
+            //         newAgenda.Add(new((Action)item.Item1.Clone(), (Literal)item.Item2.Clone()));
+            //         this1.Enqueue(item);
+            //     }
+            // }
+            // finally
+            // {
+            //     while (this1.Count > 0)
+            //         this.Add(this1.Dequeue());
+            // }
             return newAgenda;
         }
 
@@ -108,15 +116,15 @@ namespace POP
             if (this.Count != other.Count)
                 return false;
 
-            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(), other1 = new();
+            PriorityQ<System.Tuple<POP.Action, POP.Literal>> this1 = new(), other1 = new();
             try
             {
                 for (int i = 0; i < this.Count; i++)
                 {
                     Tuple<POP.Action, POP.Literal> item = this.Remove();
-                    this1.Enqueue(item, item);
+                    this1.Enqueue(item);
                     Tuple<POP.Action, POP.Literal> otherItem = other.Remove();
-                    other1.Enqueue(otherItem, otherItem);
+                    other1.Enqueue(otherItem);
                     if (!item.Equals(otherItem))
                         return false;
                 }
@@ -130,7 +138,7 @@ namespace POP
             }
             return true;
         }
-
+#nullable enable
         public static bool operator ==(Agenda? left, Agenda? right) { return left is null ? (left is null && right is null) : left.Equals(right); }
         public static bool operator !=(Agenda? left, Agenda? right) { return !(left is null ? (left is null && right is null) : left.Equals(right)); }
         public static bool operator ==(Agenda? left, object right) { return left is null ? (left is null && right is null) : left.Equals(right); }
@@ -141,42 +149,52 @@ namespace POP
         public override string ToString()
         {
             StringBuilder str = new("Agenda: ");
-            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
-            try
+
+            foreach (Tuple<POP.Action, POP.Literal> item in this.priorityQueue)
             {
-                while (this.Count > 0)
-                {
-                    Tuple<POP.Action, POP.Literal> item = this.Remove();
-                    this1.Enqueue(item, item);
-                    str.Append(item.Item1 + " / ").Append(item.Item2 + (this.Count > 0 ? ", " : ""));
-                }
+                str.Append(item.Item1 + " / ").Append(item.Item2 + (this.Count > 0 ? ", " : ""));
             }
-            finally
-            {
-                while (this1.Count > 0)
-                    this.Add(this1.Dequeue());
-            }
+            // PriorityQ<System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
+            // try
+            // {
+            //     while (this.Count > 0)
+            //     {
+            //         Tuple<POP.Action, POP.Literal> item = this.Remove();
+            //         this1.Enqueue(item);
+            //         str.Append(item.Item1 + " / ").Append(item.Item2 + (this.Count > 0 ? ", " : ""));
+            //     }
+            // }
+            // finally
+            // {
+            //     while (this1.Count > 0)
+            //         this.Add(this1.Dequeue());
+            // }
             return str.ToString();
         }
         public string ToString(PartialPlan partialPlan)
 
         {
             StringBuilder str = new("Agenda: ");
-            PriorityQueue<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
-            try
+
+            foreach (Tuple<POP.Action, POP.Literal> item in this.priorityQueue)
             {
-                while (this.Count > 0)
-                {
-                    Tuple<POP.Action, POP.Literal> item = this.Remove();
-                    this1.Enqueue(item, item);
-                    str.Append(partialPlan.ActionToString(item.Item1) + " / ").Append(partialPlan.LiteralToString(item.Item2) + (this.Count > 0 ? ", " : ""));
-                }
+                str.Append(partialPlan.ActionToString(item.Item1) + " / ").Append(partialPlan.LiteralToString(item.Item2) + (this.Count > 0 ? ", " : ""));
             }
-            finally
-            {
-                while (this1.Count > 0)
-                    this.Add(this1.Dequeue());
-            }
+            // PriorityQ<System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
+            //     try
+            //     {
+            //         while (this.Count > 0)
+            //         {
+            //             Tuple<POP.Action, POP.Literal> item = this.Remove();
+            //             this1.Enqueue(item, item);
+            //             str.Append(partialPlan.ActionToString(item.Item1) + " / ").Append(partialPlan.LiteralToString(item.Item2) + (this.Count > 0 ? ", " : ""));
+            //         }
+            //     }
+            //     finally
+            //     {
+            //         while (this1.Count > 0)
+            //             this.Add(this1.Dequeue());
+            //     }
             return str.ToString();
         }
     }

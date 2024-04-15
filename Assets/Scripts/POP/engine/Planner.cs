@@ -1,13 +1,15 @@
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using static System.ArgumentNullException;
 namespace POP
 {
-    using System;
-    using System.Collections.Generic;
-    using static System.ArgumentNullException;
     using static Helpers;
 
     public class Planner
     {
+#nullable enable
         public static bool PRINT_START_FINISH_ORDERINGS = false, PRINT_AFTER_CONVERTING_VARIABLES = true,
             PRINT_DEBUG_INFO = false;
 
@@ -27,13 +29,13 @@ namespace POP
 
         public Planner(PlanningProblem problem)
         {
-            ThrowIfNull(problem, nameof(problem));
+            Helpers.ThrowIfNull(problem, nameof(problem));
 
             this.problem = problem;
 
             // Initialize the plan
-            Action start = new Action("Start", problem.InitialState, new List<Literal>(), []);
-            Action finish = new Action("Finish", new List<Literal>(), problem.GoalState, []);
+            Action start = new Action("Start", problem.InitialState, new List<Literal>(), new string[] { });
+            Action finish = new Action("Finish", new List<Literal>(), problem.GoalState, new string[] { });
             this.plan = new PartialPlan(
                 new HashSet<Action> { start, finish }, // {aₒ, a∞}
                 new HashSet<CausalLink>(),             // ∅ or {}
@@ -65,11 +67,11 @@ namespace POP
             // Node => (PartialPlan, Agenda, pathCost, parent)
 
             // Create a new PriorityQueue to store the partial plans with the cost of the path from the start node (root) to the current node -> (partial plan, agenda, path cost, parent node)
-            PriorityQueue<Node, int> aStarQueue = new();
+            PriorityQ<Node> aStarQueue = new(new NodeComparer(SearchStrategy.AStar));
 
             // Use the initial plan as the root node
             Node root = new Node(plan, agenda, 0, null);
-            aStarQueue.Enqueue(root, Eval_Fn(root));
+            aStarQueue.Enqueue(root);
 
             Console.Write("Searching");
 
@@ -91,7 +93,14 @@ namespace POP
 
                 // Check if the current node is a goal node
                 if (current.agenda.Count == 0) // if the agenda is empty
+                {
+                    this.plan = current.partialPlan;
+                    Graph<Action> graph = new Graph<Action>();
+                    graph.InitializeGraph(current.partialPlan.OrderingConstraints);
+                    List<Action> actions = graph.Linearize();
+                    Console.WriteLine("\n\nSteps:\n*************\n" + string.Join(" -> ", actions.Select(plan.ActionToString)) + "\n************\n\n");
                     return current.partialPlan; // return the partial plan
+                }
 
 
                 EXPAND(current, aStarQueue);
@@ -112,18 +121,8 @@ namespace POP
             return new Node(plan, agenda, pathCost, null);
         }
 
-        private int Eval_Fn(Node node)
-        {
-            /* 
-             *      f(n) = h(n) + g(n)
-             *      h(n) = open preconditions of the partial plan (inside the agenda) 
-             *      g(n) = path cost from the start node to the current node
-            */
-            return node.pathCost + node.agenda.Count;
-        }
 
-
-        private void EXPAND(Node current, PriorityQueue<Node, int> aStarQueue)
+        private void EXPAND(Node current, PriorityQ<Node> aStarQueue)
         {
             // Expand the current node by applying each of the achievers to the current node
 
@@ -136,11 +135,9 @@ namespace POP
 
             // Find the list of achievers for the selected literal p
             // If the list of achievers is empty, the Agenda class will detect it and throw an exception, indicating that the problem is unsolvable
-            List<Operator> achievers =
-            [
-                .. current.partialPlan.getListOfActionsAchievers(chosenAgendaPair.Item2, chosenAgendaPair.Item1),
-                .. problem.GetListOfAchievers(chosenAgendaPair.Item2),
-            ];
+            List<Operator> achievers = new();
+            achievers.AddRange(current.partialPlan.getListOfActionsAchievers(chosenAgendaPair.Item2, chosenAgendaPair.Item1));
+            achievers.AddRange(problem.GetListOfAchievers(chosenAgendaPair.Item2));
 
             // Apply each of the achievers to the current node
             foreach (Operator achiever in achievers)
@@ -282,14 +279,14 @@ namespace POP
             foreach (Literal l in op.Preconditions)
             {
                 Literal newPreCondLiteral = createLiteral(l, boundedVariablesSoFar, bindingConstraints);
-                if (newPreCondLiteral.Name == "") return new Action("", [], [], []);
+                if (newPreCondLiteral.Name == "") return new Action("", new(), new(), new string[] { });
 
                 preconditions.Add(newPreCondLiteral);
             }
             foreach (Literal l in op.Effects)
             {
                 Literal newEffectLiteral = createLiteral(l, boundedVariablesSoFar, bindingConstraints);
-                if (newEffectLiteral.Name == "") return new Action("", [], [], []);
+                if (newEffectLiteral.Name == "") return new Action("", new(), new(), new string[] { });
 
                 effects.Add(newEffectLiteral);
             }
@@ -333,7 +330,7 @@ namespace POP
                 {
                     // bindingConstraints.Add(new BindingConstraint(variables[i], l.Variables[i], true));
                     bool successful = bindingConstraints.setEqual(variables[i], l.Variables[i]);
-                    if (!successful) return new Literal("", [], false);
+                    if (!successful) return new Literal("", new string[] { }, false);
                 }
             }
 
@@ -342,7 +339,7 @@ namespace POP
             return new Literal(l.Name, variables, l.IsPositive);
         }
 
-        public void searchResolveThreats(Action action, CausalLink causalLink, PriorityQueue<Node, int> aStarQueue, Node node)
+        public void searchResolveThreats(Action action, CausalLink causalLink, PriorityQ<Node> aStarQueue, Node node)
         {
             Queue<Node> nodes = new Queue<Node>();
             nodes.Enqueue(node);
@@ -367,7 +364,7 @@ namespace POP
                             // try promotion of action
                             Node promotedNode = createNode(current);
                             promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threatenedLink.Consumerj, action));
-                            if (threatenedLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, []))
+                            if (threatenedLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, new string[] { }))
                             {
                                 // before queuing the promoted node, check if there is a threat to the new causal link
                                 if (!searchResolveThreatsForNewCausalLink(causalLink, nodes, promotedNode))
@@ -377,7 +374,7 @@ namespace POP
                             // try demotion of the causal link
                             Node demotedNode = createNode(current);
                             demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(action, threatenedLink.Produceri));
-                            if (threatenedLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
+                            if (threatenedLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), new string[] { }))
                             {
                                 // before queuing the demoted node, check if there is a threat to the new causal link
                                 if (!searchResolveThreatsForNewCausalLink(causalLink, nodes, demotedNode))
@@ -415,7 +412,7 @@ namespace POP
                     // check if there is a threat to the new causal link
                     threatFound = threatFound || searchResolveThreatsForNewCausalLink(causalLink, nodes, current);
                 }
-                if (!threatFound) aStarQueue.Enqueue(current, Eval_Fn(current));
+                if (!threatFound) aStarQueue.Enqueue(current);
             }
         }
 
@@ -437,15 +434,15 @@ namespace POP
                         // try promotion of action
                         Node promotedNode = createNode(current);
                         promotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(causalLink.Consumerj, threateningAction));
-                        if (causalLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, [])
-                                    && threateningAction != new Action("Start", problem.InitialState, new List<Literal>(), []))
+                        if (causalLink.Consumerj != new Action("Finish", new List<Literal>(), problem.GoalState, new string[] { })
+                                    && threateningAction != new Action("Start", problem.InitialState, new List<Literal>(), new string[] { }))
                             queue.Enqueue(promotedNode);
 
 
                         // try demotion of the causal link
                         Node demotedNode = createNode(current);
                         demotedNode.partialPlan.OrderingConstraints.Add(new Tuple<Action, Action>(threateningAction, causalLink.Produceri));
-                        if (causalLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), []))
+                        if (causalLink.Produceri != new Action("Start", problem.InitialState, new List<Literal>(), new string[] { }))
                             queue.Enqueue(demotedNode);
 
 

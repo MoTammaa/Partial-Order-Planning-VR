@@ -1,9 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace POP
 {
     public class BindingConstraints : ICloneable, IEquatable<BindingConstraints>
     {
+#nullable enable
         private Dictionary<int, int> pE, rankE, setSizeE;
         private Dictionary<int, HashSet<int>> pNEGraph;
         private Dictionary<string, int> variablesMap = new Dictionary<string, int>();
@@ -46,8 +50,8 @@ namespace POP
         public HashSet<string> getEqualSet(string variable)
         {
             if (!variablesMap.ContainsKey(variable))
-                return [];
-            HashSet<string> result = [];
+                return new();
+            HashSet<string> result = new();
             int representative = findRepresentativeEq(variablesMap[variable]);
             foreach (var item in variablesMap)
             {
@@ -69,7 +73,7 @@ namespace POP
         public string[] getBoundNE(string variable)
         {
             if (!variablesMap.ContainsKey(variable))
-                return [];
+                return new string[] { };
             return pNEGraph[variablesMap[variable]].Select(getStringName).ToArray()!;
         }
 

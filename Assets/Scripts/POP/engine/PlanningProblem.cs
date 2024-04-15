@@ -1,4 +1,6 @@
 
+using POP;
+
 namespace POP
 {
     using System;
@@ -7,10 +9,11 @@ namespace POP
 
     public class PlanningProblem
     {
+#nullable enable
         private readonly HashSet<Operator> operators;
         private List<Literal> initialState;
         private List<Literal> goalState;
-        private readonly HashSet<Literal> literals = [];
+        private readonly HashSet<Literal> literals = new();
 
         public HashSet<Operator> Operators
         {
@@ -33,9 +36,9 @@ namespace POP
 #nullable disable warnings
         public PlanningProblem(HashSet<Operator> operators, List<Literal> initialState, List<Literal> goalState)
         {
-            ThrowIfNull(operators, nameof(operators));
-            ThrowIfNull(initialState, nameof(initialState));
-            ThrowIfNull(goalState, nameof(goalState));
+            Helpers.ThrowIfNull(operators, nameof(operators));
+            Helpers.ThrowIfNull(initialState, nameof(initialState));
+            Helpers.ThrowIfNull(goalState, nameof(goalState));
 
             this.operators = operators;
             this.initialState = initialState;
@@ -79,7 +82,7 @@ namespace POP
 
         public List<Operator> GetListOfAchievers(Literal l)
         {
-            List<Operator> achievers = [];
+            List<Operator> achievers = new();
             // check if the literal is in the effects of the operator
             foreach (Operator op in operators)
             {
@@ -100,11 +103,11 @@ namespace POP
         public static void WearShirtProblem()
         {
             PlanningProblem custom = new PlanningProblem(
-                [
-                    new Operator("Wear", [new Literal("Worn", ["x"])], [new Literal("At", ["Home"])], ["x"]),
-                ],
-                [new Literal("At", ["Home"])],
-                [new Literal("Worn", ["SHIRT"])]
+                new HashSet<Operator> {
+                    new Operator("Wear", new List<Literal>{new Literal("Worn", new [] {"x"})}, new List<Literal>{new Literal("At",new []{"Home"})}, new [] {"x"}),
+                },
+                new List<Literal> { new Literal("At", new string[] { "Home" }) },
+                new List<Literal> { new Literal("Worn", new[] { "SHIRT" }) }
             );
 
             Planner planner = new Planner(custom);
@@ -115,14 +118,14 @@ namespace POP
         public static void SocksShoesProblem()
         {
             PlanningProblem socksShoes = new PlanningProblem(
-                operators: [
-                    new Operator("RightSock", [new ("RightSockOn", [])], [], []),
-                    new Operator("LeftSock", [new ("LeftSockOn", [])], [], []),
-                    new Operator("RightShoe", [new ("RightShoeOn", [])], [new ("RightSockOn", [])], []),
-                    new Operator("LeftShoe", [new ("LeftShoeOn", [])], [new ("LeftSockOn", [])], []),
-                ],
-                initialState: [],
-                goalState: [new("RightShoeOn", []), new("LeftShoeOn", []), new("RightSockOn", []), new("LeftSockOn", [])]
+                operators: new HashSet<Operator> {
+                    new Operator("RightSock", new List<Literal> {new ("RightSockOn", new string []{})}, new(), new string []{}),
+                    new Operator("LeftSock", new List<Literal> {new ("LeftSockOn", new string []{})}, new(), new string []{}),
+                    new Operator("RightShoe", new List<Literal> {new ("RightShoeOn", new string []{})}, new List<Literal> {new ("RightSockOn", new string []{})}, new string []{}),
+                    new Operator("LeftShoe", new List<Literal> {new ("LeftShoeOn", new string []{})}, new List<Literal> {new ("LeftSockOn", new string []{})}, new string []{}),
+                },
+                initialState: new(),
+                goalState: new List<Literal> { new("RightShoeOn", new string[] { }), new("LeftShoeOn", new string[] { }), new("RightSockOn", new string[] { }), new("LeftSockOn", new string[] { }) }
             );
 
             Planner planner = new Planner(socksShoes);
@@ -133,21 +136,21 @@ namespace POP
         public static void MilkBananasCordlessDrillProblem()
         {
             PlanningProblem milkBananasCordlessDrill = new PlanningProblem(
-                operators: [
+                operators: new HashSet<Operator> {
                     new Operator("Buy",
-                        variables:      [ "x" ],
-                        preconditions:  [ new ("Sells", [ "store", "x" ]), new ("At", [ "store" ]) ],
-                        effects:        [ new ("Have", [ "x" ]) ]
+                        variables:      new []{ "x" },
+                        preconditions:  new List<Literal> { new ("Sells", new [] { "store", "x" }), new ("At",new [] { "store" }) },
+                        effects:        new List<Literal> { new ("Have", new []{ "x" }) }
                     ),
                     new Operator("Go",
-                        variables:      [ "there" ],
-                        preconditions:  [ new ("At", [ "here" ]),       new ("At", [ "there" ], false) ],
-                        effects:        [ new ("At", [ "here" ], false), new ("At", [ "there" ]) ]
+                        variables:      new [] { "there" },
+                        preconditions:  new List<Literal> { new ("At", new []{ "here" }),       new ("At", new []{ "there" }, false) },
+                        effects:        new List<Literal> { new ("At", new []{ "here" }, false), new ("At", new []{ "there" }) }
                     )
-                ],
-                initialState: [new("At", ["Home"]), new("Sells", ["SM", "Milk"]), new("Sells", ["SM", "Bananas"]), new("Sells", ["HWS", "Drill"])
-                                , new("At",["HWS"], false), new("At", ["SM"], false)],
-                goalState: [new("At", ["Home"]), new("Have", ["Milk"]), new("Have", ["Bananas"]), new("Have", ["Drill"])]
+                },
+                initialState: new List<Literal>{ new("At",new []{"Home"}), new("Sells", new []{"SM", "Milk"}), new("Sells", new []{"SM", "Bananas"}), new("Sells", new []{"HWS", "Drill"})
+                                , new("At",new []{"HWS"}, false), new("At", new []{"SM"}, false)},
+                goalState: new List<Literal> { new("At", new string[] { "Home" }), new("Have", new[] { "Milk" }), new("Have", new[] { "Bananas" }), new("Have", new[] { "Drill" }) }
             );
 
             Planner planner = new Planner(milkBananasCordlessDrill);
@@ -158,27 +161,27 @@ namespace POP
         public static void SpareTiresProblem()
         {
             PlanningProblem spareTires = new PlanningProblem(
-                operators: [
+                operators: new HashSet<Operator> {
                     new Operator("Remove",
-                                variables:      ["obj", "loc"],
-                                preconditions:  [new ("At", ["obj", "loc"]), new("Tire", ["obj"])],
-                                effects:        [new ("At", ["obj", "Ground"]), new("At", ["obj", "loc"], false)]
+                                variables:      new []{"obj", "loc"},
+                                preconditions:  new List<Literal>{ new ("At", new []{"obj", "loc"}), new("Tire", new []{"obj"})},
+                                effects:        new List<Literal>{ new ("At", new []{"obj", "Ground"}), new("At", new []{"obj", "loc"}, false)}
                             ),
                     new Operator("PutOn",
-                                variables:      ["t", "Axle"],
-                                preconditions:  [new ("At", ["t", "Ground"]), new("At", ["Flat", "Axle"], false), new("Tire", ["t"])],
-                                effects:        [new ("At", ["t", "Axle"]), new("At", ["t", "Ground"], false)]
+                                variables:      new []{"t", "Axle"},
+                                preconditions:  new List<Literal>{ new ("At", new []{"t", "Ground"}), new("At", new []{"Flat", "Axle"}, false), new("Tire", new []{"t"})},
+                                effects:        new List<Literal>{ new ("At", new []{"t", "Axle"}), new("At", new []{"t", "Ground"}, false)}
                             ),
                     new Operator("LeaveOvernight",
-                                variables:      [],
-                                preconditions:  [],
-                                effects:        [new ("At", ["Spare", "Axle"], false), new("At", ["Spare", "Trunk"], false), new("At", ["Spare", "Ground"], false)
-                                                ,new("At", ["Flat", "Axle"], false), new("At", ["Flat", "Trunk"], false), new("At", ["Flat", "Ground"], false)]
+                                variables:      new string []{},
+                                preconditions:  new(),
+                                effects:        new List<Literal>{ new ("At", new []{"Spare", "Axle"}, false), new("At", new []{"Spare", "Trunk"}, false), new("At", new []{"Spare", "Ground"}, false)
+                                                ,new("At", new []{"Flat", "Axle"}, false), new("At", new []{"Flat", "Trunk"}, false), new("At", new []{"Flat", "Ground"}, false)}
                             )
-                ],
-                initialState: [new("At", ["Flat", "Axle"]), new("At", ["Spare", "Trunk"]), new("Tire", ["Spare"]), new("Tire", ["Flat"])],
-                goalState: [new("At", ["Spare", "Axle"]), new("At", ["Flat", "Ground"])]
-            );
+                },
+                initialState: new List<Literal> { new("At", new[] { "Flat", "Axle" }), new("At", new[] { "Spare", "Trunk" }), new("Tire", new[] { "Spare" }), new("Tire", new[] { "Flat" }) },
+                goalState: new List<Literal> { new("At", new[] { "Spare", "Axle" }), new("At", new[] { "Flat", "Ground" }) }
+        );
 
             Planner planner = new Planner(spareTires);
             PartialPlan? plan = planner.POP();
@@ -188,20 +191,20 @@ namespace POP
         public static void GroceriesBuyProblem()
         {
             PlanningProblem groceriesBuy = new PlanningProblem(
-                operators: [
+                operators: new HashSet<Operator> {
                     new Operator("Buy",
-                                variables:      ["x"],
-                                preconditions:  [new ("At", ["SM"]) , new("At", ["Home"], false)],
-                                effects:        [new ("Have", ["x"])]
+                                variables:      new [] {"x"},
+                                preconditions:  new List<Literal>{ new ("At", new []{"SM"}) , new("At",new []{"Home"}, false)},
+                                effects:        new List<Literal>{ new ("Have", new [] {"x"})}
                             ),
                     new Operator("Go",
-                                variables:      ["x"],
-                                preconditions:  [new ("At", ["any"]), new("At", ["x"], false)],
-                                effects:        [new ("At", ["any"], false), new("At", ["x"])]
+                                variables:      new [] {"x"},
+                                preconditions:  new List<Literal>{ new ("At", new []{"any"}), new("At", new [] {"x"}, false)},
+                                effects:        new List<Literal>{ new ("At", new []{"any"}, false), new("At", new [] {"x"})}
                             )
-                ],
-                initialState: [new("At", ["Home"]), new("At", ["SM"], false)],
-                goalState: [new("At", ["Home"]), new("Have", ["Groceries"])]
+                },
+                initialState: new List<Literal> { new("At", new string[] { "Home" }), new("At", new[] { "SM" }, false) },
+                goalState: new List<Literal> { new("At", new string[] { "Home" }), new("Have", new[] { "Groceries" }) }
             );
 
             Planner planner = new Planner(groceriesBuy);

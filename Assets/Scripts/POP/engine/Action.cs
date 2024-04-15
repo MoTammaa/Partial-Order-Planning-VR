@@ -3,10 +3,12 @@ namespace POP
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using static System.ArgumentNullException;
 
     public class Action : Operator, ICloneable, IEquatable<Action>
     {
+#nullable enable
         private Dictionary<string, string> boundVariables = new Dictionary<string, string>();
         public Dictionary<string, string> BoundVariables
         {
@@ -17,14 +19,14 @@ namespace POP
             : base(name, effects, preconditions, variables)
         {
             // if (this.Variables.Length != 0)
-            //     ThrowIfNull(boundVariables, nameof(boundVariables));
+            //     Helpers.ThrowIfNull(boundVariables, nameof(boundVariables));
 
             this.BoundVariables = boundVariables ?? new Dictionary<string, string>();
         }
         public Action(Operator op, Dictionary<string, string> boundVariables)
             : base(op.Name, op.Effects, op.Preconditions, op.Variables)
         {
-            ThrowIfNull(boundVariables, nameof(boundVariables));
+            Helpers.ThrowIfNull(boundVariables, nameof(boundVariables));
             this.BoundVariables = boundVariables;
         }
 

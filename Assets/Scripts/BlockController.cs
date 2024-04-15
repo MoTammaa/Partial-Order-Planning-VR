@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using POP;
 
 public class BlockController : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
     {
+        UpdateName("Hello");
 
     }
 
@@ -15,6 +17,15 @@ public class BlockController : MonoBehaviour
     {
 
     }
+
+    void UpdateName(string name)
+    {
+        // update the text written on the block in this object >> Cube >> Operator Canvas F/B >> Background Button >> Text (TMP)
+        transform.Find("Cube").Find("Operator Canvas F").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = name;
+        transform.Find("Cube").Find("Operator Canvas B").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = name;
+    }
+
+
 
     void Move(Vector3 direction)
     {

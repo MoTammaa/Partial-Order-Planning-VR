@@ -1,12 +1,14 @@
 
 namespace POP
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
     using static System.ArgumentNullException;
 
     public class Operator : ICloneable, IEquatable<Operator>
     {
-
+#nullable enable
         private string name;
         private List<Literal> effects, preconditions;
         private string[] variables;
@@ -39,9 +41,9 @@ namespace POP
 #nullable disable warnings
         public Operator(string name, List<Literal> effects, List<Literal> preconditions, string[]? variables = null)
         {
-            ThrowIfNull(name, nameof(name));
-            ThrowIfNull(effects, nameof(effects));
-            ThrowIfNull(preconditions, nameof(preconditions));
+            Helpers.ThrowIfNull(name, nameof(name));
+            Helpers.ThrowIfNull(effects, nameof(effects));
+            Helpers.ThrowIfNull(preconditions, nameof(preconditions));
             this.Variables = variables ?? new string[0];
 
 
