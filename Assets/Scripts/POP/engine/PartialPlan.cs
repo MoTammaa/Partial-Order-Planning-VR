@@ -112,6 +112,11 @@ namespace POP
             return (l.IsPositive ? "" : " ¬") + l.Name + "(" + string.Join(", ", l.Variables.Select(variable => BindingConstraintsContains(variable) && PRINT_AFTER_CONVERTING_VARIABLES ? GetBindingConstraintsBounds(variable) : variable)) + ")";
         }
 
+        public string CausalLinkToString(CausalLink link)
+        {
+            return ActionToString(link.Produceri) + " --" + LiteralToString(link.LinkCondition) + "--> " + ActionToString(link.Consumerj);
+        }
+
 
         public override string ToString()
         {

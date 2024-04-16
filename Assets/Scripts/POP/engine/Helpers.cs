@@ -130,7 +130,7 @@ namespace POP
 
     }
 
-    public class Node
+    public class Node : IEquatable<Node>, ICloneable
     {
         public PartialPlan partialPlan;
         public Agenda agenda;
@@ -144,6 +144,30 @@ namespace POP
             this.pathCost = pathCost;
             this.parent = parent;
         }
+
+        public object Clone()
+        {
+            return new Node((PartialPlan)this.partialPlan.Clone(), (Agenda)this.agenda.Clone(), this.pathCost, this.parent);
+        }
+
+        public bool Equals(Node other)
+        {
+            if (other is null)
+                return false;
+            return this.partialPlan.Equals(other.partialPlan)
+                && this.agenda.Equals(other.agenda)
+                && this.pathCost == other.pathCost;
+        }
+        public override bool Equals(object? obj)
+        {
+            return obj is Node node && this.Equals(node);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(partialPlan, agenda, pathCost);
+        }
+
+
 
         public override string ToString()
         {

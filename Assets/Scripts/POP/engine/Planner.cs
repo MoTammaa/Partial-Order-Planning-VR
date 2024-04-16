@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using static System.ArgumentNullException;
 namespace POP
 {
@@ -26,6 +27,9 @@ namespace POP
             get { return problem; }
             set { problem = value; }
         }
+
+        public PartialPlan PartialPlan { get { return plan; } }
+        public Agenda Agenda { get { return agenda; } }
 
         public SearchStrategy SearchStrategy { get; set; }
         public int MaxDepth { get; } = 400;
@@ -104,21 +108,30 @@ namespace POP
                 }
 
                 // Check if the current node is a goal node
-                if (current.agenda.Count == 0) // if the agenda is empty
-                {
-                    this.plan = current.partialPlan;
-                    Graph<Action> graph = new Graph<Action>();
-                    graph.InitializeGraph(current.partialPlan.OrderingConstraints);
-                    List<Action> actions = graph.Linearize();
-                    Console.WriteLine("\n\nSteps:\n*************\n" + string.Join(" -> ", actions.Select(plan.ActionToString)) + "\n************\n\n");
-                    return current.partialPlan; // return the partial plan
-                }
+                if (GoalTest(current)) return current.partialPlan;
 
 
                 EXPAND(current, aStarQueue);
 
             }
             return null;
+        }
+
+        public bool GoalTest(Node current)
+        {
+            if (current is null) return false;
+            // Check if the Node satisfies the goal test
+            if (current.agenda.Count == 0) // if the agenda is empty
+            {
+                this.plan = current.partialPlan;
+                Graph<Action> graph = new Graph<Action>();
+                graph.InitializeGraph(current.partialPlan.OrderingConstraints);
+                List<Action> actions = graph.Linearize();
+                Console.WriteLine("\n\nSteps:\n*************\n" + string.Join(" -> ", actions.Select(plan.ActionToString)) + "\n************\n\n");
+                return true;
+            }
+            return false;
+
         }
 
         public int Eval_Fn(Node node)
@@ -161,7 +174,7 @@ namespace POP
         }
 
 
-        private void EXPAND(Node current, PriorityQ<Node, int> aStarQueue)
+        public void EXPAND(Node current, PriorityQ<Node, int> aStarQueue)
         {
             // Expand the current node by applying each of the achievers to the current node
 

@@ -9,6 +9,7 @@ namespace POP
     using static System.ArgumentNullException;
     public class PriorityQ<TElement, TPriority> : IEquatable<PriorityQ<TElement, TPriority>>, IEnumerable<TElement> where TElement : notnull where TPriority : notnull
     {
+#nullable enable
         private SortedDictionary<TPriority, Queue<TElement>> sortedDict;
         public IComparer<TPriority> Comparer { get; }
 
@@ -16,6 +17,7 @@ namespace POP
         {
             get { return sortedDict.Count + sortedDict.Values.Sum(q => q.Count - 1); }
         }
+        public bool IsEmpty() { return Count == 0; }
 
         public PriorityQ(IComparer<TPriority> comparer)
         {
