@@ -62,7 +62,7 @@ namespace POP
                     {
                         sb.Append($"{(orderingConstraintDiff.Item2 ? "+ " : "- ")}: {current.partialPlan.ActionToString(orderingConstraintDiff.Item1.Item1)} < {current.partialPlan.ActionToString(orderingConstraintDiff.Item1.Item2)}\n");
                     }
-                    Debug.Log(sb.ToString());
+                    // Debug.Log(sb.ToString());
                 }
             }
             currentNode = current.Clone() as Node;
