@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace ForceDirectedGraph
@@ -15,7 +16,7 @@ namespace ForceDirectedGraph
         /// <summary>
         /// The repulsion force between any two nodes.
         /// </summary>
-        private const float REPULSION_FORCE = 80000f;
+        private const float REPULSION_FORCE = 7000f;//40000f;
 
         /// <summary>
         /// The maximum distance for applying repulsion forces.
@@ -25,7 +26,12 @@ namespace ForceDirectedGraph
         /// <summary>
         /// The attraction force between any two nodes.
         /// </summary>
-        private const float ATTRACTION_FORCE = 20000f;
+        private const float ATTRACTION_FORCE = 10000f;
+
+        /// <summary>
+        /// The default position of the graph.
+        /// </summary>
+        [SerializeField] public Vector3 GraphPosition = new Vector3(0, 22, 18);
 
         #endregion
 
@@ -59,13 +65,19 @@ namespace ForceDirectedGraph
         /// </summary>
         [SerializeField]
         [Tooltip("Template used for initiating nodes.")]
-        private GameObject NoteTemplate;
+        private GameObject[] NoteTemplate;
 
         /// <summary>
         /// List of all nodes displayed on the graph.
         /// </summary>
         private Dictionary<Guid, GraphNode> GraphNodes;
 
+        /// <summary>
+        /// Arrow head template.
+        /// </summary>
+        [SerializeField]
+        [Tooltip("Template used for initiating arrow heads.")]
+        private GameObject ArrowHeadTemplate;
 
 
         [Header("Links")]
@@ -153,10 +165,11 @@ namespace ForceDirectedGraph
             foreach (var node in Network?.Nodes)
             {
                 // Create a new entity instance
-                GameObject graphNode = Instantiate(NoteTemplate, NodesParent.transform);
+                int index = (Network.Nodes[0].Name == "Start()" || Network.Nodes[0].Name == "End()") ? 2 : UnityEngine.Random.Range(0, 1);
+                GameObject graphNode = Instantiate(NoteTemplate[index], NodesParent.transform);
                 graphNode.transform.position = Vector3.zero;
-                // add 10 to the y position to avoid ground
-                graphNode.transform.position = new Vector3(graphNode.transform.position.x, graphNode.transform.position.y + 20, graphNode.transform.position.z);
+                // add the starting position offset to the node
+                graphNode.transform.position = new Vector3(graphNode.transform.position.x + GraphPosition.x, graphNode.transform.position.y + GraphPosition.y, graphNode.transform.position.z + GraphPosition.z);
                 graphNode.transform.localRotation = Quaternion.Euler(Vector3.zero);
 
                 // Extract the script
@@ -190,11 +203,16 @@ namespace ForceDirectedGraph
                 graphLink.transform.position = Vector3.zero;
                 graphLink.transform.localRotation = Quaternion.Euler(Vector3.zero);
 
+                // Instantiate the arrow head
+                GameObject arrowHead = Instantiate(ArrowHeadTemplate, graphLink.transform);
+                arrowHead.transform.localPosition = Vector3.zero;
+                arrowHead.transform.localRotation = Quaternion.Euler(Vector3.zero);
+
                 // Extract the script
                 GraphLink script = graphLink.GetComponent<GraphLink>();
 
                 // Initialize data
-                script.Initialize(link, firstNode, secondNode);
+                script.Initialize(link, firstNode, secondNode, arrowHead);
 
                 // Add to list
                 GraphLinks.Add(script);

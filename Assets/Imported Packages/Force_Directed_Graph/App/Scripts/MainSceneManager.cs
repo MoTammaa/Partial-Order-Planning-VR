@@ -16,10 +16,10 @@ public class MainSceneManager : MonoBehaviour
     private void Start()
     {
         // Display the app version
-        DisplayVersion();
+        // DisplayVersion();
 
         // Generate a sample to visualize
-        GenerateSample();
+        StartCoroutine(GenerateSample());
     }
 
     #endregion
@@ -49,13 +49,13 @@ public class MainSceneManager : MonoBehaviour
     /// </summary>
     private void DisplayVersion()
     {
-        // Version.text = string.Format("Version: {0}", Application.version);
+        Version.text = string.Format("Version: {0}", Application.version);
     }
 
     /// <summary>
     /// Generates a network sample and displays it on the graph.
     /// </summary>
-    public void GenerateSample()
+    public IEnumerator GenerateSample()
     {
         // Start a new network
         ForceDirectedGraph.DataStructure.Network network = new ForceDirectedGraph.DataStructure.Network();
@@ -77,7 +77,21 @@ public class MainSceneManager : MonoBehaviour
 
         // Display network
         Graph.Initialize(network);
+
+        // wait for 3 seconds
+        yield return new WaitForSeconds(10);
+
+        // add a new node and link
+        Debug.Log("Adding a new node and link");
+        ForceDirectedGraph.DataStructure.Node item8 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 8", Color.grey);
+        network.Nodes.Add(item8);
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(network.Nodes[6].Id, item8.Id, 0.8f, Color.white)); // Item 6 -> Item 8
+
+        // Display network
+        Graph.Initialize(network);
     }
+
+
 
     /// <summary>
     /// Generates nodes and connects them together to form a triangle.

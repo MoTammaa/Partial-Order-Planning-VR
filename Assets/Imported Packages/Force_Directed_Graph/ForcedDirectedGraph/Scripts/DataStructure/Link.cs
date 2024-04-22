@@ -26,12 +26,13 @@ namespace ForceDirectedGraph.DataStructure
         /// <param name="width">Normalized width of the link [0-1].</param>
         /// <param name="color">The color used when representing the link.</param>
         /// </summary>
-        public Link(Guid firstNodeId, Guid secondNodeId, float width, Color color)
+        public Link(Guid firstNodeId, Guid secondNodeId, float width, Color color = default, string CausalLinkCondition = "")
         {
             _FirstNodeId = firstNodeId;
             _SecondNodeId = secondNodeId;
             _Width = width;
             _Color = color;
+            _Condition = CausalLinkCondition;
         }
 
         /// <summary>
@@ -100,6 +101,20 @@ namespace ForceDirectedGraph.DataStructure
         /// The color used when representing the link.
         /// </summary>
         public Color Color { get { return _Color; } }
+
+
+
+        /// <summary>
+        /// Link Condition (if it is a causal link).
+        /// </summary>
+        [SerializeField]
+        [Tooltip("Link Condition (if it is a causal link).")]
+        private string _Condition;
+
+        /// <summary>
+        /// Link Condition (if it is a causal link).
+        /// </summary>
+        public string Condition { get { return _Condition; } set { _Condition = value; } }
 
         #endregion
 

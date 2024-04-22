@@ -24,7 +24,7 @@ namespace ForceDirectedGraph
         /// <param name="link">The link being presented.</param>
         /// <param name="firstNode">The first graph node this entity is attached to.</param>
         /// <param name="secondNode">The second graph node this entity is attached to.</param>
-        public void Initialize(Link link, GraphNode firstNode, GraphNode secondNode)
+        public void Initialize(Link link, GraphNode firstNode, GraphNode secondNode, GameObject linkConditionArrow)
         {
             _Link = link;
             _FirstNode = firstNode;
@@ -38,6 +38,9 @@ namespace ForceDirectedGraph
             float width = link.Width == 0 ? 0 : link.Width * 0.08f + 0.02f; // [0.02 -> 0.1]
             LineRenderer.startWidth = width;
             LineRenderer.endWidth = width;
+
+            // Set arrow head
+            _LinkConditionArrow = linkConditionArrow;
         }
 
         #endregion
@@ -89,6 +92,20 @@ namespace ForceDirectedGraph
         /// </summary>
         private LineRenderer LineRenderer;
 
+
+
+        /// <summary>
+        /// Arrow head object.
+        /// </summary>
+        [SerializeField]
+        [Tooltip("Arrow head object.")]
+        private GameObject _LinkConditionArrow;
+
+        /// <summary>
+        /// Arrow head object.
+        /// </summary>
+        public GameObject LinkConditionArrow { get { return _LinkConditionArrow; } }
+
         #endregion
 
         #region Methods
@@ -105,6 +122,14 @@ namespace ForceDirectedGraph
 
             LineRenderer.SetPosition(0, firstPosition);
             LineRenderer.SetPosition(1, secondPosition);
+
+            if (_LinkConditionArrow != null)
+            {
+                // set the position of the arrow head to the middle of the line
+                _LinkConditionArrow.transform.position = (firstPosition + secondPosition) / 2;
+                // set the rotation of the arrow head to point towards the second node
+                _LinkConditionArrow.transform.rotation = Quaternion.LookRotation(secondPosition - firstPosition, Vector3.up);
+            }
         }
 
         #endregion
