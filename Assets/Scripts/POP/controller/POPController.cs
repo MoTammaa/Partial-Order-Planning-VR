@@ -18,6 +18,8 @@ namespace POP
 
         private Planner planner;
 
+        public Planner Planner { get { return planner; } }
+
         public POPController(PlanningProblem problem, SearchStrategy strategy = SearchStrategy.AStar, int maxDepth = -1)
         {
             SearchQueue = new PriorityQ<Node, int>();

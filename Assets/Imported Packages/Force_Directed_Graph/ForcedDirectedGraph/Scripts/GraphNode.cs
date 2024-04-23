@@ -1,5 +1,6 @@
 ﻿using ForceDirectedGraph.DataStructure;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -45,12 +46,32 @@ namespace ForceDirectedGraph
 
             // Set name
             UpdateName(node.Name);
+
+            // Set preconditions
+            UpdatePrecondions(node.Action.Preconditions);
+
+            // Set effects
+            UpdateEffects(node.Action.Effects);
         }
         void UpdateName(string name)
         {
             // update the text written on the block in this object >> Cube >> Operator Canvas F/B >> Background Button >> Text (TMP)
             transform.Find("Cube").Find("Operator Canvas F").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = name;
             transform.Find("Cube").Find("Operator Canvas B").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = name;
+        }
+
+        void UpdatePrecondions(List<POP.Literal> preconditions)
+        {
+            // update the text written on the block in this object >> Cube >> Preconds Canvas >> Background Button >> Text (TMP)
+            string preconds = "Preconditions: \n" + (preconditions.Count > 0 ? ">" : "") + string.Join("\n>", preconditions.Select(_Node.LiteralToString).ToArray());
+            transform.Find("Cube").Find("Preconds Canvas").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = preconds;
+        }
+
+        void UpdateEffects(List<POP.Literal> effects)
+        {
+            // update the text written on the block in this object >> Cube >> Effects Canvas >> Background Button >> Text (TMP)
+            string effectsString = "Effects: \n" + (effects.Count > 0 ? ">" : "") + string.Join("\n>", effects.Select(_Node.LiteralToString).ToArray());
+            transform.Find("Cube").Find("Effects Canvas").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = effectsString;
         }
 
 
@@ -88,6 +109,13 @@ namespace ForceDirectedGraph
         /// List of all forces to apply.
         /// </summary>
         private List<Vector2> Forces;
+
+
+
+        /// <summary>
+        /// An instance of a Partial Plan Action.
+        /// </summary>
+        private POP.Action _Action;
 
         #endregion
 

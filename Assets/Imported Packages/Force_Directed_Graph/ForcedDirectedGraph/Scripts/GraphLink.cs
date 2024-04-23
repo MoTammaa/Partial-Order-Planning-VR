@@ -41,6 +41,8 @@ namespace ForceDirectedGraph
 
             // Set arrow head
             _LinkConditionArrow = linkConditionArrow;
+            // Set the text on the arrow
+            UpdateLinkText(link.Condition);
         }
 
         #endregion
@@ -128,7 +130,37 @@ namespace ForceDirectedGraph
                 // set the position of the arrow head to the middle of the line
                 _LinkConditionArrow.transform.position = (firstPosition + secondPosition) / 2;
                 // set the rotation of the arrow head to point towards the second node
-                _LinkConditionArrow.transform.rotation = Quaternion.LookRotation(secondPosition - firstPosition, Vector3.up);
+                if (firstPosition != secondPosition)
+                {
+                    _LinkConditionArrow.transform.rotation = Quaternion.LookRotation(secondPosition - firstPosition, Vector3.up);
+                }
+
+                // set the text to update if the condition changes
+                UpdateLinkText(_Link.Condition);
+            }
+        }
+
+        /// <summary>
+        /// Update the text on the link.
+        /// </summary>
+        /// <param name="text">The text to be displayed.</param>
+        public void UpdateLinkText(string text)
+        {
+            var textF = _LinkConditionArrow.transform.Find("BodyText").Find("TextF").GetComponent<TMPro.TextMeshPro>();
+            var textB = _LinkConditionArrow.transform.Find("BodyText").Find("TextB").GetComponent<TMPro.TextMeshPro>();
+
+            if (textF.text != text)
+            {
+                // make the font size smaller if the text is too long based on the number of commas count ... for every comma, reduce the font size by 0.05 from the original size 3.5
+                textF.fontSize = 3.5f - 0.05f * text.Split(',').Length;
+                textF.text = text;
+            }
+
+            if (textB.text != text)
+            {
+                // make the font size smaller if the text is too long based on the number of commas count ... for every comma, reduce the font size by 0.05 from the original size 3.5
+                textB.fontSize = 3.5f - 0.05f * text.Split(',').Length;
+                textB.text = text;
             }
         }
 

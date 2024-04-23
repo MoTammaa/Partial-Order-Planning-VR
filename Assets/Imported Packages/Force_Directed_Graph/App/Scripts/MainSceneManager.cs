@@ -83,9 +83,9 @@ public class MainSceneManager : MonoBehaviour
 
         // add a new node and link
         Debug.Log("Adding a new node and link");
-        ForceDirectedGraph.DataStructure.Node item8 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 8", Color.grey);
+        ForceDirectedGraph.DataStructure.Node item8 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 8");
         network.Nodes.Add(item8);
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(network.Nodes[6].Id, item8.Id, 0.8f, Color.white)); // Item 6 -> Item 8
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(network.Nodes[6].Id, item8.Id, 0.8f)); // Item 6 -> Item 8
 
         // Display network
         Graph.Initialize(network);
@@ -100,9 +100,9 @@ public class MainSceneManager : MonoBehaviour
     private void GenerateTriangleSample(ForceDirectedGraph.DataStructure.Network network)
     {
         // Create nodes
-        ForceDirectedGraph.DataStructure.Node item1 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 1", Color.red);
-        ForceDirectedGraph.DataStructure.Node item2 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 2", Color.blue);
-        ForceDirectedGraph.DataStructure.Node item3 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 3", Color.green);
+        ForceDirectedGraph.DataStructure.Node item1 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 1");
+        ForceDirectedGraph.DataStructure.Node item2 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 2");
+        ForceDirectedGraph.DataStructure.Node item3 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 3");
 
         // Add nodes to network
         network.Nodes.Add(item1);
@@ -110,9 +110,9 @@ public class MainSceneManager : MonoBehaviour
         network.Nodes.Add(item3);
 
         // Create links and add to network
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item1.Id, item2.Id, 0.5f, Color.white)); // Item 1 -> Item 2
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item1.Id, item3.Id, 0.5f, Color.white)); // Item 1 -> Item 3
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item2.Id, item3.Id, 0.5f, Color.white)); // Item 2 -> Item 3
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item1.Id, item2.Id, 0.5f)); // Item 1 -> Item 2
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item1.Id, item3.Id, 0.5f)); // Item 1 -> Item 3
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item2.Id, item3.Id, 0.5f)); // Item 2 -> Item 3
     }
 
     /// <summary>
@@ -131,7 +131,7 @@ public class MainSceneManager : MonoBehaviour
             (
                 id: Guid.NewGuid(),
                 name: string.Format("Item {0}", i),
-                color: i == start ? Color.white : Color.black
+                action: new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { })
             ));
 
         // Add nodes to graph
@@ -139,7 +139,7 @@ public class MainSceneManager : MonoBehaviour
 
         // Create links and add to network
         for (int i = 1; i < nodes.Count; i++)
-            network.Links.Add(new ForceDirectedGraph.DataStructure.Link(nodes[0].Id, nodes[i].Id, i == 1 ? 0.7f : 0.2f, Color.white));
+            network.Links.Add(new ForceDirectedGraph.DataStructure.Link(nodes[0].Id, nodes[i].Id, i == 1 ? 0.7f : 0.2f));
 
     }
 
@@ -156,8 +156,8 @@ public class MainSceneManager : MonoBehaviour
             nodes.Add(new ForceDirectedGraph.DataStructure.Node
             (
                 id: Guid.NewGuid(),
-                name: string.Empty,
-                color: Color.grey
+                action: new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }),
+                name: string.Empty
             ));
 
         // Add nodes to graph
@@ -166,20 +166,20 @@ public class MainSceneManager : MonoBehaviour
         // Create links and add to network
         for (int i = 0; i < nodes.Count - 1; i++)
             for (int j = i + 1; j < nodes.Count; j++)
-                network.Links.Add(new ForceDirectedGraph.DataStructure.Link(nodes[i].Id, nodes[j].Id, 0.2f, Color.white));
+                network.Links.Add(new ForceDirectedGraph.DataStructure.Link(nodes[i].Id, nodes[j].Id, 0.2f));
     }
 
     private void GenerateDAGSample(ForceDirectedGraph.DataStructure.Network network)
     {
         // Create nodes
-        ForceDirectedGraph.DataStructure.Node item0 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 0", Color.white);
-        ForceDirectedGraph.DataStructure.Node item1 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 1", Color.red);
-        ForceDirectedGraph.DataStructure.Node item2 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 2", Color.blue);
-        ForceDirectedGraph.DataStructure.Node item3 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 3", Color.green);
-        ForceDirectedGraph.DataStructure.Node item4 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 4", Color.yellow);
-        ForceDirectedGraph.DataStructure.Node item5 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 5", Color.cyan);
-        ForceDirectedGraph.DataStructure.Node item6 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 6", Color.magenta);
-        ForceDirectedGraph.DataStructure.Node item7 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), "Item 7", Color.black);
+        ForceDirectedGraph.DataStructure.Node item0 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 0");
+        ForceDirectedGraph.DataStructure.Node item1 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 1");
+        ForceDirectedGraph.DataStructure.Node item2 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 2");
+        ForceDirectedGraph.DataStructure.Node item3 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 3");
+        ForceDirectedGraph.DataStructure.Node item4 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 4");
+        ForceDirectedGraph.DataStructure.Node item5 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 5");
+        ForceDirectedGraph.DataStructure.Node item6 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 6");
+        ForceDirectedGraph.DataStructure.Node item7 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 7");
 
         // Add nodes to network
         network.Nodes.Add(item0);
@@ -192,15 +192,15 @@ public class MainSceneManager : MonoBehaviour
         network.Nodes.Add(item7);
 
         // Create links and add to network
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item0.Id, item1.Id, 0.1f, Color.white)); // Item 0 -> Item 1
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item1.Id, item2.Id, 0.1f, Color.white)); // Item 1 -> Item 2
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item1.Id, item3.Id, 0.1f, Color.white)); // Item 1 -> Item 3
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item2.Id, item4.Id, 0.1f, Color.white)); // Item 2 -> Item 4
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item3.Id, item4.Id, 0.1f, Color.white)); // Item 3 -> Item 4
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item4.Id, item5.Id, 0.1f, Color.white)); // Item 4 -> Item 5
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item5.Id, item6.Id, 0.1f, Color.white)); // Item 5 -> Item 6
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item6.Id, item7.Id, 0.1f, Color.white)); // Item 6 -> Item 7
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item0.Id, item7.Id, 0.001f, Color.white)); // Item 6 -> Item 7
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item0.Id, item1.Id, 0.1f)); // Item 0 -> Item 1
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item1.Id, item2.Id, 0.1f)); // Item 1 -> Item 2
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item1.Id, item3.Id, 0.1f)); // Item 1 -> Item 3
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item2.Id, item4.Id, 0.1f)); // Item 2 -> Item 4
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item3.Id, item4.Id, 0.1f)); // Item 3 -> Item 4
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item4.Id, item5.Id, 0.1f)); // Item 4 -> Item 5
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item5.Id, item6.Id, 0.1f)); // Item 5 -> Item 6
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item6.Id, item7.Id, 0.1f)); // Item 6 -> Item 7
+        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(item0.Id, item7.Id, 0.001f)); // Item 6 -> Item 7
 
 
     }

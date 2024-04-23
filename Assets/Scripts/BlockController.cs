@@ -10,16 +10,6 @@ public class BlockController : MonoBehaviour
     {
         UpdateName("Hello");
 
-        POPController popController = new POPController(PlanningProblem.GroceriesBuyProblem(false));
-        bool nextStep = true;
-        Node currentNode = popController.CurrentNode;
-        while (nextStep && popController.GoalTest(currentNode) == false)
-        {
-            currentNode = /*(popController.CurrentNode is not null) ?popController.CurrentNode.Clone() as Node : */popController.CurrentNode;
-            nextStep = popController.NextStep();
-        }
-
-        Debug.Log("Done " + currentNode);
 
     }
 
