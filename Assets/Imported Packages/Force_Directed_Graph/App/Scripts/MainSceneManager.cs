@@ -73,22 +73,33 @@ public class MainSceneManager : MonoBehaviour
         // GenerateSample(network, 5);
 
         // Add a DAG network
-        GenerateDAGSample(network);
+        // GenerateDAGSample(network);
 
         // Display network
+        if (Graph is null)
+            Debug.LogError("Graph GameObject is null... Please assign the Graph GameObject in the inspector.");
         Graph.Initialize(network);
 
         // wait for 3 seconds
-        yield return new WaitForSeconds(10);
+        // yield return new WaitForSeconds(10);
 
         // add a new node and link
         Debug.Log("Adding a new node and link");
-        ForceDirectedGraph.DataStructure.Node item8 = new ForceDirectedGraph.DataStructure.Node(Guid.NewGuid(), new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 8");
+        ForceDirectedGraph.DataStructure.Node item6 = new ForceDirectedGraph.DataStructure.Node(new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 6");
+        network.Nodes.Add(item6);
+        ForceDirectedGraph.DataStructure.Node item8 = new ForceDirectedGraph.DataStructure.Node(new POP.Action("Action", new List<POP.Literal> { }, new List<POP.Literal> { }), null, "Item 8");
         network.Nodes.Add(item8);
-        network.Links.Add(new ForceDirectedGraph.DataStructure.Link(network.Nodes[6].Id, item8.Id, 0.8f)); // Item 6 -> Item 8
+
+        ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(item6.Id, item8.Id, 0.2f);
+        network.Links.Add(link); // Item 6 -> Item 8
 
         // Display network
-        Graph.Initialize(network);
+        // Graph.Initialize(network);
+        Graph.AddDisplayNode(item6);
+        yield return new WaitForSeconds(5);
+        Graph.AddDisplayNode(item8);
+        yield return new WaitForSeconds(5);
+        Graph.AddDisplayLink(link);
     }
 
 
