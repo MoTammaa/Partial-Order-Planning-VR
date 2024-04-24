@@ -51,6 +51,14 @@ namespace ForceDirectedGraph
             REPULSION_FORCE = 7000f;
             ATTRACTION_FORCE = 10000f;
         }
+
+        /// <summary>
+        /// Maxes out REPULSION_FORCE to value = 60000f.
+        /// </summary>
+        public void MaxOutRepulsionForce()
+        {
+            REPULSION_FORCE = 60000f;
+        }
         #endregion
 
         #region Initialization
@@ -255,7 +263,7 @@ namespace ForceDirectedGraph
         /// <summary>
         /// Shuffles the nodes randomly.
         /// </summary>
-        private void ShuffleNodes()
+        public void ShuffleNodes()
         {
             System.Random random = new System.Random();
             foreach (var node in GraphNodes.Values)

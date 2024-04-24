@@ -4,6 +4,7 @@ using UnityEngine;
 using ForceDirectedGraph;
 using POP;
 using System;
+using Unity.VisualScripting;
 
 public class POPEngineDriverController : MonoBehaviour
 {
@@ -35,7 +36,7 @@ public class POPEngineDriverController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        PlanningProblem planningProblem = PlanningProblem.MilkBananasCordlessDrillProblem(false/*, SearchStrategy.DFS, 100*/);
+        PlanningProblem planningProblem = PlanningProblem.GroceriesBuyProblem(false/*, SearchStrategy.DFS, 100*/);
         StartCoroutine(StartPOPEngine(planningProblem));
     }
     #endregion
@@ -61,15 +62,27 @@ public class POPEngineDriverController : MonoBehaviour
         {
             currentNode = POPController.CurrentNode;
             // Display the new Plan
-            // GenerateNetwork(currentNode is null ? null : currentNode.partialPlan);
+            GenerateNetwork(currentNode is null ? null : currentNode.partialPlan);
 
-            yield return new WaitForSeconds(0);
+            yield return new WaitForSeconds(3);
             i++;
             nextStep = POPController.NextStep();
         }
-        Debug.Log(i + "...");
+        if (POPController.GoalTest(currentNode))
+        {
+            yield return new WaitForSeconds(2);
 
-        Debug.Log("Done " + currentNode);
+            // Display the lineariztion of the final plan
+            Graph<POP.Action> graph = new Graph<POP.Action>();
+            graph.InitializeGraph(currentNode.partialPlan.OrderingConstraints);
+            AddLinearizedActionsToNetwork(graph.Linearize(), currentNode.partialPlan);
+
+            Graph.MaxOutRepulsionForce();
+            yield return new WaitForSeconds(2);
+            Graph.ResetForces();
+        }
+
+        Debug.Log($"Done after {(i - 1)} iterations: {currentNode}");
     }
 
     /// <summary>
@@ -128,6 +141,39 @@ public class POPEngineDriverController : MonoBehaviour
         // Display the network
         Graph.Initialize(Network);
     }
+
+
+
+    /// <summary>
+    /// Adds the list of linearized actions to the network to display.
+    /// </summary>
+    /// <param name="linearizedActions">The list of linearized actions to add to the network.</param>
+    public void AddLinearizedActionsToNetwork(List<POP.Action> linearizedActions, PartialPlan partialPlan)
+    {
+        if (Network is null)
+        {
+            Network = new ForceDirectedGraph.DataStructure.Network();
+        }
+
+        // Create a node for each Action
+        foreach (POP.Action action in linearizedActions)
+        {
+            ForceDirectedGraph.DataStructure.Node node = new ForceDirectedGraph.DataStructure.Node(action, partialPlan);
+            Network.Nodes.Add(node);
+        }
+
+        // Create a link between each pair of consecutive actions as an ordering constraint
+        for (int i = 0; i < linearizedActions.Count - 1; i++)
+        {
+            ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(Network.Nodes[Network.Nodes.Count - linearizedActions.Count + i], Network.Nodes[Network.Nodes.Count - linearizedActions.Count + i + 1],
+                         0.3f, isOrderingConstraint: true);
+            Network.Links.Add(link);
+        }
+
+        // Display the network
+        Graph.Initialize(Network);
+    }
+
 
     /// <summary>
     /// Gets Node by Name.

@@ -78,25 +78,20 @@ namespace POP
         {
             Agenda newAgenda = new Agenda(this.problem, this.partialPlan);
             PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(newAgenda);
-            foreach (Tuple<POP.Action, POP.Literal> item in this.priorityQueue)
+            try
             {
-                newAgenda.Add(new((Action)item.Item1.Clone(), (Literal)item.Item2.Clone()));
-                this1.Enqueue(item, item);
+                while (this.Count > 0)
+                {
+                    Tuple<POP.Action, POP.Literal> item = this.Remove();
+                    newAgenda.Add(new((Action)item.Item1.Clone(), (Literal)item.Item2.Clone()));
+                    this1.Enqueue(item, item);
+                }
             }
-            // try
-            // {
-            //     while (this.Count > 0)
-            //     {
-            //         Tuple<POP.Action, POP.Literal> item = this.Remove();
-            //         newAgenda.Add(new((Action)item.Item1.Clone(), (Literal)item.Item2.Clone()));
-            //         this1.Enqueue(item, item);
-            //     }
-            // }
-            // finally
-            // {
-            //     while (this1.Count > 0)
-            //         this.Add(this1.Dequeue());
-            // }
+            finally
+            {
+                while (this1.Count > 0)
+                    this.Add(this1.Dequeue());
+            }
             return newAgenda;
         }
 
@@ -124,7 +119,7 @@ namespace POP
                     Tuple<POP.Action, POP.Literal> item = this.Remove();
                     this1.Enqueue(item, item);
                     Tuple<POP.Action, POP.Literal> otherItem = other.Remove();
-                    other1.Enqueue(otherItem);
+                    other1.Enqueue(otherItem, otherItem);
                     if (!item.Equals(otherItem))
                         return false;
                 }
@@ -150,25 +145,21 @@ namespace POP
         {
             StringBuilder str = new("Agenda: ");
 
-            foreach (Tuple<POP.Action, POP.Literal> item in this.priorityQueue)
+            PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
+            try
             {
-                str.Append(item.Item1 + " / ").Append(item.Item2 + (this.Count > 0 ? ", " : ""));
+                while (this.Count > 0)
+                {
+                    Tuple<POP.Action, POP.Literal> item = this.Remove();
+                    this1.Enqueue(item, item);
+                    str.Append(item.Item1 + " / ").Append(item.Item2 + (this.Count > 0 ? ", " : ""));
+                }
             }
-            // PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
-            // try
-            // {
-            //     while (this.Count > 0)
-            //     {
-            //         Tuple<POP.Action, POP.Literal> item = this.Remove();
-            //         this1.Enqueue(item, item);
-            //         str.Append(item.Item1 + " / ").Append(item.Item2 + (this.Count > 0 ? ", " : ""));
-            //     }
-            // }
-            // finally
-            // {
-            //     while (this1.Count > 0)
-            //         this.Add(this1.Dequeue());
-            // }
+            finally
+            {
+                while (this1.Count > 0)
+                    this.Add(this1.Dequeue());
+            }
             return str.ToString();
         }
         public string ToString(PartialPlan partialPlan)
@@ -176,25 +167,21 @@ namespace POP
         {
             StringBuilder str = new("Agenda: ");
 
-            foreach (Tuple<POP.Action, POP.Literal> item in this.priorityQueue)
+            PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
+            try
             {
-                str.Append(partialPlan.ActionToString(item.Item1) + " / ").Append(partialPlan.LiteralToString(item.Item2) + (this.Count > 0 ? ", " : ""));
+                while (this.Count > 0)
+                {
+                    Tuple<POP.Action, POP.Literal> item = this.Remove();
+                    this1.Enqueue(item, item);
+                    str.Append(partialPlan.ActionToString(item.Item1) + " / ").Append(partialPlan.LiteralToString(item.Item2) + (this.Count > 0 ? ", " : ""));
+                }
             }
-            // PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
-            //     try
-            //     {
-            //         while (this.Count > 0)
-            //         {
-            //             Tuple<POP.Action, POP.Literal> item = this.Remove();
-            //             this1.Enqueue(item, item);
-            //             str.Append(partialPlan.ActionToString(item.Item1) + " / ").Append(partialPlan.LiteralToString(item.Item2) + (this.Count > 0 ? ", " : ""));
-            //         }
-            //     }
-            //     finally
-            //     {
-            //         while (this1.Count > 0)
-            //             this.Add(this1.Dequeue());
-            //     }
+            finally
+            {
+                while (this1.Count > 0)
+                    this.Add(this1.Dequeue());
+            }
             return str.ToString();
         }
     }
