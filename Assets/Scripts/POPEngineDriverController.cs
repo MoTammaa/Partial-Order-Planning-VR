@@ -35,8 +35,8 @@ public class POPEngineDriverController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
-        StartCoroutine(StartPOPEngine());
+        PlanningProblem planningProblem = PlanningProblem.MilkBananasCordlessDrillProblem(false/*, SearchStrategy.DFS, 100*/);
+        StartCoroutine(StartPOPEngine(planningProblem));
     }
     #endregion
 
@@ -51,20 +51,23 @@ public class POPEngineDriverController : MonoBehaviour
     /// <summary>
     /// Starts the POP Engine.
     /// </summary>
-    public IEnumerator StartPOPEngine()
+    public IEnumerator StartPOPEngine(PlanningProblem PlanningProblem)
     {
-        POPController = new POPController(PlanningProblem.GroceriesBuyProblem(false));
+        POPController = new POPController(PlanningProblem);
         bool nextStep = true;
         Node currentNode = POPController.CurrentNode;
+        int i = 1;
         while (nextStep && POPController.GoalTest(currentNode) == false)
         {
             currentNode = POPController.CurrentNode;
             // Display the new Plan
-            GenerateNetwork(currentNode is null ? null : currentNode.partialPlan);
+            // GenerateNetwork(currentNode is null ? null : currentNode.partialPlan);
 
-            yield return new WaitForSeconds(3);
+            yield return new WaitForSeconds(0);
+            i++;
             nextStep = POPController.NextStep();
         }
+        Debug.Log(i + "...");
 
         Debug.Log("Done " + currentNode);
     }
@@ -101,10 +104,25 @@ public class POPEngineDriverController : MonoBehaviour
             }
             else
             {
-                ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(GetNodeByAction(cl.Produceri).Id, GetNodeByAction(cl.Consumerj).Id,
-                             0.01f, Color.white, partialPlan.LiteralToString(cl.LinkCondition));
+                ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(GetNodeByAction(cl.Produceri), GetNodeByAction(cl.Consumerj),
+                             0.01f, CausalLinkCondition: partialPlan.LiteralToString(cl.LinkCondition));
                 Network.Links.Add(link);
             }
+        }
+
+        // Create a link for each ordering constraint
+        foreach (Tuple<POP.Action, POP.Action> oc in partialPlan.OrderingConstraints)
+        {
+            // Skip the start and finish ordering constraints ... as all actions are connected between them
+            if (oc.Item1.Name == "Start" || oc.Item2.Name == "Finish")
+                continue;
+            ForceDirectedGraph.DataStructure.Link linkCheck = GetLinkByActions(oc.Item1, oc.Item2, partialPlan);
+            if (linkCheck is not null)
+                continue;
+
+            ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(GetNodeByAction(oc.Item1), GetNodeByAction(oc.Item2),
+                         0.001f, isOrderingConstraint: true);
+            Network.Links.Add(link);
         }
 
         // Display the network

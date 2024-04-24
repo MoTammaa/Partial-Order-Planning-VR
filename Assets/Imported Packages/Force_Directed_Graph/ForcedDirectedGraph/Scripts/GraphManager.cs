@@ -91,13 +91,6 @@ namespace ForceDirectedGraph
         /// </summary>
         private Dictionary<Guid, GraphNode> GraphNodes;
 
-        /// <summary>
-        /// Arrow head template.
-        /// </summary>
-        [SerializeField]
-        [Tooltip("Template used for initiating arrow heads.")]
-        private GameObject ArrowHeadTemplate;
-
 
         [Header("Links")]
 
@@ -116,11 +109,30 @@ namespace ForceDirectedGraph
         private GameObject LinkTemplate;
 
         /// <summary>
+        /// Template used for initiating links.
+        /// </summary>
+        [SerializeField]
+        [Tooltip("Template used for initiating links.")]
+        private GameObject OrderingLinkTemplate;
+
+        /// <summary>
         /// List of all links displayed on the graph.
         /// </summary>
         private List<GraphLink> GraphLinks;
 
+        /// <summary>
+        /// Arrow head template.
+        /// </summary>
+        [SerializeField]
+        [Tooltip("Template used for initiating arrow heads.")]
+        private GameObject ArrowHeadTemplate;
 
+        /// <summary>
+        /// Arrow head template.
+        /// </summary>
+        [SerializeField]
+        [Tooltip("Template used for initiating arrow heads.")]
+        private GameObject OrderingArrowHeadTemplate;
 
         [Header("Data")]
 
@@ -218,12 +230,14 @@ namespace ForceDirectedGraph
                 GraphNode secondNode = GraphNodes?[link.SecondNodeId];
 
                 // Create a new entity instance
-                GameObject graphLink = Instantiate(LinkTemplate, LinksParent.transform);
+                GameObject theTemplateForEdgeLink = link.IsOrderingConstraint ? OrderingLinkTemplate : LinkTemplate;
+                GameObject graphLink = Instantiate(theTemplateForEdgeLink, LinksParent.transform);
                 graphLink.transform.position = Vector3.zero;
                 graphLink.transform.localRotation = Quaternion.Euler(Vector3.zero);
 
                 // Instantiate the arrow head
-                GameObject linkConditionArrow = Instantiate(ArrowHeadTemplate, graphLink.transform);
+                GameObject theTemplateForArrowHead = link.IsOrderingConstraint ? OrderingArrowHeadTemplate : ArrowHeadTemplate;
+                GameObject linkConditionArrow = Instantiate(theTemplateForArrowHead, graphLink.transform);
                 linkConditionArrow.transform.localPosition = Vector3.zero;
                 linkConditionArrow.transform.localRotation = Quaternion.Euler(Vector3.zero);
 

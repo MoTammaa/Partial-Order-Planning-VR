@@ -80,10 +80,11 @@ namespace POP
 
             // Create a new PriorityQueue to store the partial plans with the cost of the path from the start node (root) to the current node -> (partial plan, agenda, path cost, parent node)
             PriorityQ<Node, int> aStarQueue = new();
+            Queue<Node> DFSQueue = new();
 
             // Use the initial plan as the root node
             Node root = new Node(plan, agenda, 0, null);
-            if (SearchStrategy == SearchStrategy.DFS) { aStarQueue.Enqueue(root); }
+            if (SearchStrategy == SearchStrategy.DFS) { DFSQueue.Enqueue(root); }
             else { aStarQueue.Enqueue(root, Eval_Fn(root)); }
 
             Console.Write("Searching");
@@ -111,7 +112,7 @@ namespace POP
                 if (GoalTest(current)) return current.partialPlan;
 
 
-                EXPAND(current, aStarQueue);
+                EXPAND(current, aStarQueue, DFSQueue);
 
             }
             return null;
@@ -174,7 +175,7 @@ namespace POP
         }
 
 
-        public void EXPAND(Node current, PriorityQ<Node, int> aStarQueue)
+        public void EXPAND(Node current, PriorityQ<Node, int> aStarQueue, Queue<Node> DFSQueue)
         {
             // Expand the current node by applying each of the achievers to the current node
 
@@ -208,7 +209,7 @@ namespace POP
                 if (newAction is null || newCausalLink is null) continue;
 
                 // if there is a threat, resolve it and push the nodes with the new plans to the queue
-                searchResolveThreats(newAction, newCausalLink, aStarQueue, newNode);
+                searchResolveThreats(newAction, newCausalLink, aStarQueue, DFSQueue, newNode);
             }
         }
 
@@ -391,7 +392,7 @@ namespace POP
             return new Literal(l.Name, variables, l.IsPositive);
         }
 
-        public void searchResolveThreats(Action action, CausalLink causalLink, PriorityQ<Node, int> aStarQueue, Node node)
+        public void searchResolveThreats(Action action, CausalLink causalLink, PriorityQ<Node, int> aStarQueue, Queue<Node> DFSQueue, Node node)
         {
             Queue<Node> nodes = new Queue<Node>();
             nodes.Enqueue(node);
@@ -465,7 +466,7 @@ namespace POP
                     threatFound = threatFound || searchResolveThreatsForNewCausalLink(causalLink, nodes, current);
                 }
                 if (!threatFound)
-                    if (SearchStrategy == SearchStrategy.DFS) { if (current.pathCost < MaxDepth) aStarQueue.Enqueue(current); }
+                    if (SearchStrategy == SearchStrategy.DFS) { if (current.pathCost < MaxDepth) DFSQueue.Enqueue(current); }
                     else { aStarQueue.Enqueue(current, Eval_Fn(current)); }
             }
         }

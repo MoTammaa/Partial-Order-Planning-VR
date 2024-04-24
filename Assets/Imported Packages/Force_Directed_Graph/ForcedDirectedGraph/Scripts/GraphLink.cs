@@ -42,7 +42,8 @@ namespace ForceDirectedGraph
             // Set arrow head
             _LinkConditionArrow = linkConditionArrow;
             // Set the text on the arrow
-            UpdateLinkText(link.Condition);
+            if (!Link.IsOrderingConstraint)
+                UpdateLinkText(link.Condition);
         }
 
         #endregion
@@ -136,7 +137,8 @@ namespace ForceDirectedGraph
                 }
 
                 // set the text to update if the condition changes
-                UpdateLinkText(_Link.Condition);
+                if (!Link.IsOrderingConstraint)
+                    UpdateLinkText(_Link.Condition);
             }
         }
 

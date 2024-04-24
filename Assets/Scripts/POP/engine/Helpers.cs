@@ -130,6 +130,13 @@ namespace POP
 
     }
 
+    public enum SearchStrategy
+    {
+        BFS,
+        DFS,
+        AStar
+    }
+
     public class Node : IEquatable<Node>, ICloneable
     {
         public PartialPlan partialPlan;

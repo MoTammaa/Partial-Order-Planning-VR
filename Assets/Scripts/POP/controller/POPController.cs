@@ -12,6 +12,7 @@ namespace POP
     {
         private Node currentNode;
         public PriorityQ<Node, int> SearchQueue { get; }
+        public Queue<Node> DFSQueue { get; }
         public Node CurrentNode { get { return currentNode; } }
         public SearchStrategy Strategy { get; }
         public int MaxDepth { get; }
@@ -22,20 +23,21 @@ namespace POP
 
         public POPController(PlanningProblem problem, SearchStrategy strategy = SearchStrategy.AStar, int maxDepth = -1)
         {
-            SearchQueue = new PriorityQ<Node, int>();
+            if (strategy == SearchStrategy.DFS) { DFSQueue = new Queue<Node>(); }
+            else { SearchQueue = new PriorityQ<Node, int>(); }
             Strategy = strategy;
             planner = new Planner(problem, Strategy, maxDepth);
             MaxDepth = planner.MaxDepth;
 
             Node root = new Node(planner.PartialPlan, planner.Agenda, 0, null);
-            if (Strategy == SearchStrategy.DFS) { SearchQueue.Enqueue(root); }
+            if (Strategy == SearchStrategy.DFS) { DFSQueue.Enqueue(root); }
             else { SearchQueue.Enqueue(root, planner.Eval_Fn(root)); }
         }
 
         public bool NextStep()
         {
             // false in this context means that there is a failure or the search queue is empty and we can't continue
-            if (SearchQueue.IsEmpty()) { return false; }
+            if (SearchQueue.Count == 0) { return false; }
 
             Node current = SearchQueue.Dequeue();
             if (current != null)
@@ -83,7 +85,7 @@ namespace POP
             // Check if the current node is a goal node
             if (planner.GoalTest(current)) return true;
 
-            planner.EXPAND(current, SearchQueue);
+            planner.EXPAND(current, SearchQueue, DFSQueue);
             return true;
         }
 

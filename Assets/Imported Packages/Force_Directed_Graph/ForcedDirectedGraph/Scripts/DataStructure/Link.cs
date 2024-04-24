@@ -15,7 +15,7 @@ namespace ForceDirectedGraph.DataStructure
         /// <param name="firstNodeId">The first node connected to the edge of the link.</param>
         /// <param name="secondNodeId">The second node connected to the edge of the link.</param>
         public Link(Guid firstNodeId, Guid secondNodeId)
-            : this(firstNodeId, secondNodeId, 0.5f, Color.white)
+            : this(firstNodeId, secondNodeId, 0.5f, color: Color.white)
         {
         }
 
@@ -26,13 +26,26 @@ namespace ForceDirectedGraph.DataStructure
         /// <param name="width">Normalized width of the link [0-1].</param>
         /// <param name="color">The color used when representing the link.</param>
         /// </summary>
-        public Link(Guid firstNodeId, Guid secondNodeId, float width, Color color = default, string CausalLinkCondition = "")
+        public Link(Guid firstNodeId, Guid secondNodeId, float width, bool isOrderingConstraint = false, Color color = default, string CausalLinkCondition = "")
         {
             _FirstNodeId = firstNodeId;
             _SecondNodeId = secondNodeId;
             _Width = width;
-            _Color = color;
+            _Color = Color.white;
             _Condition = CausalLinkCondition;
+            _IsOrderingConstraint = isOrderingConstraint;
+        }
+
+        /// <summary>
+        /// Default constructor.
+        /// <param name="firstNodeId">The first node connected to the edge of the link.</param>
+        /// <param name="secondNodeId">The second node connected to the edge of the link.</param>
+        /// <param name="width">Normalized width of the link [0-1].</param>
+        /// <param name="color">The color used when representing the link.</param>
+        /// </summary>
+        public Link(Node firstNode, Node secondNode, float width, bool isOrderingConstraint = false, Color color = default, string CausalLinkCondition = "")
+        : this(firstNode.Id, secondNode.Id, width, isOrderingConstraint, color, CausalLinkCondition)
+        {
         }
 
         /// <summary>
@@ -40,7 +53,7 @@ namespace ForceDirectedGraph.DataStructure
         /// </summary>
         /// <param name="link">Instance to clone.</param>
         public Link(Link link)
-            : this(link.FirstNodeId, link.SecondNodeId, link.Width, link.Color)
+            : this(link.FirstNodeId, link.SecondNodeId, link.Width, link.IsOrderingConstraint, link.Color)
         {
         }
 
@@ -115,6 +128,20 @@ namespace ForceDirectedGraph.DataStructure
         /// Link Condition (if it is a causal link).
         /// </summary>
         public string Condition { get { return _Condition; } set { _Condition = value; } }
+
+
+
+        /// <summary>
+        /// A boolean to check if the link is a Ordering Constraint or not(CausalLink). 
+        /// </summary>
+        [SerializeField]
+        [Tooltip("A boolean to check if the link is a Ordering Constraint or not(CausalLink).")]
+        private bool _IsOrderingConstraint;
+
+        /// <summary>
+        /// A boolean to check if the link is a Ordering Constraint or not(CausalLink).
+        /// </summary>
+        public bool IsOrderingConstraint { get { return _IsOrderingConstraint; } }
 
         #endregion
 
