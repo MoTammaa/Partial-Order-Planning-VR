@@ -47,7 +47,7 @@ namespace ForceDirectedGraph.DataStructure
         /// </summary>
         /// <param name="node">Instance to clone.</param>
         public Node(Node node)
-            : this(node.Id, node._Action, null, node.Name)
+            : this(node.Id, node._Action, node._PartialPlan, node.Name)
         {
         }
 

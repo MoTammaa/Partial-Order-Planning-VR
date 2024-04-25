@@ -71,7 +71,7 @@ namespace ForceDirectedGraph.DataStructure
         /// <summary>
         /// The first node connected to the edge of the link.
         /// </summary>
-        public Guid FirstNodeId { get { return _FirstNodeId; } }
+        public Guid FirstNodeId { get { return _FirstNodeId; } set { _FirstNodeId = value; } }
 
 
 
@@ -85,7 +85,7 @@ namespace ForceDirectedGraph.DataStructure
         /// <summary>
         /// The second node connected to the edge of the link.
         /// </summary>
-        public Guid SecondNodeId { get { return _SecondNodeId; } }
+        public Guid SecondNodeId { get { return _SecondNodeId; } set { _SecondNodeId = value; } }
 
 
 

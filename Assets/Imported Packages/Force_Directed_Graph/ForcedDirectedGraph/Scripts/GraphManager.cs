@@ -33,6 +33,16 @@ namespace ForceDirectedGraph
         /// </summary>
         private Vector3 GraphPosition;
 
+        /// <summary>
+        /// The width of the graph display area.
+        /// </summary>
+        private float GRAPH_WIDTH = 13.5f;
+
+        /// <summary>
+        /// The height of the graph display area.
+        /// </summary>
+        private float GRAPH_HEIGHT = 7.5f;
+
 
         /// <summary>
         /// Cancels all forces applied to the nodes and sets them to 0.
@@ -72,6 +82,8 @@ namespace ForceDirectedGraph
             Debug.Log("Initializing graph");
             GraphPosition = transform.position;
             _Network = network;
+            GRAPH_WIDTH *= transform.localScale.x;
+            GRAPH_HEIGHT *= transform.localScale.y;
             Display();
         }
 
@@ -213,15 +225,22 @@ namespace ForceDirectedGraph
         /// Adds & displays a new node to the graph.
         /// </summary>
         /// <param name="node">The node to add.</param>
-        public void AddDisplayNode(DataStructure.Node node)
+        public void AddDisplayNode(DataStructure.Node node, Color color = default, Vector3 position = default)
         {
+            Color red = Color.red, green = Color.green;
+            if (color == default) color = red;
+            if (position == default) position = Vector3.zero;
+
             // Create a new entity instance
-            int index = (node.Name == "Start()" || node.Name == "Finish()") ? 2 : UnityEngine.Random.Range(0, 2);
+            int index = (node.Name == "Start()" || node.Name == "Finish()") ? 2 : color == red ? 0 : color == green ? 1 : UnityEngine.Random.Range(0, 2);
             GameObject graphNode = Instantiate(NoteTemplate[index], NodesParent.transform);
-            graphNode.transform.position = Vector3.zero;
+            graphNode.transform.position = position;
             // add the starting position offset to the node
             graphNode.transform.position = new Vector3(graphNode.transform.position.x + GraphPosition.x, graphNode.transform.position.y + GraphPosition.y, graphNode.transform.position.z + GraphPosition.z);
             graphNode.transform.localRotation = Quaternion.Euler(Vector3.zero);
+
+            if (position == Vector3.zero)
+                graphNode.transform.localPosition = new Vector3(-GRAPH_WIDTH / 2 + 0.1f, -GRAPH_HEIGHT / 2 + 0.1f, 0);
 
             // Extract the script
             GraphNode script = graphNode.GetComponent<GraphNode>();
@@ -234,6 +253,41 @@ namespace ForceDirectedGraph
         }
 
         /// <summary>
+        /// Replaces a node and changes its color to the given color with the same attributes.
+        /// </summary>
+        /// <param name="node">The node to replace.</param>
+        /// <param name="color">The color to change the node to.</param>
+        /// <returns>The new node.</returns>
+        public DataStructure.Node ChangeNodeColor(DataStructure.Node node, Color color)
+        {
+
+            // Find the node
+            if (!GraphNodes.ContainsKey(node.Id))
+                return null;
+            GraphNode graphNode = GraphNodes[node.Id];
+
+            // Remove the old node
+            GraphNodes.Remove(node.Id);
+            Destroy(graphNode.gameObject);
+
+            // Create a new node
+            DataStructure.Node newNode = new DataStructure.Node(node);
+            AddDisplayNode(newNode, color, graphNode.transform.localPosition);
+
+            // Update links to the new replaced node
+            foreach (var link in GraphLinks)
+            {
+                if (link.FirstNode.Node.Id == node.Id)
+                    link.FirstNode = GraphNodes[newNode.Id];
+                if (link.SecondNode.Node.Id == node.Id)
+                    link.SecondNode = GraphNodes[newNode.Id];
+            }
+
+            return newNode;
+        }
+
+
+        /// <summary>
         /// Displays links on the graph.
         /// </summary>
         private void DisplayLinks()
@@ -244,8 +298,6 @@ namespace ForceDirectedGraph
                 AddDisplayLink(link);
             }
         }
-
-
 
         /// <summary>
         /// Adds & displays a new link to the graph.
@@ -377,6 +429,8 @@ namespace ForceDirectedGraph
         /// </summary>
         private Vector2 ComputeAttractionForce(GraphLink link)
         {
+            if (link.FirstNode == null || link.SecondNode == null)
+                return Vector2.zero;
             // Compute force direction
             Vector2 forceDirection = (link.FirstNode.transform.position - link.SecondNode.transform.position).normalized;
 

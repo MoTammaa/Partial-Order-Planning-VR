@@ -73,7 +73,7 @@ namespace ForceDirectedGraph
         /// <summary>
         /// The first graph node this entity is attached to.
         /// </summary>
-        public GraphNode FirstNode { get { return _FirstNode; } }
+        public GraphNode FirstNode { get { return _FirstNode; } set { _FirstNode = value; _Link.FirstNodeId = value.Node.Id; } }
 
 
 
@@ -86,7 +86,7 @@ namespace ForceDirectedGraph
         /// <summary>
         /// The second graph node this entity is attached to.
         /// </summary>
-        public GraphNode SecondNode { get { return _SecondNode; } }
+        public GraphNode SecondNode { get { return _SecondNode; } set { _SecondNode = value; _Link.SecondNodeId = value.Node.Id; } }
 
 
 
