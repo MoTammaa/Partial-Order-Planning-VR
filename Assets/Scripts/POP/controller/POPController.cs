@@ -36,6 +36,17 @@ namespace POP
 
         public bool NextStep()
         {
+            return NextStep(out _, out _, out _, out _);
+        }
+
+        public bool NextStep(out bool isThereDifferencesThanLastStep, out List<Tuple<Action, bool>> actionsDifference,
+            out List<Tuple<CausalLink, bool>> causalLinksDifference, out List<Tuple<Tuple<Action, Action>, bool>> orderingConstraintsDifference)
+        {
+            isThereDifferencesThanLastStep = false;
+            actionsDifference = new();
+            causalLinksDifference = new();
+            orderingConstraintsDifference = new();
+
             // false in this context means that there is a failure or the search queue is empty and we can't continue
             if (Strategy == SearchStrategy.DFS && DFSQueue.Count == 0) { return false; }
             if (Strategy != SearchStrategy.DFS && SearchQueue.Count == 0) { return false; }
@@ -43,30 +54,25 @@ namespace POP
             Node current = Strategy is SearchStrategy.DFS ? DFSQueue.Pop() : SearchQueue.Dequeue();
             if (current != null)
             {
-                List<Tuple<Action, bool>> actionsDiff;
-                List<Tuple<CausalLink, bool>> causalLinksDiff;
-                List<Tuple<Tuple<Action, Action>, bool>> orderingConstraintsDiff;
 
-                if (DifferenceBetweenPartialPlans(currentNode?.partialPlan, current.partialPlan, out actionsDiff, out causalLinksDiff, out orderingConstraintsDiff))
+                if (DifferenceBetweenPartialPlans(currentNode?.partialPlan, current.partialPlan, out actionsDifference, out causalLinksDifference, out orderingConstraintsDifference))
                 {
                     // The partial plans are different
+                    isThereDifferencesThanLastStep = true;
+
+                    // print the differences
                     StringBuilder sb = new StringBuilder();
                     sb.Append("Difference between partial plans:\n");
                     sb.Append("Actions:\n");
-                    foreach (var actionDiff in actionsDiff)
-                    {
+                    foreach (var actionDiff in actionsDifference)
                         sb.Append($"{(actionDiff.Item2 ? "+ " : "- ")}: {current.partialPlan.ActionToString(actionDiff.Item1)}\n");
-                    }
                     sb.Append("\nCausal Links:\n");
-                    foreach (var causalLinkDiff in causalLinksDiff)
-                    {
+                    foreach (var causalLinkDiff in causalLinksDifference)
                         sb.Append($"{(causalLinkDiff.Item2 ? "+ " : "- ")}: {current.partialPlan.CausalLinkToString(causalLinkDiff.Item1)}\n");
-                    }
                     sb.Append("\nOrdering Constraints:\n");
-                    foreach (var orderingConstraintDiff in orderingConstraintsDiff)
-                    {
+                    foreach (var orderingConstraintDiff in orderingConstraintsDifference)
                         sb.Append($"{(orderingConstraintDiff.Item2 ? "+ " : "- ")}: {current.partialPlan.ActionToString(orderingConstraintDiff.Item1.Item1)} < {current.partialPlan.ActionToString(orderingConstraintDiff.Item1.Item2)}\n");
-                    }
+
                     // Debug.Log(sb.ToString());
                 }
             }

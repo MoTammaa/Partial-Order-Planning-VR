@@ -110,7 +110,12 @@ namespace ForceDirectedGraph
         /// <summary>
         /// List of all nodes displayed on the graph.
         /// </summary>
-        private Dictionary<Guid, GraphNode> GraphNodes;
+        private Dictionary<Guid, GraphNode> _GraphNodes;
+
+        /// <summary>
+        /// List of all nodes displayed on the graph.
+        /// </summary>
+        public Dictionary<Guid, GraphNode> GraphNodes { get { return _GraphNodes; } }
 
 
         [Header("Links")]
@@ -198,7 +203,7 @@ namespace ForceDirectedGraph
         private void Clear()
         {
             // Clear nodes
-            GraphNodes = new Dictionary<Guid, GraphNode>();
+            _GraphNodes = new Dictionary<Guid, GraphNode>();
             foreach (Transform entity in NodesParent.transform)
                 GameObject.Destroy(entity.gameObject);
 
@@ -249,7 +254,38 @@ namespace ForceDirectedGraph
             script.Initialize(node);
 
             // Add to list
-            GraphNodes?.Add(node.Id, script);
+            _GraphNodes?.Add(node.Id, script);
+        }
+
+        /// <summary>
+        /// Removes a node from the graph and all its links.
+        /// </summary>
+        /// <param name="node">The node to remove.</param>
+        /// <returns>True if the node was removed, false otherwise.</returns>
+        public bool RemoveNode(DataStructure.Node node)
+        {
+            // Find the node
+            if (!_GraphNodes.ContainsKey(node.Id))
+                return false;
+            GraphNode graphNode = _GraphNodes[node.Id];
+
+            // Remove the node
+            _GraphNodes.Remove(node.Id);
+
+            // Remove all links connected to the node
+            List<GraphLink> linksToRemove = new List<GraphLink>();
+            foreach (var link in GraphLinks)
+                if (link.FirstNode.Node.Id == node.Id || link.SecondNode.Node.Id == node.Id)
+                    linksToRemove.Add(link);
+            foreach (var link in linksToRemove)
+            {
+                GraphLinks.Remove(link);
+                Destroy(link.gameObject);
+            }
+            // Destroy the node from the scene
+            Destroy(graphNode.gameObject);
+
+            return true;
         }
 
         /// <summary>
@@ -262,12 +298,12 @@ namespace ForceDirectedGraph
         {
 
             // Find the node
-            if (!GraphNodes.ContainsKey(node.Id))
+            if (!_GraphNodes.ContainsKey(node.Id))
                 return null;
-            GraphNode graphNode = GraphNodes[node.Id];
+            GraphNode graphNode = _GraphNodes[node.Id];
 
             // Remove the old node
-            GraphNodes.Remove(node.Id);
+            _GraphNodes.Remove(node.Id);
             Destroy(graphNode.gameObject);
 
             // Create a new node
@@ -278,9 +314,9 @@ namespace ForceDirectedGraph
             foreach (var link in GraphLinks)
             {
                 if (link.FirstNode.Node.Id == node.Id)
-                    link.FirstNode = GraphNodes[newNode.Id];
+                    link.FirstNode = _GraphNodes[newNode.Id];
                 if (link.SecondNode.Node.Id == node.Id)
-                    link.SecondNode = GraphNodes[newNode.Id];
+                    link.SecondNode = _GraphNodes[newNode.Id];
             }
 
             return newNode;
@@ -306,11 +342,11 @@ namespace ForceDirectedGraph
         public void AddDisplayLink(DataStructure.Link link)
         {
             // Find graph nodes
-            if (!GraphNodes.ContainsKey(link.FirstNodeId)
-                || !GraphNodes.ContainsKey(link.SecondNodeId))
+            if (!_GraphNodes.ContainsKey(link.FirstNodeId)
+                || !_GraphNodes.ContainsKey(link.SecondNodeId))
                 return;
-            GraphNode firstNode = GraphNodes?[link.FirstNodeId];
-            GraphNode secondNode = GraphNodes?[link.SecondNodeId];
+            GraphNode firstNode = _GraphNodes?[link.FirstNodeId];
+            GraphNode secondNode = _GraphNodes?[link.SecondNodeId];
 
             // Create a new entity instance
             GameObject theTemplateForEdgeLink = link.IsOrderingConstraint ? OrderingLinkTemplate : LinkTemplate;
@@ -335,12 +371,47 @@ namespace ForceDirectedGraph
         }
 
         /// <summary>
+        /// Removes a link from the graph.
+        /// </summary>
+        /// <param name="link">The link to remove.</param>
+        /// <returns>True if the link was removed, false otherwise.</returns>
+        public bool RemoveLink(DataStructure.Link link, bool thereIsOrderingConstraintInsteadOfThisCausalLink, string linkCondition = null)
+        {
+            // Find the link
+            GraphLink graphLink = GraphLinks.FirstOrDefault(l => l?.Link?.FirstNodeId == link?.FirstNodeId && l?.Link?.SecondNodeId == link?.SecondNodeId);
+            if (graphLink == null)
+                return false;
+            if (linkCondition != null && link.Condition != null)
+            {
+                string[] linkConditionsSplit = link.Condition.Split("),");
+                if (linkConditionsSplit.Length > 1)
+                {
+                    string newCondition = string.Join("),", linkConditionsSplit.Where(c => !c.Equals(linkCondition + ")")));
+                    link.Condition = newCondition + ")";
+                    return false; // didn't completely remove the link
+                }
+            }
+
+            // Remove the link
+            GraphLinks.Remove(graphLink);
+            Destroy(graphLink.gameObject);
+
+            if (thereIsOrderingConstraintInsteadOfThisCausalLink)
+            {
+                // add the ordering constraint instead of the causal link
+                AddDisplayLink(new DataStructure.Link(link.FirstNodeId, link.SecondNodeId, 0.001f, true));
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Shuffles the nodes randomly.
         /// </summary>
         public void ShuffleNodes()
         {
             System.Random random = new System.Random();
-            foreach (var node in GraphNodes.Values)
+            foreach (var node in _GraphNodes.Values)
                 node.ApplyForces(new List<Vector2>() { new Vector2(random.Next(-10, 10) / 10f, random.Next(-10, 10) / 10f) }, true);
         }
 
@@ -361,17 +432,17 @@ namespace ForceDirectedGraph
         /// </summary>
         private void ApplyForces()
         {
-            if (GraphNodes == null)
+            if (_GraphNodes == null)
                 return;
 
             // Stores all the forces to be applied to each node
             Dictionary<GraphNode, List<Vector2>> nodeForces = new Dictionary<GraphNode, List<Vector2>>();
-            foreach (var node1 in GraphNodes.Values)
+            foreach (var node1 in _GraphNodes.Values)
                 nodeForces.Add(node1, new List<Vector2>());
 
             // Compute repulsion forces
-            foreach (var node1 in GraphNodes.Values)
-                foreach (var node2 in GraphNodes.Values)
+            foreach (var node1 in _GraphNodes.Values)
+                foreach (var node2 in _GraphNodes.Values)
                     if (node1 != node2)
                         nodeForces[node1].Add(ComputeRepulsiveForce(node1, node2));
 

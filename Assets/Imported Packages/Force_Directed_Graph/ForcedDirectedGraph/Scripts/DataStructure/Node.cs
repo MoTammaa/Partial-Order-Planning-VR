@@ -167,6 +167,14 @@ namespace ForceDirectedGraph.DataStructure
             return _PartialPlan.LiteralToString(literal);
         }
 
+        /// <summary>
+        /// Updates the node's name based on a new partial plan.
+        /// </summary>
+        public void UpdateName(Func<POP.Action, string> actionToString = null)
+        {
+            _Name = actionToString != null ? actionToString(_Action) : _Name;
+        }
+
         #endregion
 
     }

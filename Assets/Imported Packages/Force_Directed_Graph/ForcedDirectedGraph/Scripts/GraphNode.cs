@@ -1,4 +1,5 @@
 ﻿using ForceDirectedGraph.DataStructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -60,17 +61,19 @@ namespace ForceDirectedGraph
             transform.Find("Cube").Find("Operator Canvas B").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = name;
         }
 
-        void UpdatePrecondions(List<POP.Literal> preconditions)
+        public void UpdatePrecondions(List<POP.Literal> preconditions, Func<POP.Literal, string> literalToString = null)
         {
+            literalToString ??= _Node.LiteralToString;
             // update the text written on the block in this object >> Cube >> Preconds Canvas >> Background Button >> Text (TMP)
-            string preconds = "Preconditions: \n" + (preconditions.Count > 0 ? ">" : "") + string.Join("\n>", preconditions.Select(_Node.LiteralToString).ToArray());
+            string preconds = "Preconditions: \n" + (preconditions.Count > 0 ? ">" : "") + string.Join("\n>", preconditions.Select(literalToString).ToArray());
             transform.Find("Cube").Find("Preconds Canvas").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = preconds;
         }
 
-        void UpdateEffects(List<POP.Literal> effects)
+        public void UpdateEffects(List<POP.Literal> effects, Func<POP.Literal, string> literalToString = null)
         {
+            literalToString ??= _Node.LiteralToString;
             // update the text written on the block in this object >> Cube >> Effects Canvas >> Background Button >> Text (TMP)
-            string effectsString = "Effects: \n" + (effects.Count > 0 ? ">" : "") + string.Join("\n>", effects.Select(_Node.LiteralToString).ToArray());
+            string effectsString = "Effects: \n" + (effects.Count > 0 ? ">" : "") + string.Join("\n>", effects.Select(literalToString).ToArray());
             transform.Find("Cube").Find("Effects Canvas").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = effectsString;
         }
 
@@ -159,6 +162,7 @@ namespace ForceDirectedGraph
 
                 Rigidbody.AddForce(velocity);
             }
+            UpdateName(_Node.Name);
         }
 
         #endregion

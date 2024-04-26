@@ -141,7 +141,7 @@ namespace ForceDirectedGraph.DataStructure
         /// <summary>
         /// A boolean to check if the link is a Ordering Constraint or not(CausalLink).
         /// </summary>
-        public bool IsOrderingConstraint { get { return _IsOrderingConstraint; } }
+        public bool IsOrderingConstraint { get { return _IsOrderingConstraint; } set { _IsOrderingConstraint = value; } }
 
         #endregion
 
