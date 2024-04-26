@@ -60,6 +60,8 @@ public class POPEngineDriverController : MonoBehaviour
         bool nextStep = true;
         Node currentNode = POPController.CurrentNode;
         int i = 0;
+        List<Tuple<POP.Action, bool>> actionsDifference = new();
+
         yield return new WaitForSeconds(2);
         while (nextStep && POPController.GoalTest(currentNode) == false)
         {
@@ -85,11 +87,11 @@ public class POPEngineDriverController : MonoBehaviour
             currentNode = POPController.CurrentNode;
             // Display the new Plan
             GenerateNetwork(currentNode is null ? null : currentNode.partialPlan);
+            if (actionsDifference?.Count > 0) UpdateAllNodesColor(actionsDifference);
 
-            yield return new WaitForSeconds(3);
+            nextStep = POPController.NextStep(out _, out actionsDifference, out _, out _);
             i++;
-            nextStep = POPController.NextStep();
-
+            yield return new WaitForSeconds(3);
         }
         if (POPController.GoalTest(currentNode))
         {
@@ -160,6 +162,45 @@ public class POPEngineDriverController : MonoBehaviour
 
         // Display the network
         Graph.Initialize(Network);
+    }
+
+    /// <summary>
+    /// Updates the new nodes' colors in the network.
+    /// </summary>
+    /// <param name="actionsDifference">The differences in actions between the two partial plans.</param>
+    public void UpdateAllNodesColor(List<Tuple<POP.Action, bool>> actionsDifference)
+    {
+        if (Network is null)
+        {
+            return;
+        }
+
+        // Update the old nodes' colors to red
+        foreach (ForceDirectedGraph.DataStructure.Node node in Network.Nodes)
+        {
+            if (node.Name == "Start()" || node.Name == "Finish()")
+                continue;
+            GraphNode graphNode = Graph.GraphNodes[node.Id];
+            if (graphNode is not null)
+            {
+                Graph.ChangeNodeColor(node, Color.red);
+            }
+        }
+
+        // Update the new nodes' colors to green
+        foreach (Tuple<POP.Action, bool> actionDiff in actionsDifference)
+        {
+            Debug.Log(actionDiff.Item1);
+            ForceDirectedGraph.DataStructure.Node node = GetNodeByAction(actionDiff.Item1);
+            if (node is not null)
+            {
+                GraphNode graphNode = Graph.GraphNodes[node.Id];
+                if (graphNode is not null && actionDiff.Item2)
+                {
+                    Graph.ChangeNodeColor(node, Color.green);
+                }
+            }
+        }
     }
 
 
