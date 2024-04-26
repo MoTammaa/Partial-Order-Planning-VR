@@ -36,10 +36,11 @@ public class POPEngineDriverController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        SearchStrategy searchStrategy = SearchStrategy.AStar;
+        SearchStrategy searchStrategy = SearchStrategy.DFS;
+        int maxRecommendedDepth;
 
-        PlanningProblem planningProblem = PlanningProblem.GroceriesBuyProblem(false, searchStrategy, 100);
-        StartCoroutine(StartPOPEngine(planningProblem, searchStrategy));
+        PlanningProblem planningProblem = PlanningProblem.GroceriesBuyProblem(out maxRecommendedDepth);
+        StartCoroutine(StartPOPEngine(planningProblem, searchStrategy, maxRecommendedDepth));
     }
     #endregion
 
@@ -54,9 +55,9 @@ public class POPEngineDriverController : MonoBehaviour
     /// <summary>
     /// Starts the POP Engine.
     /// </summary>
-    public IEnumerator StartPOPEngine(PlanningProblem PlanningProblem, SearchStrategy searchStrategy = SearchStrategy.AStar)
+    public IEnumerator StartPOPEngine(PlanningProblem PlanningProblem, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
     {
-        POPController = new POPController(PlanningProblem, searchStrategy, 100);
+        POPController = new POPController(PlanningProblem, searchStrategy, maxDepth);
         bool nextStep = true;
         Node currentNode = POPController.CurrentNode;
         int i = 0;

@@ -32,7 +32,7 @@ namespace POP
         public Agenda Agenda { get { return agenda; } }
 
         public SearchStrategy SearchStrategy { get; set; }
-        public int MaxDepth { get; } = 400;
+        public int MaxDepth { get; set; } = 400;
 
         public Planner(PlanningProblem problem, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
         {
@@ -125,6 +125,7 @@ namespace POP
             if (current.agenda.Count == 0) // if the agenda is empty
             {
                 this.plan = current.partialPlan;
+                this.MaxDepth = current.pathCost;
                 Graph<Action> graph = new Graph<Action>();
                 graph.InitializeGraph(current.partialPlan.OrderingConstraints);
                 List<Action> actions = graph.Linearize();

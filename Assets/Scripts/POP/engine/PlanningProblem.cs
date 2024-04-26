@@ -5,6 +5,7 @@ namespace POP
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using static System.ArgumentNullException;
 
     public class PlanningProblem
@@ -100,9 +101,12 @@ namespace POP
         }
 
 
-        public static PlanningProblem WearShirtProblem(bool runPlanner, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
+        public static PlanningProblem WearShirtProblem(out int recommendedMaxDepthForDFS) { return WearShirtProblem(out recommendedMaxDepthForDFS, true); }
+        public static PlanningProblem WearShirtProblem(bool runPlanner) { return WearShirtProblem(out _, runPlanner); }
+        public static PlanningProblem WearShirtProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
-            PlanningProblem custom = new PlanningProblem(
+            recommendedMaxDepthForDFS = -1;
+            PlanningProblem wearingShirt = new PlanningProblem(
                 new HashSet<Operator> {
                     new Operator("Wear", new List<Literal>{new Literal("Worn", new [] {"x"})}, new List<Literal>{new Literal("At",new []{"Home"})}, new [] {"x"}),
                 },
@@ -110,15 +114,19 @@ namespace POP
                 new List<Literal> { new Literal("Worn", new[] { "SHIRT" }) }
             );
 
-            if (!runPlanner) return custom;
-            Planner planner = new Planner(custom, searchStrategy, maxDepth);
+            if (!runPlanner) return wearingShirt;
+            Planner planner = new Planner(wearingShirt);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
-            return custom;
+            recommendedMaxDepthForDFS = planner.MaxDepth + 1;
+            return wearingShirt;
         }
 
-        public static PlanningProblem SocksShoesProblem(bool runPlanner, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
+        public static PlanningProblem SocksShoesProblem(out int recommendedMaxDepthForDFS) { return SocksShoesProblem(out recommendedMaxDepthForDFS, true); }
+        public static PlanningProblem SocksShoesProblem(bool runPlanner) { return SocksShoesProblem(out _, runPlanner); }
+        public static PlanningProblem SocksShoesProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
+            recommendedMaxDepthForDFS = -1;
             PlanningProblem socksShoes = new PlanningProblem(
                 operators: new HashSet<Operator> {
                     new Operator("RightSock", new List<Literal> {new ("RightSockOn", new string []{})}, new(), new string []{}),
@@ -131,15 +139,19 @@ namespace POP
             );
 
             if (!runPlanner) return socksShoes;
-            Planner planner = new Planner(socksShoes, searchStrategy, maxDepth);
+            Planner planner = new Planner(socksShoes);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
+            recommendedMaxDepthForDFS = planner.MaxDepth + 1;
 
             return socksShoes;
         }
 
-        public static PlanningProblem MilkBananasCordlessDrillProblem(bool runPlanner, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
+        public static PlanningProblem MilkBananasCordlessDrillProblem(out int recommendedMaxDepthForDFS) { return MilkBananasCordlessDrillProblem(out recommendedMaxDepthForDFS, true); }
+        public static PlanningProblem MilkBananasCordlessDrillProblem(bool runPlanner) { return MilkBananasCordlessDrillProblem(out _, runPlanner); }
+        public static PlanningProblem MilkBananasCordlessDrillProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
+            recommendedMaxDepthForDFS = -1;
             PlanningProblem milkBananasCordlessDrill = new PlanningProblem(
                 operators: new HashSet<Operator> {
                     new Operator("Buy",
@@ -159,15 +171,19 @@ namespace POP
             );
 
             if (!runPlanner) return milkBananasCordlessDrill;
-            Planner planner = new Planner(milkBananasCordlessDrill, searchStrategy, maxDepth);
+            Planner planner = new Planner(milkBananasCordlessDrill);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
+            recommendedMaxDepthForDFS = planner.MaxDepth + 1;
 
             return milkBananasCordlessDrill;
         }
 
-        public static PlanningProblem SpareTiresProblem(bool runPlanner, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
+        public static PlanningProblem SpareTiresProblem(out int recommendedMaxDepthForDFS) { return SpareTiresProblem(out recommendedMaxDepthForDFS, true); }
+        public static PlanningProblem SpareTiresProblem(bool runPlanner) { return SpareTiresProblem(out _, runPlanner); }
+        public static PlanningProblem SpareTiresProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
+            recommendedMaxDepthForDFS = -1;
             PlanningProblem spareTires = new PlanningProblem(
                 operators: new HashSet<Operator> {
                     new Operator("Remove",
@@ -192,15 +208,19 @@ namespace POP
             );
 
             if (!runPlanner) return spareTires;
-            Planner planner = new Planner(spareTires, searchStrategy, maxDepth);
+            Planner planner = new Planner(spareTires);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
+            recommendedMaxDepthForDFS = planner.MaxDepth + 1;
 
             return spareTires;
         }
 
-        public static PlanningProblem GroceriesBuyProblem(bool runPlanner, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
+        public static PlanningProblem GroceriesBuyProblem(out int recommendedMaxDepthForDFS) { return GroceriesBuyProblem(out recommendedMaxDepthForDFS, true); }
+        public static PlanningProblem GroceriesBuyProblem(bool runPlanner) { return GroceriesBuyProblem(out _, runPlanner); }
+        public static PlanningProblem GroceriesBuyProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
+            recommendedMaxDepthForDFS = -1;
             PlanningProblem groceriesBuy = new PlanningProblem(
                 operators: new HashSet<Operator> {
                     new Operator("Buy",
@@ -219,9 +239,10 @@ namespace POP
             );
 
             if (!runPlanner) return groceriesBuy;
-            Planner planner = new Planner(groceriesBuy, searchStrategy, maxDepth);
+            Planner planner = new Planner(groceriesBuy);
             PartialPlan? plan = planner.POP();
             Console.WriteLine($"\nPlan {(plan is null ? "not" : "")} found: \n" + plan);
+            recommendedMaxDepthForDFS = planner.MaxDepth + 1;
 
             return groceriesBuy;
         }
