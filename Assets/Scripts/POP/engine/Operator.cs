@@ -95,5 +95,13 @@ namespace POP
         {
             return $"{Name}({string.Join(", ", Variables)})";
         }
+
+        public string GetFullStringDetails()
+        {
+            string preconditions = string.Join(", ", Preconditions.Select(l => l.ToString()));
+            string effects = string.Join(", ", Effects.Select(l => l.ToString()));
+
+            return $"{Name}({string.Join(", ", Variables)})\nPreconditions: {(Preconditions?.Count > 0 ? "\n\t" : "--")}{preconditions}\nEffects: {(Effects?.Count > 0 ? "\n\t" : "--")}{effects}";
+        }
     }
 }

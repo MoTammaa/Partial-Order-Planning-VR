@@ -36,7 +36,7 @@ public class POPEngineDriverController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        SearchStrategy searchStrategy = SearchStrategy.DFS;
+        SearchStrategy searchStrategy = SearchStrategy.AStar;
         int maxRecommendedDepth;
 
         PlanningProblem planningProblem = PlanningProblem.GroceriesBuyProblem(out maxRecommendedDepth);

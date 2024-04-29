@@ -13,11 +13,16 @@ using Valve.VR.InteractionSystem;
 //-------------------------------------------------------------------------
 public class KeyBoardController : MonoBehaviour
 {
-	private GameObject keyboardInputObject;
+	private GameObject NameKeyboardInputObject;
 
 	void Start()
 	{
-		keyboardInputObject = GameObject.Find("KeyboardInput");
+		if (GameObject.Find("Name Menu") == null) print("Name Menu is null");
+		if (GameObject.Find("Name Menu").transform.Find("BodyTitle") == null) print("BodyTitle is null");
+		if (GameObject.Find("Name Menu").transform.Find("BodyTitle").Find("OnscreenKeyboardCanvas") == null) print("OnscreenKeyboardCanvas is null");
+		if (GameObject.Find("Name Menu").transform.Find("BodyTitle").Find("OnscreenKeyboardCanvas").Find("KeyBoard") == null) print("Keyboard is null");
+		if (GameObject.Find("Name Menu").transform.Find("BodyTitle").Find("OnscreenKeyboardCanvas").Find("KeyBoard").Find("KeyboardInput") == null) print("KeyboardInput is null");
+		NameKeyboardInputObject = GameObject.Find("Name Menu").transform.Find("BodyTitle").Find("OnscreenKeyboardCanvas").Find("KeyBoard").Find("KeyboardInput").gameObject;
 	}
 
 	public void WriteText(string text)
@@ -25,8 +30,8 @@ public class KeyBoardController : MonoBehaviour
 		// get the text of the "Text" object that called this function through the onClick event
 
 
-		// get the object with name "NameCanvas" and the "Text" object that is a child of it 
-		GameObject nameText = GameObject.Find("NameCanvas").transform.Find("Text").gameObject;
+		// get the object with name "TextCanvas" and the "Text" object that is a child of it 
+		GameObject nameText = GameObject.Find("Name Menu").transform.Find("BodyTitle").Find("OnscreenKeyboardCanvas").Find("TextCanvas").Find("Text").gameObject;
 
 		// append the text to the "Text" object that is a child of the "NameCanvas" object
 		if (nameText != null)
@@ -45,13 +50,13 @@ public class KeyBoardController : MonoBehaviour
 					break;
 				case "Edit":
 					// show the keyboard "KeyboardInput"
-					keyboardInputObject.SetActive(true);
+					NameKeyboardInputObject.SetActive(true);
 
 					// Remove the "Welcome" message
 					nameText.GetComponent<UnityEngine.UI.Text>().text = PlayerPrefs.GetString("PlayerName");
 
 					// change the text and listner of the Done_Edit button to "Done"
-					GameObject Edit = GameObject.Find("Done_Edit");
+					GameObject Edit = GameObject.Find("OnscreenKeyboardCanvas").transform.Find("KeyBoard").Find("Done_Edit").gameObject;
 					GameObject Edit_Text = Edit?.transform.Find("Text")?.gameObject;
 					if (Edit_Text.GetComponent<UnityEngine.UI.Text>() == null) print("Done_Edit button is null");
 					Edit_Text.GetComponent<UnityEngine.UI.Text>().text = "Done";
@@ -68,9 +73,9 @@ public class KeyBoardController : MonoBehaviour
 					// save the name to the playerprefs
 					PlayerPrefs.SetString("PlayerName", oldname);
 					// hide the keyboard "KeyboardInput"
-					keyboardInputObject.SetActive(false);
+					NameKeyboardInputObject.SetActive(false);
 					// change the text and listner of the Done_Edit button to "Edit Name"
-					GameObject Done = GameObject.Find("Done_Edit");
+					GameObject Done = GameObject.Find("OnscreenKeyboardCanvas").transform.Find("KeyBoard").Find("Done_Edit").gameObject;
 					GameObject Done_Text = Done?.transform.Find("Text")?.gameObject;
 					if (Done_Text.GetComponent<UnityEngine.UI.Text>() == null) print("Done_Edit button is null");
 					Done_Text.GetComponent<UnityEngine.UI.Text>().text = "Edit Name";

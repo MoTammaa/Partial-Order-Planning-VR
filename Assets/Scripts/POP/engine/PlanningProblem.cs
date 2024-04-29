@@ -105,7 +105,7 @@ namespace POP
         public static PlanningProblem WearShirtProblem(bool runPlanner) { return WearShirtProblem(out _, runPlanner); }
         public static PlanningProblem WearShirtProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
-            recommendedMaxDepthForDFS = -1;
+            recommendedMaxDepthForDFS = 3; // -1;
             PlanningProblem wearingShirt = new PlanningProblem(
                 new HashSet<Operator> {
                     new Operator("Wear", new List<Literal>{new Literal("Worn", new [] {"x"})}, new List<Literal>{new Literal("At",new []{"Home"})}, new [] {"x"}),
@@ -113,6 +113,10 @@ namespace POP
                 new List<Literal> { new Literal("At", new string[] { "Home" }) },
                 new List<Literal> { new Literal("Worn", new[] { "SHIRT" }) }
             );
+
+            // precalculated depth value, so we don't have to run the planner to get it
+            runPlanner = false;
+            /////////////////////////////////////////////
 
             if (!runPlanner) return wearingShirt;
             Planner planner = new Planner(wearingShirt);
@@ -126,7 +130,7 @@ namespace POP
         public static PlanningProblem SocksShoesProblem(bool runPlanner) { return SocksShoesProblem(out _, runPlanner); }
         public static PlanningProblem SocksShoesProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
-            recommendedMaxDepthForDFS = -1;
+            recommendedMaxDepthForDFS = 7; // -1;
             PlanningProblem socksShoes = new PlanningProblem(
                 operators: new HashSet<Operator> {
                     new Operator("RightSock", new List<Literal> {new ("RightSockOn", new string []{})}, new(), new string []{}),
@@ -137,6 +141,10 @@ namespace POP
                 initialState: new(),
                 goalState: new List<Literal> { new("RightShoeOn", new string[] { }), new("LeftShoeOn", new string[] { }), new("RightSockOn", new string[] { }), new("LeftSockOn", new string[] { }) }
             );
+
+            // precalculated depth value, so we don't have to run the planner to get it
+            runPlanner = false;
+            /////////////////////////////////////////////
 
             if (!runPlanner) return socksShoes;
             Planner planner = new Planner(socksShoes);
@@ -151,7 +159,7 @@ namespace POP
         public static PlanningProblem MilkBananasCordlessDrillProblem(bool runPlanner) { return MilkBananasCordlessDrillProblem(out _, runPlanner); }
         public static PlanningProblem MilkBananasCordlessDrillProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
-            recommendedMaxDepthForDFS = -1;
+            recommendedMaxDepthForDFS = 21; //-1;
             PlanningProblem milkBananasCordlessDrill = new PlanningProblem(
                 operators: new HashSet<Operator> {
                     new Operator("Buy",
@@ -170,6 +178,10 @@ namespace POP
                 goalState: new List<Literal> { new("At", new string[] { "Home" }), new("Have", new[] { "Milk" }), new("Have", new[] { "Bananas" }), new("Have", new[] { "Drill" }) }
             );
 
+            // precalculated depth value, so we don't have to run the planner to get it
+            runPlanner = false;
+            /////////////////////////////////////////////
+
             if (!runPlanner) return milkBananasCordlessDrill;
             Planner planner = new Planner(milkBananasCordlessDrill);
             PartialPlan? plan = planner.POP();
@@ -183,7 +195,7 @@ namespace POP
         public static PlanningProblem SpareTiresProblem(bool runPlanner) { return SpareTiresProblem(out _, runPlanner); }
         public static PlanningProblem SpareTiresProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
-            recommendedMaxDepthForDFS = -1;
+            recommendedMaxDepthForDFS = 10; //-1;
             PlanningProblem spareTires = new PlanningProblem(
                 operators: new HashSet<Operator> {
                     new Operator("Remove",
@@ -207,6 +219,10 @@ namespace POP
                 goalState: new List<Literal> { new("At", new[] { "Spare", "Axle" }), new("At", new[] { "Flat", "Ground" }) }
             );
 
+            // precalculated depth value, so we don't have to run the planner to get it
+            runPlanner = false;
+            /////////////////////////////////////////////
+
             if (!runPlanner) return spareTires;
             Planner planner = new Planner(spareTires);
             PartialPlan? plan = planner.POP();
@@ -220,7 +236,7 @@ namespace POP
         public static PlanningProblem GroceriesBuyProblem(bool runPlanner) { return GroceriesBuyProblem(out _, runPlanner); }
         public static PlanningProblem GroceriesBuyProblem(out int recommendedMaxDepthForDFS, bool runPlanner)
         {
-            recommendedMaxDepthForDFS = -1;
+            recommendedMaxDepthForDFS = 10; //-1;
             PlanningProblem groceriesBuy = new PlanningProblem(
                 operators: new HashSet<Operator> {
                     new Operator("Buy",
@@ -237,6 +253,10 @@ namespace POP
                 initialState: new List<Literal> { new("At", new string[] { "Home" }), new("At", new[] { "SM" }, false) },
                 goalState: new List<Literal> { new("At", new string[] { "Home" }), new("Have", new[] { "Groceries" }) }
             );
+
+            // precalculated depth value, so we don't have to run the planner to get it
+            runPlanner = false;
+            /////////////////////////////////////////////
 
             if (!runPlanner) return groceriesBuy;
             Planner planner = new Planner(groceriesBuy);
