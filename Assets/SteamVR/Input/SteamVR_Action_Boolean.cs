@@ -6,6 +6,7 @@ using System;
 using Valve.VR;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using Codice.CM.Client.Differences.Merge;
 
 namespace Valve.VR
 {
@@ -411,10 +412,17 @@ namespace Valve.VR
         {
             lastActionData = actionData;
             lastActive = active;
-
-            EVRInputError err = OpenVR.Input.GetDigitalActionData(action.handle, ref actionData, actionData_size, inputSourceHandle);
-            if (err != EVRInputError.None)
-                Debug.LogError("<b>[SteamVR]</b> GetDigitalActionData error (" + action.fullPath + "): " + err.ToString() + " handle: " + action.handle.ToString());
+            EVRInputError err;
+            try
+            {
+                err = OpenVR.Input.GetDigitalActionData(action.handle, ref actionData, actionData_size, inputSourceHandle);
+                if (err != EVRInputError.None)
+                    Debug.LogError("<b>[SteamVR]</b> GetDigitalActionData error (" + action.fullPath + "): " + err.ToString() + " handle: " + action.handle.ToString());
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Custom Message: HDM or controllers may not be connected. Please check your SteamVR and hardware connection. Error: " + e.ToString());
+            }
 
             if (changed)
                 changedTime = Time.realtimeSinceStartup + actionData.fUpdateTime;

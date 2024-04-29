@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 
 #if UNITY_2017_2_OR_NEWER
-    using UnityEngine.XR;
+using UnityEngine.XR;
 #else
 using XRSettings = UnityEngine.VR.VRSettings;
 using XRDevice = UnityEngine.VR.VRDevice;
@@ -260,7 +260,8 @@ namespace Valve.VR
                     Debug.LogWarning("<b>[SteamVR]</b> Initialization Failed!  Make sure device's runtime is up to date.");
                     break;
                 default:
-                    Debug.LogWarning("<b>[SteamVR]</b> " + OpenVR.GetStringForHmdError(error));
+                    // Debug.LogWarning("<b>[SteamVR]</b> " + OpenVR.GetStringForHmdError(error));
+                    Debug.Log("<b>[SteamVR]</b> Error during OpenVR Init: " + error.ToString());
                     break;
             }
         }
@@ -619,7 +620,7 @@ namespace Valve.VR
             }
         }
 
-#region Event callbacks
+        #region Event callbacks
 
         private void OnInitializing(bool initializing)
         {
@@ -684,7 +685,7 @@ namespace Valve.VR
             }
         }
 
-#endregion
+        #endregion
 
         private SteamVR()
         {
@@ -744,9 +745,9 @@ namespace Valve.VR
                     textureType = ETextureType.OpenGL;
                     break;
 #if !(UNITY_5_4)
-			case UnityEngine.Rendering.GraphicsDeviceType.Vulkan:
-				textureType = ETextureType.Vulkan;
-				break;
+                case UnityEngine.Rendering.GraphicsDeviceType.Vulkan:
+                    textureType = ETextureType.Vulkan;
+                    break;
 #endif
                 default:
                     textureType = ETextureType.DirectX;

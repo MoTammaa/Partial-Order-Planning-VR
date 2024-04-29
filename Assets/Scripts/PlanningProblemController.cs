@@ -75,6 +75,15 @@ public class PlanningProblemController : MonoBehaviour
             }
         }
 
+        // set depth limit canvas to the recommended max depth for DFS if the search strategy is DFS
+        if (PreferencesController.SearchStrategy == "DFS")
+        {
+            PreferencesController.updateSuggestedDepth();
+            // add the suggested depth to the ui
+            PreferencesController.DepthLimitCanvasObject.transform.Find("BodyTitle").Find("BodyCanvas").Find("OnscreenNumberpadCanvas").Find("NumberCanvas").Find("Text").GetComponent<UnityEngine.UI.Text>().text = PlayerPrefs.GetInt("RecommendedDepthForDFS").ToString();
+            // add the suggested depth to the playerprefs
+            PlayerPrefs.SetInt("DepthLimit", PlayerPrefs.GetInt("RecommendedDepthForDFS"));
+        }
     }
 
     private void SetOperatorsCanvas()

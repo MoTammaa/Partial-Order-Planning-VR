@@ -17,11 +17,6 @@ public class KeyBoardController : MonoBehaviour
 
 	void Start()
 	{
-		if (GameObject.Find("Name Menu") == null) print("Name Menu is null");
-		if (GameObject.Find("Name Menu").transform.Find("BodyTitle") == null) print("BodyTitle is null");
-		if (GameObject.Find("Name Menu").transform.Find("BodyTitle").Find("OnscreenKeyboardCanvas") == null) print("OnscreenKeyboardCanvas is null");
-		if (GameObject.Find("Name Menu").transform.Find("BodyTitle").Find("OnscreenKeyboardCanvas").Find("KeyBoard") == null) print("Keyboard is null");
-		if (GameObject.Find("Name Menu").transform.Find("BodyTitle").Find("OnscreenKeyboardCanvas").Find("KeyBoard").Find("KeyboardInput") == null) print("KeyboardInput is null");
 		NameKeyboardInputObject = GameObject.Find("Name Menu").transform.Find("BodyTitle").Find("OnscreenKeyboardCanvas").Find("KeyBoard").Find("KeyboardInput").gameObject;
 	}
 
@@ -107,9 +102,70 @@ public class KeyBoardController : MonoBehaviour
 
 	}
 
-	public void Hello()
+	public void WriteDepthNumber(string number)
 	{
-		Debug.Log("Hello");
+		// get the PreferencesController script instance variable in the Strategy Menu
+		GameObject depthText = PreferencesController.DepthLimitCanvasObject.transform.Find("BodyTitle").Find("BodyCanvas").Find("OnscreenNumberpadCanvas").Find("NumberCanvas").Find("Text").gameObject;
+
+		// append the text to the "Text" object that is a child of the "DepthLimit" object
+		if (depthText != null)
+		{
+			string olddepth = depthText.GetComponent<UnityEngine.UI.Text>().text;
+			if (olddepth == "Please Enter Number" || olddepth == "0" || olddepth == "00" || olddepth == "000")
+			{
+				depthText.GetComponent<UnityEngine.UI.Text>().text = "";
+				olddepth = "";
+			}
+			switch (number)
+			{
+				case "<<x":
+					if (!string.IsNullOrEmpty(olddepth))
+						depthText.GetComponent<UnityEngine.UI.Text>().text = olddepth[..^1];
+					break;
+				case "Done":
+					if (olddepth == "")
+					{
+						depthText.GetComponent<UnityEngine.UI.Text>().text = "Please Enter Number";
+						break;
+					}
+					// save the depth limit to the playerprefs
+					PlayerPrefs.SetInt("DepthLimit", int.Parse(olddepth));
+					// get depth menu from the PreferencesController script in the Strategy Menu and hide the keyboard "KeyboardInput"
+					PreferencesController.DepthLimitKeyboard.transform.Find("KeyboardInput").gameObject.SetActive(false);
+
+					// change the text and listner of the Done_Edit button to "Edit"
+					GameObject Done = PreferencesController.DepthLimitKeyboard.transform.Find("Done_Edit").gameObject;
+					GameObject Done_Text = Done?.transform.Find("Text")?.gameObject;
+					if (Done_Text.GetComponent<UnityEngine.UI.Text>() == null) print("Done_Edit button is null");
+					Done_Text.GetComponent<UnityEngine.UI.Text>().text = "Edit";
+					if (Done.GetComponent<UnityEngine.UI.Button>() == null) print("Done_Edit button is null");
+					Done.GetComponent<UnityEngine.UI.Button>().onClick.RemoveAllListeners();
+					Done.GetComponent<UnityEngine.UI.Button>().onClick.AddListener(() => WriteDepthNumber("Edit"));
+
+					break;
+				case "Edit":
+					// show the keyboard "KeyboardInput"
+					PreferencesController.DepthLimitKeyboard.transform.Find("KeyboardInput").gameObject.SetActive(true);
+
+					// change the text and listner of the Done_Edit button to "Done"
+					GameObject Edit = PreferencesController.DepthLimitKeyboard.transform.Find("Done_Edit").gameObject;
+					GameObject Edit_Text = Edit?.transform.Find("Text")?.gameObject;
+					if (Edit_Text.GetComponent<UnityEngine.UI.Text>() == null) print("Done_Edit button is null");
+					Edit_Text.GetComponent<UnityEngine.UI.Text>().text = "Done";
+					if (Edit.GetComponent<UnityEngine.UI.Button>() == null) print("Done_Edit button is null");
+					Edit.GetComponent<UnityEngine.UI.Button>().onClick.RemoveAllListeners();
+					Edit.GetComponent<UnityEngine.UI.Button>().onClick.AddListener(() => WriteDepthNumber("Done"));
+					break;
+				default:
+					if (olddepth.Length < 3)
+						depthText.GetComponent<UnityEngine.UI.Text>().text += number;
+					break;
+			}
+		}
+		else
+		{
+			Debug.Log("DepthText is null");
+		}
 	}
 
 
