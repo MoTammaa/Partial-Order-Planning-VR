@@ -228,16 +228,20 @@ public class PlayerHelperController : MonoBehaviour
 
     public static void InitNextVariableMenu()
     {
+        if (currentParameterIndex > 0)
+        {
+            // save the variables to the current action
+            if (currentVariableIdxInVariables - 1 - (1 * (currentVariableJdxInVariables % 2)) >= 0)
+                currentAction.BoundVariables[currentAction.Variables[currentParameterIndex - 1]] = variables[currentVariableJdxInVariables - 1][currentVariableIdxInVariables - 1 - (1 * (currentVariableJdxInVariables % 2))];
+        }
 
         if (currentAction.Variables.Length == 0 || currentParameterIndex == currentAction.Variables.Length)
         {
-            // DoneOperator();
-            // temporarily call cancel
-            // CancelChoosingVariables();
             DoneChoosingVariables();
             print("No more variables to choose");
             return;
         }
+
 
         currentParameterIndex++;
 
@@ -277,12 +281,6 @@ public class PlayerHelperController : MonoBehaviour
                 button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
             }
         }
-        // save the variables to the current action
-        // if 
-        print(currentVariableIdxInVariables + "_+_+_ " + currentVariableJdxInVariables);
-
-        currentAction.BoundVariables[currentAction.Variables[currentParameterIndex - 1]] = variables[currentVariableJdxInVariables - 1][currentVariableIdxInVariables - 1];
-
 
         // initialize highlights
         currentVariableIdxInVariables = 1;
@@ -383,6 +381,8 @@ public class PlayerHelperController : MonoBehaviour
 
     private static void DoneChoosingVariables()
     {
+        // update the description 
+        VariableDescriptionTextCanvas.GetComponent<UnityEngine.UI.Text>().text = $"New Added Action: {currentAction}\n\nPlease Press Request to spawn and add the action to the plan. \n\n The action will get infront of you shortly.";
         // hide the next , navigation buttons and the variables options
         VariablesNextButton.SetActive(false);
         VariablesNavigation.SetActive(false);
