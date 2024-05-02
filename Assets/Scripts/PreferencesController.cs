@@ -16,7 +16,7 @@ public class PreferencesController : MonoBehaviour
     private static GameObject DepthLimitCanvas;
     public static GameObject DepthLimitCanvasObject { get { return DepthLimitCanvas; } }
     public static GameObject DepthLimitKeyboard { get { return DepthLimitCanvas?.transform.Find("BodyTitle")?.Find("BodyCanvas")?.Find("OnscreenNumberpadCanvas")?.Find("KeyBoard")?.gameObject; } }
-
+    public static bool GameStarted { get; set; } = false;
 
     // Start is called before the first frame update
     void Start()
@@ -84,6 +84,11 @@ public class PreferencesController : MonoBehaviour
             if (button.name != Mode)
                 button.gameObject.SetActive(false);
         }
+
+        // unlock PreferencesArea TeleportArea
+        GameObject Teleports = GameObject.Find("Teleports");
+        GameObject PreferencesArea = Teleports.transform.Find("PreferencesArea").gameObject;
+        PreferencesArea.GetComponent<TeleportArea>()?.SetLocked(false);
     }
 
     public void SetSearchStrategy(string strategy)
@@ -157,5 +162,29 @@ public class PreferencesController : MonoBehaviour
             if (button.name != searchStrategy)
                 button.gameObject.SetActive(false);
         }
+    }
+
+    public void StartGame()
+    {
+        GameStarted = true;
+        // hide the Strategy Menu
+        GameObject.Find("Strategy Menu").SetActive(false);
+        // hide the Planning Problem Menu
+        GameObject.Find("Planning Problem Menu").SetActive(false);
+        // hide the Ready Menu
+        GameObject.Find("Ready Menu").SetActive(false);
+
+        // Get EngineStart object and enable the disabled POPEngineDriverController script
+        GameObject.Find("EngineStart").GetComponent<POPEngineDriverController>().enabled = true;
+
+        //Unlock the "Level2 Locked" TeleportAreas
+        GameObject Teleports = GameObject.Find("Teleports");
+        GameObject Level2Locked = Teleports.transform.Find("Level2 Locked").gameObject;
+        foreach (Transform child in Level2Locked.transform)
+        {
+            child.gameObject.GetComponent<TeleportArea>()?.SetLocked(false);
+            child.gameObject.GetComponent<TeleportPoint>()?.SetLocked(false);
+        }
+
     }
 }

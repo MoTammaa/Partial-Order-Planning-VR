@@ -5,6 +5,7 @@ using ForceDirectedGraph;
 using POP;
 using System;
 using Unity.VisualScripting;
+using System.Linq;
 
 public class POPEngineDriverController : MonoBehaviour
 {
@@ -14,17 +15,23 @@ public class POPEngineDriverController : MonoBehaviour
     /// </summary>
     [SerializeField]
     [Tooltip("The graph displaying the network.")]
-    private GraphManager Graph;
+    private static GraphManager Graph;
 
     /// <summary>
     /// The Network that contains the graph data.
     /// </summary>
-    private ForceDirectedGraph.DataStructure.Network Network;
+    private static ForceDirectedGraph.DataStructure.Network Network;
 
     /// <summary>
     /// POP Backend Controller Reference.
     /// </summary>
-    private POPController POPController;
+    private static POPController POPController;
+
+    /// <summary>
+    /// The Planning Problem Constants to choose from.
+    /// </summary>
+    private static HashSet<string> problemConstants = new();
+    public static HashSet<string> ProblemConstants { get { return problemConstants; } }
 
     #endregion
 
@@ -36,11 +43,20 @@ public class POPEngineDriverController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        SearchStrategy searchStrategy = SearchStrategy.AStar;
-        int maxRecommendedDepth;
+        Graph = FindObjectOfType<GraphManager>();
 
-        PlanningProblem planningProblem = PlanningProblem.GroceriesBuyProblem(out maxRecommendedDepth);
-        StartCoroutine(StartPOPEngine(planningProblem, searchStrategy, maxRecommendedDepth));
+        if (PlayerPrefs.HasKey("Mode")) if (PlayerPrefs.GetString("Mode") == "Spectator")
+            {
+                SearchStrategy searchStrategy = SearchStrategy.AStar;
+                int maxRecommendedDepth;
+                PlanningProblem planningProblem = PlanningProblem.GroceriesBuyProblem(out maxRecommendedDepth);
+                StartCoroutine(StartPOPEngine(planningProblem, searchStrategy, maxRecommendedDepth));
+            }
+            else
+            {
+                InitializePlannerAndControllerFromPlayerPrefs();
+                // PlayerHelperController.InitOperatorsMenu();
+            }
     }
     #endregion
 
@@ -53,11 +69,17 @@ public class POPEngineDriverController : MonoBehaviour
     #region Methods
 
     /// <summary>
+    /// Sets Operators Menu to choose from.
+    /// </summary>
+
+
+
+    /// <summary>
     /// Starts the POP Engine.
     /// </summary>
-    public IEnumerator StartPOPEngine(PlanningProblem PlanningProblem, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
+    public static IEnumerator StartPOPEngine(PlanningProblem PlanningProblem, SearchStrategy searchStrategy = SearchStrategy.AStar, int maxDepth = -1)
     {
-        POPController = new POPController(PlanningProblem, searchStrategy, maxDepth);
+        POPController ??= new POPController(PlanningProblem, searchStrategy, maxDepth);
         bool nextStep = true;
         Node currentNode = POPController.CurrentNode;
         int i = 0;
@@ -112,7 +134,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// Generates a network from a Partial Order Plan and displays it on the graph.
     /// </summary>
     /// <param name="partialPlan">The Partial Order Plan to visualize.</param>
-    public void GenerateNetwork(POP.PartialPlan partialPlan)
+    public static void GenerateNetwork(POP.PartialPlan partialPlan)
     {
 
         // Start a new network
@@ -162,6 +184,10 @@ public class POPEngineDriverController : MonoBehaviour
         }
 
         // Display the network
+        if (Graph is null)
+        {
+            print("Graph is null");
+        }
         Graph.Initialize(Network);
     }
 
@@ -169,7 +195,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// Updates the new nodes' colors in the network.
     /// </summary>
     /// <param name="actionsDifference">The differences in actions between the two partial plans.</param>
-    public void UpdateAllNodesColor(List<Tuple<POP.Action, bool>> actionsDifference)
+    public static void UpdateAllNodesColor(List<Tuple<POP.Action, bool>> actionsDifference)
     {
         if (Network is null)
         {
@@ -210,7 +236,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// Adds the list of linearized actions to the network to display.
     /// </summary>
     /// <param name="linearizedActions">The list of linearized actions to add to the network.</param>
-    public void AddLinearizedActionsToNetwork(List<POP.Action> linearizedActions, PartialPlan partialPlan)
+    public static void AddLinearizedActionsToNetwork(List<POP.Action> linearizedActions, PartialPlan partialPlan)
     {
         if (Network is null)
         {
@@ -244,7 +270,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// <param name="causalLinksDifference">The differences in causal links between the two partial plans.</param>
     /// <param name="orderingConstraintsDifference">The differences in ordering constraints between the two partial plans.</param>
     /// <param name="partialPlan">The partial plan to sync the network with.</param>
-    public void UpdateNetwork(PartialPlan partialPlan, List<Tuple<POP.Action, bool>> actionsDifference, List<Tuple<POP.CausalLink, bool>> causalLinksDifference, List<Tuple<Tuple<POP.Action, POP.Action>, bool>> orderingConstraintsDifference)
+    public static void UpdateNetwork(PartialPlan partialPlan, List<Tuple<POP.Action, bool>> actionsDifference, List<Tuple<POP.CausalLink, bool>> causalLinksDifference, List<Tuple<Tuple<POP.Action, POP.Action>, bool>> orderingConstraintsDifference)
     {
         if (Network is null)
         {
@@ -320,7 +346,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// Updates all the nodes' data in the network based on a new partial plan.
     /// </summary>
     /// <param name="partialPlan">The new partial plan to update the nodes' names with.</param>
-    public void UpdateNodesText(PartialPlan partialPlan)
+    public static void UpdateNodesText(PartialPlan partialPlan)
     {
         if (Network is null)
         {
@@ -347,7 +373,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// <param name="name">The name of the node to get.</param>
     /// <returns>The node with the given name.</returns>
     /// <returns>null if no node with the given name is found.</returns>
-    public ForceDirectedGraph.DataStructure.Node GetNodeByName(string name)
+    public static ForceDirectedGraph.DataStructure.Node GetNodeByName(string name)
     {
         foreach (ForceDirectedGraph.DataStructure.Node node in Network.Nodes)
         {
@@ -367,7 +393,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// <param name="action">The action of the node to get.</param>
     /// <returns>The node with the given name.</returns>
     /// <returns>null if no node with the given name is found.</returns>
-    public ForceDirectedGraph.DataStructure.Node GetNodeByAction(POP.Action action)
+    public static ForceDirectedGraph.DataStructure.Node GetNodeByAction(POP.Action action)
     {
         foreach (ForceDirectedGraph.DataStructure.Node node in Network.Nodes)
         {
@@ -386,7 +412,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// <param name="condition">The condition of the link to get.</param>
     /// <returns>The link with the given condition.</returns>
     /// <returns>null if no link with the given condition is found.</returns>
-    public ForceDirectedGraph.DataStructure.Link GetLinkByCondition(string condition)
+    public static ForceDirectedGraph.DataStructure.Link GetLinkByCondition(string condition)
     {
         foreach (ForceDirectedGraph.DataStructure.Link link in Network.Links)
         {
@@ -405,7 +431,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// <param name="consumer">The consumer action of the link to get.</param>
     /// <returns>The link with the given producer and consumer actions.</returns>
     /// <returns>null if no link with the given producer and consumer actions is found.</returns>
-    public ForceDirectedGraph.DataStructure.Link GetLinkByActions(POP.Action producer, POP.Action consumer, PartialPlan partialPlan)
+    public static ForceDirectedGraph.DataStructure.Link GetLinkByActions(POP.Action producer, POP.Action consumer, PartialPlan partialPlan)
     {
         foreach (ForceDirectedGraph.DataStructure.Link link in Network.Links)
         {
@@ -416,6 +442,87 @@ public class POPEngineDriverController : MonoBehaviour
         }
         return null;
     }
+
+    /// <summary>
+    /// Initializes Planner and Controller from the Player Preferences.
+    /// </summary>
+    public static void InitializePlannerAndControllerFromPlayerPrefs()
+    {
+        PlanningProblem planningProblem = GetPlanningProblemFromPlayerPrefs();
+        SearchStrategy searchStrategy = GetSearchStrategyFromPlayerPrefs();
+        int maxDepth = GetMaxDepthFromPlayerPrefs();
+        POPController = new POPController(planningProblem, searchStrategy, maxDepth);
+
+        // gather the problem constants from initial state and goal state (only consider the string vars of upper case)
+        foreach (POP.Literal lit in POPController.Planner.Problem.InitialState.Concat(POPController.Planner.Problem.GoalState))
+        {
+            foreach (string var in lit.Variables)
+            {
+                if (Helpers.IsUpper(var[0])) problemConstants.Add(var);
+            }
+        }
+        PlayerHelperController.Problem = planningProblem;
+    }
+
+
+    /// <summary>
+    /// Gets Search Strategy from the Player Preferences.
+    /// </summary>
+    /// <returns>The search strategy object based on the player preferences.</returns>
+    /// <returns>SearchStrategy.AStar if no search strategy is found in the player preferences.</returns>
+    public static SearchStrategy GetSearchStrategyFromPlayerPrefs()
+    {
+        if (PlayerPrefs.HasKey("SearchStrategy"))
+        {
+            string searchStrategy = PlayerPrefs.GetString("SearchStrategy");
+            return (SearchStrategy)Enum.Parse(typeof(SearchStrategy), searchStrategy == "A*" ? "AStar" : searchStrategy);
+        }
+        return SearchStrategy.AStar;
+    }
+
+
+    /// <summary>
+    /// Gets Max Depth from the Player Preferences.
+    /// </summary>
+    /// <returns>The max depth based on the player preferences.</returns>
+    /// <returns>-1 if no max depth is found in the player preferences.</returns>
+    public static int GetMaxDepthFromPlayerPrefs()
+    {
+        if (PlayerPrefs.HasKey("MaxDepth"))
+        {
+            return PlayerPrefs.GetInt("MaxDepth");
+        }
+        return -1;
+    }
+
+
+    /// <summary>
+    /// Gets the Planning Problem from the Player Preferences.
+    /// </summary>
+    /// <returns>The planning problem object based on the player preferences.</returns>
+    /*
+        SS: Socks and Shoes Problem
+        MBCD: Milk, Bananas, Cordless Drill Problem
+        GB: Groceries Buying Problem
+        SP: Spare Tires Problem
+    */
+    public static PlanningProblem GetPlanningProblemFromPlayerPrefs()
+    {
+        if (PlayerPrefs.HasKey("ProblemName"))
+        {
+            string planningProblem = PlayerPrefs.GetString("ProblemName");
+            return planningProblem switch
+            {
+                "SS" => PlanningProblem.SocksShoesProblem(out _),
+                "MBCD" => PlanningProblem.MilkBananasCordlessDrillProblem(out _),
+                "GB" => PlanningProblem.GroceriesBuyProblem(out _),
+                "SP" => PlanningProblem.SpareTiresProblem(out _),
+                _ => PlanningProblem.GroceriesBuyProblem(out _) // Default to Groceries Buy Problem
+            };
+        }
+        return PlanningProblem.GroceriesBuyProblem(out _);
+    }
+
 
 
     #endregion

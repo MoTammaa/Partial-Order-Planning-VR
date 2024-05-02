@@ -3,7 +3,14 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - projectile
+  - FxTemporaire
+  - PlayerEyes
+  - lb_groundTarget
+  - lb_perchTarget
+  - lb_bird
+  - Interactable
   layers:
   - Default
   - TransparentFX

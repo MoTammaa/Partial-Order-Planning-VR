@@ -19,6 +19,21 @@ namespace POP
             get { return new List<string>(variablesMap.Keys); }
         }
 
+        public List<string> UniqueVariables
+        {
+            get
+            {
+                HashSet<string> uniqueVariables = new();
+                foreach (var item in Variables)
+                {
+                    string? BoundEq = getBoundEq(item);
+                    if (BoundEq != null)
+                        uniqueVariables.Add(BoundEq);
+                }
+                return uniqueVariables.ToList();
+            }
+        }
+
         public BindingConstraints(int initalCapacity = -1)
         {
             if (initalCapacity == -1)

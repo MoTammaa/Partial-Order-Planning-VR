@@ -82,6 +82,15 @@ public class KeyBoardController : MonoBehaviour
 					nameText.GetComponent<UnityEngine.UI.Text>().text = "Welcome " + oldname + "!";
 
 					print("Player Name: " + PlayerPrefs.GetString("PlayerName"));
+
+					// unlock "Level1 Locked" SteamVR teleport areas and points
+					GameObject Teleports = GameObject.Find("Teleports");
+					GameObject Level1Locked = Teleports.transform.Find("Level1 Locked").gameObject;
+					foreach (Transform child in Level1Locked.transform)
+					{
+						child.gameObject.GetComponent<TeleportArea>()?.SetLocked(false);
+						child.gameObject.GetComponent<TeleportPoint>()?.SetLocked(false);
+					}
 					break;
 				case "Space":
 					text = " ";
