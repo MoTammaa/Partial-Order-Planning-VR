@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Action = POP.Action;
 
 namespace POP
@@ -126,7 +127,14 @@ namespace POP
                 throw new ArgumentNullException(paramName);
         }
 
-
+        public static string repeat(int n, string? s = null, char? c = null)
+        {
+            if (s != null)
+                return string.Concat(Enumerable.Repeat(s, n));
+            if (c != null)
+                return new string((char)c, n);
+            return "";
+        }
 
     }
 

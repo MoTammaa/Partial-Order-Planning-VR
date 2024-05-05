@@ -49,13 +49,13 @@ public class PreferencesController : MonoBehaviour
         GameObject BodyCanvas = GameObject.Find("Mode Menu").transform.Find("BodyTitle").gameObject;
         BodyCanvas.transform.Find("DescriptionCanvas").Find("Text").GetComponent<UnityEngine.UI.Text>().text = GetModeDescription(mode);
 
-        // Set All unchosen buttons Normal color to "#FFFFFF" color and the chosen button to "#6B6B6B" color in the "Buttons" parent object
+        // Set All unchosen buttons Normal color to "#FFFFFF" color and the chosen button to "#FF0000" color in the "Buttons" parent object
         GameObject buttons = GameObject.Find("Mode Menu").transform.Find("BodyTitle").Find("BodyCanvas").Find("Buttons").gameObject;
         foreach (Transform button in buttons.transform)
         {
             if (button.name == mode)
             {
-                button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(0.4196078f, 0.4196078f, 0.4196078f);
+                button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
             }
             else
             {
@@ -107,13 +107,13 @@ public class PreferencesController : MonoBehaviour
         GameObject BodyCanvas = GameObject.Find("Strategy Menu").transform.Find("BodyTitle").gameObject;
         BodyCanvas.transform.Find("DescriptionCanvas").Find("Text").GetComponent<UnityEngine.UI.Text>().text = GetStrategyDescription(strategy);
 
-        // Set All unchosen buttons Normal color to "#FFFFFF" color and the chosen button to "#6B6B6B" color in the "Buttons" parent object
+        // Set All unchosen buttons Normal color to "#FFFFFF" color and the chosen button to "#FF0000" color in the "Buttons" parent object
         GameObject buttons = GameObject.Find("Strategy Menu").transform.Find("BodyTitle").Find("BodyCanvas").Find("Buttons").gameObject;
         foreach (Transform button in buttons.transform)
         {
             if (button.name == searchStrategy)
             {
-                button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(0.4196078f, 0.4196078f, 0.4196078f);
+                button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
             }
             else
             {

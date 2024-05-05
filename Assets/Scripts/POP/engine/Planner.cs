@@ -215,7 +215,7 @@ namespace POP
         }
 
 
-        private bool ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node, ref Action? newActionToReturn, ref CausalLink? newCausalLinkToReturn)
+        public bool ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node, ref Action? newActionToReturn, ref CausalLink? newCausalLinkToReturn)
         {
             // true if the action is added to the plan, false if couldn't satisfy binding constraints or otherwise
             PartialPlan plan = node.partialPlan;
@@ -594,15 +594,5 @@ namespace POP
             return graph.IsAcyclic();
         }
 
-
-
-        private static string repeat(int n, string? s = null, char? c = null)
-        {
-            if (s != null)
-                return string.Concat(Enumerable.Repeat(s, n));
-            if (c != null)
-                return new string((char)c, n);
-            return "";
-        }
     }
 }

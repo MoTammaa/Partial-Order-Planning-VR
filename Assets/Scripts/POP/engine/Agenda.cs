@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using static System.ArgumentNullException;
@@ -7,7 +8,7 @@ using Action = POP.Action;
 namespace POP
 {
 
-    public class Agenda : IComparer<System.Tuple<POP.Action, POP.Literal>>, ICloneable, IEquatable<Agenda>
+    public class Agenda : IComparer<System.Tuple<POP.Action, POP.Literal>>, ICloneable, IEquatable<Agenda>, IEnumerable<System.Tuple<POP.Action, POP.Literal>>
     {
 #nullable enable
         private PlanningProblem problem;
@@ -35,6 +36,27 @@ namespace POP
         public Tuple<POP.Action, POP.Literal> Remove()
         {
             return priorityQueue.Dequeue();
+        }
+        public bool Remove(Tuple<POP.Action, POP.Literal> itemToRemove)
+        {
+            bool removed = false;
+            Agenda this1 = new(problem, partialPlan);
+            if (this.Clone() is not Agenda clone)
+                return false;
+
+
+            while (clone.Count > 0)
+            {
+                Tuple<POP.Action, POP.Literal> item = clone.Remove();
+                if (item.Equals(itemToRemove))
+                    removed = true;
+                else
+                    this1.Add(item);
+            }
+
+
+            this.priorityQueue = this1.priorityQueue;
+            return removed;
         }
         public Tuple<POP.Action, POP.Literal> Peek()
         {
@@ -183,6 +205,29 @@ namespace POP
                     this.Add(this1.Dequeue());
             }
             return str.ToString();
+        }
+
+        public IEnumerator<Tuple<Action, Literal>> GetEnumerator()
+        {
+            PriorityQ<System.Tuple<POP.Action, POP.Literal>, System.Tuple<POP.Action, POP.Literal>> this1 = new(this);
+            if (this.Clone() is not Agenda clone)
+                yield break;
+            try
+            {
+                while (clone.Count > 0)
+                {
+                    Tuple<POP.Action, POP.Literal> item = clone.Remove();
+                    this1.Enqueue(item, item);
+                    yield return new Tuple<Action, Literal>(item.Item1, item.Item2);
+                }
+            }
+            finally { }
+        }
+
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

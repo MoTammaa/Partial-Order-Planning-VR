@@ -462,6 +462,8 @@ public class POPEngineDriverController : MonoBehaviour
             }
         }
         PlayerHelperController.Problem = planningProblem;
+        PlayerHelperController.PopController = new POPController(planningProblem);
+        print(PlayerHelperController.PopController.Planner.Agenda.Count);
     }
 
 

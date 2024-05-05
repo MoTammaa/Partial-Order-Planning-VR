@@ -155,6 +155,70 @@ namespace POP
         }
 
 
+#nullable enable
+        public bool AddNewActionToPlan(Action action)
+        {
+            if (action is null) return false;
+            if (planner.PartialPlan is null) return false;
+            PartialPlan plan = planner.PartialPlan;
+
+            plan.Actions.Add(action);
+
+            // add ordering constraints that the new action is after the start action and before the finish action
+            Action? start = plan.GetActionByName("Start"), finish = plan.GetActionByName("Finish");
+            if (start is null || finish is null)
+                throw new Exception("Start or Finish action not found in the plan");
+
+            plan.OrderingConstraints.Add(new Tuple<Action, Action>(start, action));
+            plan.OrderingConstraints.Add(new Tuple<Action, Action>(action, finish));
+
+
+            // add the new action preconditions to the agenda
+            foreach (Literal precondition in action.Preconditions)
+            {
+                planner.Agenda.Add(action, precondition);
+            }
+
+            // add the current action's binding constraints to the partial plan
+            foreach (var item in action.BoundVariables)
+            {
+                planner.PartialPlan.BindingConstraints.setEqual(item.Key, item.Value);
+            }
+
+            if (action.hasConflictingPreconditionsOrEffects(plan.BindingConstraints))
+                return false;
+            return true;
+
+        }
+
+        public bool AddNewCausalLinkToPlan(CausalLink link)
+        {
+            if (currentNode == null) return false;
+            if (currentNode.partialPlan == null) return false;
+            PartialPlan plan = planner.PartialPlan;
+
+            plan.CausalLinks.Add(link);
+
+            if (link is null) return false;
+
+            // add the new causal link to the partial plan
+            plan.CausalLinks.Add(link);
+
+            // add the new causal link's ordering constraints to the partial plan
+            plan.OrderingConstraints.Add(new Tuple<Action, Action>(link.Produceri, link.Consumerj));
+
+            return planner.searchResolveThreatsForNewCausalLink(link, new(), planner.createNode(plan: planner.PartialPlan, agenda: planner.Agenda));
+        }
+
+        public string ActionToString(Action action)
+        {
+            return planner.PartialPlan.ActionToString(action);
+        }
+
+        public string LiteralToString(Literal literal)
+        {
+            return planner.PartialPlan.LiteralToString(literal);
+        }
 
     }
 }
