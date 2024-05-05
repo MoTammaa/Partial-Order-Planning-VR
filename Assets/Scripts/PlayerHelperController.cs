@@ -138,116 +138,7 @@ public class PlayerHelperController : MonoBehaviour
 
     }
 
-    public static void OpMoveUp()
-    {
-        if (currentOperatorIndex > operators.Count) return;
-
-        currentOperatorIndex = Math.Min(currentOperatorIndex + 1, operators.Count);
-
-        // set the previous operator button to "#FFFFFF" color
-        GameObject previousOperatorButton = OperatorButtons.transform.Find($"B{currentOperatorIndex - 1}").gameObject;
-        previousOperatorButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current operator button to "#FF0000" color
-        GameObject currentOperatorButton = OperatorButtons.transform.Find($"B{currentOperatorIndex}").gameObject;
-        currentOperatorButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-
-        // set the description of the current operator in the description canvas
-        OperatorDescriptionTextCanvas.GetComponent<UnityEngine.UI.Text>().text = operators[currentOperatorIndex - 1].GetFullStringDetails();
-    }
-
-    public static void OpMoveDown()
-    {
-        if (currentOperatorIndex < 1) return;
-
-        currentOperatorIndex = Math.Max(currentOperatorIndex - 1, 1);
-
-        // set the next operator button to "#FFFFFF" color
-        GameObject nextOperatorButton = OperatorButtons.transform.Find($"B{currentOperatorIndex + 1}").gameObject;
-        nextOperatorButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current operator button to "#FF0000" color
-        GameObject currentOperatorButton = OperatorButtons.transform.Find($"B{currentOperatorIndex}").gameObject;
-        currentOperatorButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-
-        // set the description of the current operator in the description canvas
-        OperatorDescriptionTextCanvas.GetComponent<UnityEngine.UI.Text>().text = operators[currentOperatorIndex - 1].GetFullStringDetails();
-    }
-
-    public static void VarMoveUp()
-    {
-        if (currentVariableIdxInVariables > variables[currentVariableJdxInVariables - 1].Count + 1 - (1 * ((currentVariableJdxInVariables + 1) % 2))) return;
-
-        int oldidx = currentVariableIdxInVariables;
-        currentVariableIdxInVariables = Math.Min(currentVariableIdxInVariables + 1, variables[currentVariableJdxInVariables - 1].Count + 1 - (1 * ((currentVariableJdxInVariables + 1) % 2)));
-
-        // set the previous variable button to "#FFFFFF" color
-        GameObject previousVariableButton = VariableOptionButtons.transform.Find($"B{oldidx}{currentVariableJdxInVariables}").gameObject;
-        previousVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current variable button to "#FF0000" color
-        GameObject currentVariableButton = VariableOptionButtons.transform.Find($"B{currentVariableIdxInVariables}{currentVariableJdxInVariables}").gameObject;
-        currentVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-    }
-
-    public static void VarMoveDown()
-    {
-        if (currentVariableIdxInVariables < 1) return;
-
-        int oldidx = currentVariableIdxInVariables;
-        currentVariableIdxInVariables = Math.Max(currentVariableIdxInVariables - 1, 1);
-
-        // set the previous variable button to "#FFFFFF" color
-        GameObject previousVariableButton = VariableOptionButtons.transform.Find($"B{oldidx}{currentVariableJdxInVariables}").gameObject;
-        previousVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current variable button to "#FF0000" color
-        GameObject currentVariableButton = VariableOptionButtons.transform.Find($"B{currentVariableIdxInVariables}{currentVariableJdxInVariables}").gameObject;
-        currentVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-    }
-
-    public static void VarMoveRight()
-    {
-        if (currentVariableJdxInVariables > 2) return;
-
-        int oldidx = currentVariableIdxInVariables;
-
-        currentVariableJdxInVariables = 2;
-        currentVariableIdxInVariables = Math.Min(currentVariableIdxInVariables, variables[currentVariableJdxInVariables - 1].Count);
-        if (currentVariableIdxInVariables == 0)
-        {
-            currentVariableIdxInVariables = oldidx;
-            currentVariableJdxInVariables = 1;
-            return;
-        }
-
-        // set the previous variable button to "#FFFFFF" color
-        GameObject previousVariableButton = VariableOptionButtons.transform.Find($"B{oldidx}{currentVariableJdxInVariables - 1}").gameObject;
-        previousVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current variable button to "#FF0000" color
-        GameObject currentVariableButton = VariableOptionButtons.transform.Find($"B{currentVariableIdxInVariables}{currentVariableJdxInVariables}").gameObject;
-        currentVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-    }
-
-    public static void VarMoveLeft()
-    {
-        if (currentVariableJdxInVariables <= 1) return;
-
-        int oldidx = currentVariableIdxInVariables;
-
-        currentVariableJdxInVariables = 1;
-        currentVariableIdxInVariables = Math.Min(currentVariableIdxInVariables, variables[currentVariableJdxInVariables - 1].Count + 1);
-
-        // set the previous variable button to "#FFFFFF" color
-        GameObject previousVariableButton = VariableOptionButtons.transform.Find($"B{oldidx}{currentVariableJdxInVariables + 1}").gameObject;
-        previousVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current variable button to "#FF0000" color
-        GameObject currentVariableButton = VariableOptionButtons.transform.Find($"B{currentVariableIdxInVariables}{currentVariableJdxInVariables}").gameObject;
-        currentVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-    }
-
+    #region Initialization
     public static void InitOperatorsMenu()
     {
         // Set the operators menu
@@ -343,54 +234,126 @@ public class PlayerHelperController : MonoBehaviour
         VarMoveDown();
     }
 
-    private static void ResetVariables()
+    private static void InitAgenda()
     {
-        variables = new List<List<string>>();
+        tempAgendaList = new();
 
-        List<string> myConstants = POPEngineDriverController.ProblemConstants.ToList();
-        List<string> myVariables = new List<string>();
+        // Set Visibility
+        gameObjects["AgendaCanvas"].SetActive(true);
+        gameObjects["AgendaCanvas"].transform.Find("BodyTitle").gameObject.SetActive(true);
+        gameObjects["AchieversCanvas"].SetActive(false);
 
-        HashSet<string> myUniqueVariables = new HashSet<string>();
+        // Set the Agenda menu
+        GameObject AgendaCanvas = gameObjects["AgendaCanvas"];
+        if (AgendaCanvas == null) { Debug.LogError("Agenda Menu is null"); return; }
 
-        foreach (string variable in partialPlan.Actions.SelectMany(a => a.Variables))
+        // Set the Agenda menu description
+        GameObject descriptionCanvas = gameObjects["AgendaDescriptionTextCanvas"];
+        descriptionCanvas.GetComponent<UnityEngine.UI.Text>().text = "Choose any of the Pairs of Actions/Preconditions to try to achieve.";
+
+        // clear the previous Agenda buttons
+        foreach (Transform child in gameObjects["AgendaButtons"].transform)
         {
-            string b = partialPlan.GetBindingConstraintsBounds(variable);
-            if (!Helpers.IsUpper(b[0]))
-                myUniqueVariables.Add(b);
-        }
-
-        foreach (string variable in partialPlan.Actions.SelectMany(a => a.Effects.SelectMany(e => e.Variables))
-                .Concat(partialPlan.Actions.SelectMany(a => a.Preconditions.SelectMany(p => p.Variables))))
-        {
-            string b = partialPlan.GetBindingConstraintsBounds(variable);
-            if (!Helpers.IsUpper(b[0]))
-                myUniqueVariables.Add(b);
-        }
-
-        if (currentAction != null)
-        {
-            foreach (string variable in currentAction.Variables)
+            if (child.name.StartsWith("B") && child.name != "B0")
             {
-                string b = currentAction.BoundVariables?.GetValueOrDefault(variable, null);
-                if (b is null)
-                {
-                    if (currentAction.Variables[currentParameterIndex - 1] != variable)
-                        myUniqueVariables.Add(variable);
-                }
-                else if (!Helpers.IsUpper(b[0]))
-                    myUniqueVariables.Add(b);
+                Destroy(child.gameObject);
             }
         }
 
-        foreach (string variable in myUniqueVariables)
+        // create the Agenda buttons by cloning B0
+        GameObject buttons = gameObjects["AgendaButtons"];
+        GameObject B0 = buttons.transform.Find("B0").gameObject;
+        foreach (Tuple<POP.Action, POP.Literal> pair in popController.Planner.Agenda)
         {
-            myVariables.Add(partialPlan.GetBindingConstraintsBounds(variable));
+            tempAgendaList.Add(pair);
+        }
+        for (int i = 0; i < tempAgendaList.Count; i++)
+        {
+            Tuple<POP.Action, POP.Literal> pair = tempAgendaList[i];
+
+            GameObject button = Instantiate(B0, buttons.transform);
+            button.name = "B" + (i + 1);
+            button.transform.Find("Text").GetComponent<UnityEngine.UI.Text>().text = $"A:{popController.ActionToString(pair.Item1)} / PreC:{popController.LiteralToString(pair.Item2)}";
+            button.transform.localPosition = new Vector3(button.transform.localPosition.x, button.transform.localPosition.y + 0.125f * i, button.transform.localPosition.z);
+            button.transform.localScale = new Vector3(1.8f, 1, 1);
+            button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = (i == 0) ? new Color(1, 0, 0) : new Color(1, 1, 1);
         }
 
-        variables.Add(myConstants);
-        variables.Add(myVariables);
+        if (tempAgendaList.Count == 0)
+        {
+            // change the Title text
+            gameObjects["AgendaCanvas"].transform.Find("BodyTitle").Find("TitleCanvas").Find("Text").GetComponent<UnityEngine.UI.Text>().text = "No More Items in Your Agenda!";
+            // change the description text
+            descriptionCanvas.GetComponent<UnityEngine.UI.Text>().text = "Goal Achieved! Go Celebrate!";
+            // hide the Done button
+            gameObjects["AgendaDoneButton"].SetActive(false);
+            // hide the UpDown buttons
+            gameObjects["AgendaUpDownButtons"].SetActive(false);
+
+        }
+
+
+        // initialize the operator description text
+        AgendaMoveDown();
     }
 
+    public static void InitAchieversMenu()
+    {
+        // show the next, navigation buttons, cancel, done and the achievers options AND hide the request button & alert text
+        gameObjects["AchieversNavigation"].SetActive(true);
+        gameObjects["AchieversDoneButton"].SetActive(true);
+        gameObjects["AchieversOptionButtons"].SetActive(true);
+        gameObjects["AchieversRequestButton"].SetActive(false);
+        gameObjects["AchieversAlertTextCanvas"].SetActive(false);
+        gameObjects["AchieversCancelButton"].SetActive(true);
+
+
+        // Set the Achievers List
+        SetAchievers();
+
+        // Set the Achievers menu
+        GameObject AchieversCanvas = gameObjects["AchieversCanvas"];
+        if (AchieversCanvas == null) { Debug.LogError("Achievers Menu is null"); return; }
+
+        // Set the Achievers menu description
+        GameObject descriptionCanvas = gameObjects["AchieversDescriptionTextCanvas"];
+        descriptionCanvas.GetComponent<UnityEngine.UI.Text>().text = $"Choose any of the Achievers for the selected pair of Actions/Preconditions:\n {popController.ActionToString(tempAgendaList[currentAgendaIndex - 1].Item1)} / {popController.LiteralToString(tempAgendaList[currentAgendaIndex - 1].Item2)}";
+
+        // clear the previous Achievers buttons
+        foreach (Transform child in gameObjects["AchieversOptionButtons"].transform)
+        {
+            if (child.name.StartsWith("B"))
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        // create the Achievers buttons by cloning B1
+        GameObject buttonTemplate = gameObjects["AchieversButtons"].transform.Find("B").gameObject;
+        for (int i = 0; i < Math.Min(2, achievers.Count); i++)
+        {
+            for (int j = 0; j < achievers[i].Count; j++)
+            {
+                POP.Action actionAchiever = (achievers[i][j] is POP.Action action) ? action : null;
+                string achiever = (actionAchiever is not null) ? popController.ActionToString(actionAchiever) : achievers[i][j].ToString();
+                GameObject button = Instantiate(buttonTemplate, gameObjects["AchieversOptionButtons"].transform);
+                button.name = $"B{j + 1}{i + 1}"; // e.g. "B11", "B12", "B21", "B22", etc.
+                button.transform.Find("Text").GetComponent<UnityEngine.UI.Text>().text = achiever;
+                button.transform.localPosition = new Vector3(button.transform.localPosition.x + i * 0.75f, button.transform.localPosition.y + 0.1f * j, button.transform.localPosition.z);
+                button.transform.localScale = new Vector3(1.8f, 1, 1);
+                button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = (i == 0 && j == 0) ? new Color(1, 0, 0) : new Color(1, 1, 1);
+            }
+        }
+
+        // initialize highlights
+        currentAchieverIdx = 1;
+        currentAchieverJdx = 1;
+        AchieversMoveDown();
+    }
+
+    #endregion
+
+    #region Flow Control(Done, ...etc)
     public static void DoneChoosingOperator()
     {
         // reset the current parameter index
@@ -513,109 +476,7 @@ public class PlayerHelperController : MonoBehaviour
         // show the operators menu
         OperatorCanvasBody.SetActive(true);
     }
-
-
-    private static void InitAgenda()
-    {
-        tempAgendaList = new();
-
-        // Set Visibility
-        gameObjects["AgendaCanvas"].SetActive(true);
-        gameObjects["AgendaCanvas"].transform.Find("BodyTitle").gameObject.SetActive(true);
-        gameObjects["AchieversCanvas"].SetActive(false);
-
-        // Set the Agenda menu
-        GameObject AgendaCanvas = gameObjects["AgendaCanvas"];
-        if (AgendaCanvas == null) { Debug.LogError("Agenda Menu is null"); return; }
-
-        // Set the Agenda menu description
-        GameObject descriptionCanvas = gameObjects["AgendaDescriptionTextCanvas"];
-        descriptionCanvas.GetComponent<UnityEngine.UI.Text>().text = "Choose any of the Pairs of Actions/Preconditions to try to achieve.";
-
-        // clear the previous Agenda buttons
-        foreach (Transform child in gameObjects["AgendaButtons"].transform)
-        {
-            if (child.name.StartsWith("B") && child.name != "B0")
-            {
-                Destroy(child.gameObject);
-            }
-        }
-
-        // create the Agenda buttons by cloning B0
-        GameObject buttons = gameObjects["AgendaButtons"];
-        GameObject B0 = buttons.transform.Find("B0").gameObject;
-        foreach (Tuple<POP.Action, POP.Literal> pair in popController.Planner.Agenda)
-        {
-            tempAgendaList.Add(pair);
-        }
-        for (int i = 0; i < tempAgendaList.Count; i++)
-        {
-            Tuple<POP.Action, POP.Literal> pair = tempAgendaList[i];
-
-            GameObject button = Instantiate(B0, buttons.transform);
-            button.name = "B" + (i + 1);
-            button.transform.Find("Text").GetComponent<UnityEngine.UI.Text>().text = $"A:{popController.ActionToString(pair.Item1)} / PreC:{popController.LiteralToString(pair.Item2)}";
-            button.transform.localPosition = new Vector3(button.transform.localPosition.x, button.transform.localPosition.y + 0.125f * i, button.transform.localPosition.z);
-            button.transform.localScale = new Vector3(1.8f, 1, 1);
-            button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-        }
-
-        if (tempAgendaList.Count == 0)
-        {
-            // change the Title text
-            gameObjects["AgendaCanvas"].transform.Find("BodyTitle").Find("TitleCanvas").Find("Text").GetComponent<UnityEngine.UI.Text>().text = "No More Items in Your Agenda!";
-            // change the description text
-            descriptionCanvas.GetComponent<UnityEngine.UI.Text>().text = "Goal Achieved! Go Celebrate!";
-            // hide the Done button
-            gameObjects["AgendaDoneButton"].SetActive(false);
-            // hide the UpDown buttons
-            gameObjects["AgendaUpDownButtons"].SetActive(false);
-
-        }
-
-
-        // initialize the operator description text
-        AgendaMoveDown();
-    }
-
-    public static void AgendaMoveDown()
-    {
-        if (currentAgendaIndex < 1) return;
-
-        int oldidx = currentAgendaIndex;
-        currentAgendaIndex = Math.Max(currentAgendaIndex - 1, 1);
-
-        // set the next operator button to "#FFFFFF" color
-        GameObject nextAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{oldidx}").gameObject;
-        nextAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current operator button to "#FF0000" color
-        GameObject currentAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{currentAgendaIndex}").gameObject;
-        currentAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-
-        // set the description of the current operator in the description canvas
-        // gameObjects["AgendaDescriptionTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = popController.ActionToString(tempAgendaList[currentAgendaIndex - 1].Item1) + " / " + popController.LiteralToString(tempAgendaList[currentAgendaIndex - 1].Item2);
-    }
-
-    public static void AgendaMoveUp()
-    {
-        if (currentAgendaIndex > tempAgendaList.Count) return;
-
-        int oldidx = currentAgendaIndex;
-        currentAgendaIndex = Math.Min(currentAgendaIndex + 1, tempAgendaList.Count);
-
-        // set the previous operator button to "#FFFFFF" color
-        GameObject previousAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{oldidx}").gameObject;
-        previousAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current operator button to "#FF0000" color
-        GameObject currentAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{currentAgendaIndex}").gameObject;
-        currentAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-
-        // set the description of the current operator in the description canvas
-        // gameObjects["AgendaDescriptionTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = popController.ActionToString(tempAgendaList[currentAgendaIndex - 1].Item1) + " / " + popController.LiteralToString(tempAgendaList[currentAgendaIndex - 1].Item2);
-    }
-
+    //================================================================================================================================================================
     public static void DoneChoosingAgenda()
     {
         // hide the agenda menu body
@@ -626,145 +487,6 @@ public class PlayerHelperController : MonoBehaviour
 
         // initialize the achievers menu
         InitAchieversMenu();
-    }
-
-
-    public static void InitAchieversMenu()
-    {
-        // show the next, navigation buttons, cancel, done and the achievers options AND hide the request button & alert text
-        gameObjects["AchieversNavigation"].SetActive(true);
-        gameObjects["AchieversDoneButton"].SetActive(true);
-        gameObjects["AchieversOptionButtons"].SetActive(true);
-        gameObjects["AchieversRequestButton"].SetActive(false);
-        gameObjects["AchieversAlertTextCanvas"].SetActive(false);
-        gameObjects["AchieversCancelButton"].SetActive(true);
-
-
-        // Set the Achievers List
-        SetAchievers();
-
-        // Set the Achievers menu
-        GameObject AchieversCanvas = gameObjects["AchieversCanvas"];
-        if (AchieversCanvas == null) { Debug.LogError("Achievers Menu is null"); return; }
-
-        // Set the Achievers menu description
-        GameObject descriptionCanvas = gameObjects["AchieversDescriptionTextCanvas"];
-        descriptionCanvas.GetComponent<UnityEngine.UI.Text>().text = $"Choose any of the Achievers for the selected pair of Actions/Preconditions:\n {popController.ActionToString(tempAgendaList[currentAgendaIndex - 1].Item1)} / {popController.LiteralToString(tempAgendaList[currentAgendaIndex - 1].Item2)}";
-
-        // clear the previous Achievers buttons
-        foreach (Transform child in gameObjects["AchieversOptionButtons"].transform)
-        {
-            if (child.name.StartsWith("B"))
-            {
-                Destroy(child.gameObject);
-            }
-        }
-
-        // create the Achievers buttons by cloning B1
-        GameObject buttonTemplate = gameObjects["AchieversButtons"].transform.Find("B").gameObject;
-        for (int i = 0; i < Math.Min(2, achievers.Count); i++)
-        {
-            for (int j = 0; j < achievers[i].Count; j++)
-            {
-                POP.Action actionAchiever = (achievers[i][j] is POP.Action action) ? action : null;
-                string achiever = (actionAchiever is not null) ? popController.ActionToString(actionAchiever) : achievers[i][j].ToString();
-                GameObject button = Instantiate(buttonTemplate, gameObjects["AchieversOptionButtons"].transform);
-                button.name = $"B{j + 1}{i + 1}"; // e.g. "B11", "B12", "B21", "B22", etc.
-                button.transform.Find("Text").GetComponent<UnityEngine.UI.Text>().text = achiever;
-                button.transform.localPosition = new Vector3(button.transform.localPosition.x + i * 0.75f, button.transform.localPosition.y + 0.1f * j, button.transform.localPosition.z);
-                button.transform.localScale = new Vector3(1.8f, 1, 1);
-                button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = (i == 0 && j == 0) ? new Color(1, 0, 0) : new Color(1, 1, 1);
-            }
-        }
-
-        // initialize highlights
-        currentAchieverIdx = 1;
-        currentAchieverJdx = 1;
-        AchieversMoveDown();
-    }
-
-    public static void AchieversMoveLeft()
-    {
-        if (currentAchieverJdx <= 1) return;
-
-        int oldidx = currentAchieverIdx, oldjdx = currentAchieverJdx;
-
-        currentAchieverJdx = 1;
-        currentAchieverIdx = Math.Min(currentAchieverIdx, achievers[currentAchieverJdx - 1].Count);
-
-        // set the previous variable button to "#FFFFFF" color
-        GameObject previousAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{oldidx}{oldjdx}").gameObject;
-        previousAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current variable button to "#FF0000" color
-        GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
-        currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-    }
-
-    public static void AchieversMoveRight()
-    {
-        if (currentAchieverJdx > 2) return;
-
-        int oldidx = currentAchieverIdx, oldjdx = currentAchieverJdx;
-
-        currentAchieverJdx = 2;
-        currentAchieverIdx = Math.Min(currentAchieverIdx, achievers[currentAchieverJdx - 1].Count);
-        if (currentAchieverIdx == 0)
-        {
-            currentAchieverIdx = oldidx;
-            currentAchieverJdx = 1;
-            return;
-        }
-
-        // set the previous variable button to "#FFFFFF" color
-        GameObject previousAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{oldidx}{oldjdx}").gameObject;
-        previousAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current variable button to "#FF0000" color
-        GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
-        currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-    }
-    public static void AchieversMoveDown()
-    {
-        if (currentAchieverIdx < 1) return;
-
-        int oldidx = currentAchieverIdx;
-        currentAchieverIdx = Math.Max(currentAchieverIdx - 1, 1);
-
-        // set the previous variable button to "#FFFFFF" color
-        GameObject previousAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{oldidx}{currentAchieverJdx}").gameObject;
-        previousAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current variable button to "#FF0000" color
-        GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
-        currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-    }
-    public static void AchieversMoveUp()
-    {
-        if (currentAchieverIdx > achievers[currentAchieverJdx - 1].Count) return;
-
-        int oldidx = currentAchieverIdx;
-        currentAchieverIdx = Math.Min(currentAchieverIdx + 1, achievers[currentAchieverJdx - 1].Count);
-
-        // set the previous variable button to "#FFFFFF" color
-        GameObject previousAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{oldidx}{currentAchieverJdx}").gameObject;
-        previousAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
-
-        // set the color of the current variable button to "#FF0000" color
-        GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
-        currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
-    }
-
-    public static void SetAchievers()
-    {
-        achievers = new();
-        List<Operator> existingActions = new();
-        existingActions.AddRange(popController.Planner.PartialPlan.getListOfActionsAchievers(tempAgendaList[currentAgendaIndex - 1].Item2, tempAgendaList[currentAgendaIndex - 1].Item1));
-
-        List<Operator> newActions = popController.Planner.Problem.GetListOfAchievers(tempAgendaList[currentAgendaIndex - 1].Item2);
-
-        achievers.Add(newActions);
-        achievers.Add(existingActions);
     }
 
     public static void CancelChoosingAchievers()
@@ -915,6 +637,294 @@ public class PlayerHelperController : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Navigation
+    public static void AgendaMoveDown()
+    {
+        if (currentAgendaIndex < 1) return;
+
+        int oldidx = currentAgendaIndex;
+        currentAgendaIndex = Math.Max(currentAgendaIndex - 1, 1);
+
+        // set the next operator button to "#FFFFFF" color
+        GameObject nextAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{oldidx}").gameObject;
+        nextAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current operator button to "#FF0000" color
+        GameObject currentAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{currentAgendaIndex}").gameObject;
+        currentAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+
+        // set the description of the current operator in the description canvas
+        // gameObjects["AgendaDescriptionTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = popController.ActionToString(tempAgendaList[currentAgendaIndex - 1].Item1) + " / " + popController.LiteralToString(tempAgendaList[currentAgendaIndex - 1].Item2);
+    }
+
+    public static void AgendaMoveUp()
+    {
+        if (currentAgendaIndex > tempAgendaList.Count) return;
+
+        int oldidx = currentAgendaIndex;
+        currentAgendaIndex = Math.Min(currentAgendaIndex + 1, tempAgendaList.Count);
+
+        // set the previous operator button to "#FFFFFF" color
+        GameObject previousAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{oldidx}").gameObject;
+        previousAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current operator button to "#FF0000" color
+        GameObject currentAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{currentAgendaIndex}").gameObject;
+        currentAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+
+        // set the description of the current operator in the description canvas
+        // gameObjects["AgendaDescriptionTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = popController.ActionToString(tempAgendaList[currentAgendaIndex - 1].Item1) + " / " + popController.LiteralToString(tempAgendaList[currentAgendaIndex - 1].Item2);
+    }
+
+    //================================================================================================================================================================
+    public static void AchieversMoveLeft()
+    {
+        if (currentAchieverJdx <= 1) return;
+
+        int oldidx = currentAchieverIdx, oldjdx = currentAchieverJdx;
+
+        currentAchieverJdx = 1;
+        currentAchieverIdx = Math.Min(currentAchieverIdx, achievers[currentAchieverJdx - 1].Count);
+
+        // set the previous variable button to "#FFFFFF" color
+        GameObject previousAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{oldidx}{oldjdx}").gameObject;
+        previousAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current variable button to "#FF0000" color
+        GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
+        currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+    }
+
+    public static void AchieversMoveRight()
+    {
+        if (currentAchieverJdx > 2) return;
+
+        int oldidx = currentAchieverIdx, oldjdx = currentAchieverJdx;
+
+        currentAchieverJdx = 2;
+        currentAchieverIdx = Math.Min(currentAchieverIdx, achievers[currentAchieverJdx - 1].Count);
+        if (currentAchieverIdx == 0)
+        {
+            currentAchieverIdx = oldidx;
+            currentAchieverJdx = 1;
+            return;
+        }
+
+        // set the previous variable button to "#FFFFFF" color
+        GameObject previousAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{oldidx}{oldjdx}").gameObject;
+        previousAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current variable button to "#FF0000" color
+        GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
+        currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+    }
+    public static void AchieversMoveDown()
+    {
+        if (currentAchieverIdx < 1) return;
+
+        int oldidx = currentAchieverIdx;
+        currentAchieverIdx = Math.Max(currentAchieverIdx - 1, 1);
+
+        // set the previous variable button to "#FFFFFF" color
+        GameObject previousAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{oldidx}{currentAchieverJdx}").gameObject;
+        previousAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current variable button to "#FF0000" color
+        GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
+        currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+    }
+    public static void AchieversMoveUp()
+    {
+        if (currentAchieverIdx > achievers[currentAchieverJdx - 1].Count) return;
+
+        int oldidx = currentAchieverIdx;
+        currentAchieverIdx = Math.Min(currentAchieverIdx + 1, achievers[currentAchieverJdx - 1].Count);
+
+        // set the previous variable button to "#FFFFFF" color
+        GameObject previousAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{oldidx}{currentAchieverJdx}").gameObject;
+        previousAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current variable button to "#FF0000" color
+        GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
+        currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+    }
+    //================================================================================================================================================================
+    public static void OpMoveUp()
+    {
+        if (currentOperatorIndex > operators.Count) return;
+
+        currentOperatorIndex = Math.Min(currentOperatorIndex + 1, operators.Count);
+
+        // set the previous operator button to "#FFFFFF" color
+        GameObject previousOperatorButton = OperatorButtons.transform.Find($"B{currentOperatorIndex - 1}").gameObject;
+        previousOperatorButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current operator button to "#FF0000" color
+        GameObject currentOperatorButton = OperatorButtons.transform.Find($"B{currentOperatorIndex}").gameObject;
+        currentOperatorButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+
+        // set the description of the current operator in the description canvas
+        OperatorDescriptionTextCanvas.GetComponent<UnityEngine.UI.Text>().text = operators[currentOperatorIndex - 1].GetFullStringDetails();
+    }
+
+    public static void OpMoveDown()
+    {
+        if (currentOperatorIndex < 1) return;
+
+        currentOperatorIndex = Math.Max(currentOperatorIndex - 1, 1);
+
+        // set the next operator button to "#FFFFFF" color
+        GameObject nextOperatorButton = OperatorButtons.transform.Find($"B{currentOperatorIndex + 1}").gameObject;
+        nextOperatorButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current operator button to "#FF0000" color
+        GameObject currentOperatorButton = OperatorButtons.transform.Find($"B{currentOperatorIndex}").gameObject;
+        currentOperatorButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+
+        // set the description of the current operator in the description canvas
+        OperatorDescriptionTextCanvas.GetComponent<UnityEngine.UI.Text>().text = operators[currentOperatorIndex - 1].GetFullStringDetails();
+    }
+    //================================================================================================================================================================
+    public static void VarMoveUp()
+    {
+        if (currentVariableIdxInVariables > variables[currentVariableJdxInVariables - 1].Count + 1 - (1 * ((currentVariableJdxInVariables + 1) % 2))) return;
+
+        int oldidx = currentVariableIdxInVariables;
+        currentVariableIdxInVariables = Math.Min(currentVariableIdxInVariables + 1, variables[currentVariableJdxInVariables - 1].Count + 1 - (1 * ((currentVariableJdxInVariables + 1) % 2)));
+
+        // set the previous variable button to "#FFFFFF" color
+        GameObject previousVariableButton = VariableOptionButtons.transform.Find($"B{oldidx}{currentVariableJdxInVariables}").gameObject;
+        previousVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current variable button to "#FF0000" color
+        GameObject currentVariableButton = VariableOptionButtons.transform.Find($"B{currentVariableIdxInVariables}{currentVariableJdxInVariables}").gameObject;
+        currentVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+    }
+
+    public static void VarMoveDown()
+    {
+        if (currentVariableIdxInVariables < 1) return;
+
+        int oldidx = currentVariableIdxInVariables;
+        currentVariableIdxInVariables = Math.Max(currentVariableIdxInVariables - 1, 1);
+
+        // set the previous variable button to "#FFFFFF" color
+        GameObject previousVariableButton = VariableOptionButtons.transform.Find($"B{oldidx}{currentVariableJdxInVariables}").gameObject;
+        previousVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current variable button to "#FF0000" color
+        GameObject currentVariableButton = VariableOptionButtons.transform.Find($"B{currentVariableIdxInVariables}{currentVariableJdxInVariables}").gameObject;
+        currentVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+    }
+
+    public static void VarMoveRight()
+    {
+        if (currentVariableJdxInVariables > 2) return;
+
+        int oldidx = currentVariableIdxInVariables;
+
+        currentVariableJdxInVariables = 2;
+        currentVariableIdxInVariables = Math.Min(currentVariableIdxInVariables, variables[currentVariableJdxInVariables - 1].Count);
+        if (currentVariableIdxInVariables == 0)
+        {
+            currentVariableIdxInVariables = oldidx;
+            currentVariableJdxInVariables = 1;
+            return;
+        }
+
+        // set the previous variable button to "#FFFFFF" color
+        GameObject previousVariableButton = VariableOptionButtons.transform.Find($"B{oldidx}{currentVariableJdxInVariables - 1}").gameObject;
+        previousVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current variable button to "#FF0000" color
+        GameObject currentVariableButton = VariableOptionButtons.transform.Find($"B{currentVariableIdxInVariables}{currentVariableJdxInVariables}").gameObject;
+        currentVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+    }
+
+    public static void VarMoveLeft()
+    {
+        if (currentVariableJdxInVariables <= 1) return;
+
+        int oldidx = currentVariableIdxInVariables;
+
+        currentVariableJdxInVariables = 1;
+        currentVariableIdxInVariables = Math.Min(currentVariableIdxInVariables, variables[currentVariableJdxInVariables - 1].Count + 1);
+
+        // set the previous variable button to "#FFFFFF" color
+        GameObject previousVariableButton = VariableOptionButtons.transform.Find($"B{oldidx}{currentVariableJdxInVariables + 1}").gameObject;
+        previousVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current variable button to "#FF0000" color
+        GameObject currentVariableButton = VariableOptionButtons.transform.Find($"B{currentVariableIdxInVariables}{currentVariableJdxInVariables}").gameObject;
+        currentVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+    }
+    #endregion
+
+    #region Setting Variables
+
+    public static void SetAchievers()
+    {
+        achievers = new();
+        List<Operator> existingActions = new();
+        existingActions.AddRange(popController.Planner.PartialPlan.getListOfActionsAchievers(tempAgendaList[currentAgendaIndex - 1].Item2, tempAgendaList[currentAgendaIndex - 1].Item1));
+
+        List<Operator> newActions = popController.Planner.Problem.GetListOfAchievers(tempAgendaList[currentAgendaIndex - 1].Item2);
+
+        achievers.Add(newActions);
+        achievers.Add(existingActions);
+    }
+
+    private static void ResetVariables()
+    {
+        variables = new List<List<string>>();
+
+        List<string> myConstants = POPEngineDriverController.ProblemConstants.ToList();
+        List<string> myVariables = new List<string>();
+
+        HashSet<string> myUniqueVariables = new HashSet<string>();
+
+        foreach (string variable in partialPlan.Actions.SelectMany(a => a.Variables))
+        {
+            string b = partialPlan.GetBindingConstraintsBounds(variable);
+            if (!Helpers.IsUpper(b[0]))
+                myUniqueVariables.Add(b);
+        }
+
+        foreach (string variable in partialPlan.Actions.SelectMany(a => a.Effects.SelectMany(e => e.Variables))
+                .Concat(partialPlan.Actions.SelectMany(a => a.Preconditions.SelectMany(p => p.Variables))))
+        {
+            string b = partialPlan.GetBindingConstraintsBounds(variable);
+            if (!Helpers.IsUpper(b[0]))
+                myUniqueVariables.Add(b);
+        }
+
+        if (currentAction != null)
+        {
+            foreach (string variable in currentAction.Variables)
+            {
+                string b = currentAction.BoundVariables?.GetValueOrDefault(variable, null);
+                if (b is null)
+                {
+                    if (currentAction.Variables[currentParameterIndex - 1] != variable)
+                        myUniqueVariables.Add(variable);
+                }
+                else if (!Helpers.IsUpper(b[0]))
+                    myUniqueVariables.Add(b);
+            }
+        }
+
+        foreach (string variable in myUniqueVariables)
+        {
+            myVariables.Add(partialPlan.GetBindingConstraintsBounds(variable));
+        }
+
+        variables.Add(myConstants);
+        variables.Add(myVariables);
+    }
+
+    #endregion
 
 
 }
