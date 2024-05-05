@@ -36,8 +36,11 @@ public class NotebookController : MonoBehaviour
         // get the distance between the player and the notebook
         float distance = Vector3.Distance(playerPosition, notebookPosition);
         // if the player is close to the notebook and the notebook is not opening or closing then open the notebook
+        if (distance < 3.5) print("Too close, Distance: " + distance);
+        else print("far, Distance: " + distance);
         if (distance < 3.5 && !Opening && !Opened)
         {
+            print("Opening");
             //if closing, stop closing
             if (Closing)
             {
@@ -51,6 +54,7 @@ public class NotebookController : MonoBehaviour
         // if the player is far from the notebook and the notebook is not opening or closing then close the notebook
         else if (distance > 3.5 && !Closing && !Closed)
         {
+            print("Closing");
             // if opening, stop opening
             if (Opening)
             {
@@ -81,11 +85,22 @@ public class NotebookController : MonoBehaviour
 
         float zRotation = this.transform.Find("Body").Find("notebook_left").localEulerAngles.z;
         if (zRotation > 180) zRotation -= 360; // Convert to negative angle if necessary
-        while (zRotation < 45)
+
+        float zPosition = this.transform.localPosition.z;
+
+        while (zRotation < 45 || zPosition > -1.54f)
         {
-            this.transform.Find("Body").Find("notebook_left").Rotate(0, 0, 1 * Time.deltaTime * 100);
+            if (zPosition > -1.54f)
+            {
+                this.transform.localPosition -= new Vector3(0, 0, 0.015f * Time.deltaTime * 100);
+                GameObject bodyTitle = this.transform.parent.Find("BodyTitle").gameObject, achieversMenu = this.transform.parent.Find("Achievers Menu").gameObject;
+                bodyTitle.transform.localPosition = new Vector3(bodyTitle.transform.localPosition.x, bodyTitle.transform.localPosition.y, this.transform.localPosition.z - 0.11f);
+                achieversMenu.transform.localPosition = bodyTitle.transform.localPosition;
+            }
+            if (zRotation < 45) this.transform.Find("Body").Find("notebook_left").Rotate(0, 0, 1 * Time.deltaTime * 100);
             yield return new WaitForSeconds(0.01f);
             zRotation = this.transform.Find("Body").Find("notebook_left").localEulerAngles.z;
+            zPosition = this.transform.localPosition.z;
             if (zRotation > 180) zRotation -= 360;
         }
         Opened = true;
@@ -98,11 +113,23 @@ public class NotebookController : MonoBehaviour
 
         float zRotation = this.transform.Find("Body").Find("notebook_left").localEulerAngles.z;
         if (zRotation > 180) zRotation -= 360; // Convert to negative angle if necessary
-        while (zRotation > -88)
+
+        float zPosition = this.transform.localPosition.z;
+
+        while (zRotation > -83 || zPosition < 0.11)
         {
-            this.transform.Find("Body").Find("notebook_left").Rotate(0, 0, -1 * Time.deltaTime * 100);
+            if (zPosition < 0.11)
+            {
+                this.transform.localPosition += new Vector3(0, 0, 0.015f * Time.deltaTime * 100);
+                GameObject bodyTitle = this.transform.parent.Find("BodyTitle").gameObject, achieversMenu = this.transform.parent.Find("Achievers Menu").gameObject;
+                bodyTitle.transform.localPosition = new Vector3(bodyTitle.transform.localPosition.x, bodyTitle.transform.localPosition.y, this.transform.localPosition.z - 0.11f);
+                achieversMenu.transform.localPosition = bodyTitle.transform.localPosition;
+            }
+
+            if (zRotation > -83) this.transform.Find("Body").Find("notebook_left").Rotate(0, 0, -1 * Time.deltaTime * 100);
             yield return new WaitForSeconds(0.01f);
             zRotation = this.transform.Find("Body").Find("notebook_left").localEulerAngles.z;
+            zPosition = this.transform.localPosition.z;
             if (zRotation > 180) zRotation -= 360;
         }
         Closed = true;
