@@ -38,16 +38,21 @@ public class PlayerHelperController : MonoBehaviour
     public static POPController PopController { get { return popController; } set { popController = value; InitAgenda(); } }
 
     private static Dictionary<string, GameObject> gameObjects = new();
-    private static int currentAgendaIndex = 1;
     private static List<Tuple<Action, Literal>> tempAgendaList = new();
 
     private static List<List<Operator>> achievers = new();
 
+    private static int currentAgendaIndex = 1;
     private static int currentAchieverIdx = 1;
     private static int currentAchieverJdx = 1;
+    private static int currentCausalLinkIndex = 1;
+    private static int currentOrderingConstraintIndex = 1;
 
     private static Action ThreatAction = null;
     private static CausalLink ThreatenedLink = null;
+
+    private static List<CausalLink> CausalLinks = new();
+    private static List<Tuple<Action, Action>> OrderingConstraints = new();
 
 
     //////////////////////////////////////////////////////
@@ -138,7 +143,31 @@ public class PlayerHelperController : MonoBehaviour
             print("ThreatsDescriptionTextCanvas is null");
         }
 
-        gameObjects["AchieversCanvas"].SetActive(false);
+        gameObjects.TryAdd("CausalLinksCanvas", GameObject.Find("CausalLinks Menu"));
+        gameObjects.TryAdd("CausalLinksDescriptionTextCanvas", gameObjects["CausalLinksCanvas"]?.transform.Find("BodyTitle")?.Find("DescriptionCanvas")?.Find("Text")?.gameObject);
+        gameObjects.TryAdd("CausalLinksButtons", gameObjects["CausalLinksCanvas"]?.transform.Find("BodyTitle")?.Find("BodyCanvas")?.Find("Buttons")?.gameObject);
+        gameObjects.TryAdd("CausalLinksDeleteButton", gameObjects["CausalLinksButtons"]?.transform.Find("Delete")?.gameObject);
+        gameObjects.TryAdd("CausalLinksUpDownButtons", gameObjects["CausalLinksButtons"]?.transform.Find("UpDown")?.gameObject);
+        if (gameObjects["CausalLinksCanvas"] == null || gameObjects["CausalLinksDescriptionTextCanvas"] == null
+        || gameObjects["CausalLinksButtons"] == null || gameObjects["CausalLinksDeleteButton"] == null
+        || gameObjects["CausalLinksUpDownButtons"] == null)
+        {
+            print("One of the CausalLinksCanvas, CausalLinksDescriptionTextCanvas, CausalLinksButtons, CausalLinksDeleteButton, CausalLinksUpDownButtons is null");
+        }
+
+        gameObjects.TryAdd("OrderingConstraintsCanvas", GameObject.Find("OrderingConstraints Menu"));
+        gameObjects.TryAdd("OrderingConstraintsDescriptionTextCanvas", gameObjects["OrderingConstraintsCanvas"]?.transform.Find("BodyTitle")?.Find("DescriptionCanvas")?.Find("Text")?.gameObject);
+        gameObjects.TryAdd("OrderingConstraintsButtons", gameObjects["OrderingConstraintsCanvas"]?.transform.Find("BodyTitle")?.Find("BodyCanvas")?.Find("Buttons")?.gameObject);
+        gameObjects.TryAdd("OrderingConstraintsDeleteButton", gameObjects["OrderingConstraintsButtons"]?.transform.Find("Delete")?.gameObject);
+        gameObjects.TryAdd("OrderingConstraintsUpDownButtons", gameObjects["OrderingConstraintsButtons"]?.transform.Find("UpDown")?.gameObject);
+        if (gameObjects["OrderingConstraintsCanvas"] == null || gameObjects["OrderingConstraintsDescriptionTextCanvas"] == null
+        || gameObjects["OrderingConstraintsButtons"] == null || gameObjects["OrderingConstraintsDeleteButton"] == null
+        || gameObjects["OrderingConstraintsUpDownButtons"] == null)
+        {
+            print("One of the OrderingConstraintsCanvas, OrderingConstraintsDescriptionTextCanvas, OrderingConstraintsButtons, OrderingConstraintsDeleteButton, OrderingConstraintsUpDownButtons is null");
+        }
+
+        // gameObjects["AchieversCanvas"].SetActive(false);
         gameObjects["AchieversRequestButton"].SetActive(false);
         gameObjects["AchieversAlertTextCanvas"].SetActive(false);
 
@@ -309,12 +338,14 @@ public class PlayerHelperController : MonoBehaviour
 
 
         // initialize the operator description text
+        currentAgendaIndex = 1;
         AgendaMoveDown();
     }
 
     public static void InitAchieversMenu()
     {
         // show the next, navigation buttons, cancel, done and the achievers options AND hide the request button & alert text
+        gameObjects["AchieversCanvas"].SetActive(true);
         gameObjects["AchieversNavigation"].SetActive(true);
         gameObjects["AchieversDoneButton"].SetActive(true);
         gameObjects["AchieversOptionButtons"].SetActive(true);
@@ -364,6 +395,94 @@ public class PlayerHelperController : MonoBehaviour
         currentAchieverIdx = 1;
         currentAchieverJdx = 1;
         AchieversMoveDown();
+    }
+
+    public static void InitCausalLinksMenu()
+    {
+        // reset the CausalLinks List
+        CausalLinks = new();
+
+        // Set the CausalLinksCanvas
+        GameObject CausalLinksMenu = gameObjects["CausalLinksCanvas"];
+        if (CausalLinksMenu == null) { Debug.LogError("CausalLinksCanvas is null"); return; }
+
+        // Set the CausalLinks menu description
+        GameObject descriptionCanvas = gameObjects["CausalLinksDescriptionTextCanvas"];
+        descriptionCanvas.GetComponent<UnityEngine.UI.Text>().text = "Choose any of the Causal Links to delete.";
+
+        // clear the previous CausalLinks buttons
+        foreach (Transform child in gameObjects["CausalLinksButtons"].transform)
+        {
+            if (child.name.StartsWith("B") && child.name != "B0")
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        // create the CausalLinks buttons by cloning B0
+        GameObject buttons = gameObjects["CausalLinksButtons"];
+        GameObject B0 = buttons.transform.Find("B0").gameObject;
+        foreach (CausalLink link in popController.Planner.PartialPlan.CausalLinks)
+        {
+            CausalLinks.Add(link);
+        }
+
+        for (int i = 0; i < CausalLinks.Count; i++)
+        {
+            CausalLink link = CausalLinks[i];
+
+            GameObject button = Instantiate(B0, buttons.transform);
+            button.name = "B" + (i + 1);
+            button.transform.Find("Text").GetComponent<UnityEngine.UI.Text>().text = popController.Planner.PartialPlan.CausalLinkToString(link);
+            button.transform.localPosition = new Vector3(button.transform.localPosition.x, button.transform.localPosition.y + 0.125f * i, button.transform.localPosition.z);
+            button.transform.localScale = new Vector3(2.9f, 1, 1);
+            button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = i == 0 ? new Color(1, 0, 0) : new Color(1, 1, 1);
+        }
+
+        // initialize the CausalLinks description text
+        currentCausalLinkIndex = 1;
+        CausalLinksMoveDown();
+    }
+
+    public static void InitOrderingConstraintsMenu()
+    {
+        // reset the OrderingConstraints List
+        SetOrderingConstraints();
+
+        // Set the OrderingConstraintsCanvas
+        GameObject OrderingConstraintsMenu = gameObjects["OrderingConstraintsCanvas"];
+        if (OrderingConstraintsMenu == null) { Debug.LogError("OrderingConstraintsCanvas is null"); return; }
+
+        // Set the OrderingConstraints menu description
+        GameObject descriptionCanvas = gameObjects["OrderingConstraintsDescriptionTextCanvas"];
+        descriptionCanvas.GetComponent<UnityEngine.UI.Text>().text = "Note: Any Ordering Constraint with Start or Finish will not be shown, And any one implied by a causal link will not be shown, as it cannot be deleted.";
+
+        // clear the previous OrderingConstraints buttons
+        foreach (Transform child in gameObjects["OrderingConstraintsButtons"].transform)
+        {
+            if (child.name.StartsWith("B") && child.name != "B0")
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        // create the OrderingConstraints buttons by cloning B0
+        GameObject buttons = gameObjects["OrderingConstraintsButtons"];
+        GameObject B0 = buttons.transform.Find("B0").gameObject;
+        for (int i = 0; i < OrderingConstraints.Count; i++)
+        {
+            Tuple<Action, Action> pair = OrderingConstraints[i];
+
+            GameObject button = Instantiate(B0, buttons.transform);
+            button.name = "B" + (i + 1);
+            button.transform.Find("Text").GetComponent<UnityEngine.UI.Text>().text = OrderingConstraintToString(pair);
+            button.transform.localPosition = new Vector3(button.transform.localPosition.x, button.transform.localPosition.y + 0.125f * i, button.transform.localPosition.z);
+            button.transform.localScale = new Vector3(2.9f, 1, 1);
+            button.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = i == 0 ? new Color(1, 0, 0) : new Color(1, 1, 1);
+        }
+
+        // initialize the OrderingConstraints description text
+        OrderingConstraintsMoveDown();
     }
 
     #endregion
@@ -494,11 +613,21 @@ public class PlayerHelperController : MonoBehaviour
     //================================================================================================================================================================
     public static void DoneChoosingAgenda()
     {
-        // hide the agenda menu body
-        gameObjects["AgendaCanvas"].transform.Find("BodyTitle").gameObject.SetActive(false);
-
         // show the achievers menu
-        gameObjects["AchieversCanvas"].SetActive(true);
+        if (gameObjects.ContainsKey("AchieversCanvas") && gameObjects["AchieversCanvas"] != null)
+        {
+            gameObjects["AchieversCanvas"].SetActive(true);
+        }
+        else
+        {
+            Debug.Log("AchieversCanvas is not available or not initialized yet.");
+            return;
+        }
+        // hide the agenda menu body
+        if (gameObjects["AchieversCanvas"].activeSelf)
+        {
+            gameObjects["AgendaCanvas"].transform.Find("BodyTitle").gameObject.SetActive(false);
+        }
 
         // initialize the achievers menu
         InitAchieversMenu();
@@ -682,6 +811,73 @@ public class PlayerHelperController : MonoBehaviour
         print("restarting");
         yield return Instance.StartCoroutine(UpdateThreatsText("Clearing and restarting...\n"));
         Instance.StartCoroutine(CheckAndUpdateThreats(tempAction, tempLink));
+    }
+    //================================================================================================================================================================
+    public static void DeleteCausalLink()
+    {
+        Instance.StartCoroutine(DeleteCausalLinkCoroutine());
+    }
+
+    private static IEnumerator DeleteCausalLinkCoroutine()
+    {
+        if (currentCausalLinkIndex < 1 || currentCausalLinkIndex > CausalLinks.Count) yield break;
+
+        GameObject CausalLinksText = gameObjects["CausalLinksDescriptionTextCanvas"];
+
+        CausalLink link = CausalLinks[currentCausalLinkIndex - 1];
+
+        // remove the causal link from the partial plan
+        popController.Planner.PartialPlan.CausalLinks.Remove(link);
+        // re-add the link condition to the agenda
+        popController.Planner.Agenda.Add(link.Consumerj, link.LinkCondition);
+
+        CausalLinksText.GetComponent<UnityEngine.UI.Text>().text = "Causal Link Deleted Successfully!\n";
+        // destroy the causal link button
+        Destroy(gameObjects["CausalLinksButtons"].transform.Find($"B{currentCausalLinkIndex}").gameObject);
+        // set delete button disabled
+        gameObjects["CausalLinksDeleteButton"].GetComponent<UnityEngine.UI.Button>().interactable = false;
+        yield return new WaitForSeconds(3.0f);
+        gameObjects["CausalLinksDeleteButton"].GetComponent<UnityEngine.UI.Button>().interactable = true;
+        CausalLinksText.GetComponent<UnityEngine.UI.Text>().text = "Choose any of the Causal Links to delete.\n";
+
+        InitCausalLinksMenu();
+        // reset agenda
+        InitAgenda();
+        // check for threats
+        if (ThreatAction is not null && ThreatenedLink is not null)
+            Instance.StartCoroutine(CheckAndUpdateThreats(ThreatAction, ThreatenedLink));
+    }
+
+    public static void DeleteOrderingConstraint()
+    {
+        Instance.StartCoroutine(DeleteOrderingConstraintCoroutine());
+    }
+
+    private static IEnumerator DeleteOrderingConstraintCoroutine()
+    {
+        if (currentOrderingConstraintIndex < 1 || currentOrderingConstraintIndex > OrderingConstraints.Count) yield break;
+
+        GameObject OrderingConstraintsText = gameObjects["OrderingConstraintsDescriptionTextCanvas"];
+
+        Tuple<Action, Action> pair = OrderingConstraints[currentOrderingConstraintIndex - 1];
+
+        popController.Planner.PartialPlan.OrderingConstraints.Remove(pair);
+
+        OrderingConstraintsText.GetComponent<UnityEngine.UI.Text>().text = "Ordering Constraint Deleted Successfully!\n";
+        // destroy the ordering constraint button
+        Destroy(gameObjects["OrderingConstraintsButtons"].transform.Find($"B{currentOrderingConstraintIndex}").gameObject);
+        // set delete button disabled
+        gameObjects["OrderingConstraintsDeleteButton"].GetComponent<UnityEngine.UI.Button>().interactable = false;
+        yield return new WaitForSeconds(3.0f);
+        gameObjects["OrderingConstraintsDeleteButton"].GetComponent<UnityEngine.UI.Button>().interactable = true;
+        OrderingConstraintsText.GetComponent<UnityEngine.UI.Text>().text = "Note: Any Ordering Constraint with Start or Finish will not be shown, And any one implied by a causal link will not be shown, as it cannot be deleted.\n";
+
+        InitOrderingConstraintsMenu();
+        // reset agenda
+        InitAgenda();
+        // check for threats
+        if (ThreatAction is not null && ThreatenedLink is not null)
+            Instance.StartCoroutine(CheckAndUpdateThreats(ThreatAction, ThreatenedLink));
     }
     #endregion
 
@@ -906,6 +1102,83 @@ public class PlayerHelperController : MonoBehaviour
         GameObject currentVariableButton = VariableOptionButtons.transform.Find($"B{currentVariableIdxInVariables}{currentVariableJdxInVariables}").gameObject;
         currentVariableButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
     }
+    //================================================================================================================================================================
+    public static void CausalLinksMoveDown()
+    {
+        if (currentCausalLinkIndex < 1 || CausalLinks.Count < 1) return;
+
+        int oldidx = currentCausalLinkIndex;
+        currentCausalLinkIndex = Math.Max(currentCausalLinkIndex - 1, 1);
+
+        // set the next operator button to "#FFFFFF" color
+        GameObject nextCausalLinkButton = gameObjects["CausalLinksButtons"].transform.Find($"B{oldidx}").gameObject;
+        nextCausalLinkButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current operator button to "#FF0000" color
+        GameObject currentCausalLinkButton = gameObjects["CausalLinksButtons"].transform.Find($"B{currentCausalLinkIndex}").gameObject;
+        currentCausalLinkButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+
+        // set the description of the current operator in the description canvas
+        // gameObjects["CausalLinksDescriptionTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = popController.Planner.PartialPlan.CausalLinkToString(CausalLinks[currentCausalLinkIndex - 1]);
+    }
+
+    public static void CausalLinksMoveUp()
+    {
+        if (currentCausalLinkIndex > CausalLinks.Count) return;
+
+        int oldidx = currentCausalLinkIndex;
+        currentCausalLinkIndex = Math.Min(currentCausalLinkIndex + 1, CausalLinks.Count);
+
+        // set the previous operator button to "#FFFFFF" color
+        GameObject previousCausalLinkButton = gameObjects["CausalLinksButtons"].transform.Find($"B{oldidx}").gameObject;
+        previousCausalLinkButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current operator button to "#FF0000" color
+        GameObject currentCausalLinkButton = gameObjects["CausalLinksButtons"].transform.Find($"B{currentCausalLinkIndex}").gameObject;
+        currentCausalLinkButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+
+        // set the description of the current operator in the description canvas
+        // gameObjects["CausalLinksDescriptionTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = popController.Planner.PartialPlan.CausalLinkToString(CausalLinks[currentCausalLinkIndex - 1]);
+    }
+
+    public static void OrderingConstraintsMoveDown()
+    {
+        if (currentOrderingConstraintIndex < 1 || OrderingConstraints.Count < 1) return;
+
+        int oldidx = currentOrderingConstraintIndex;
+        currentOrderingConstraintIndex = Math.Max(currentOrderingConstraintIndex - 1, 1);
+
+        // set the next operator button to "#FFFFFF" color
+        GameObject nextOrderingConstraintButton = gameObjects["OrderingConstraintsButtons"].transform.Find($"B{oldidx}").gameObject;
+        nextOrderingConstraintButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current operator button to "#FF0000" color
+        GameObject currentOrderingConstraintButton = gameObjects["OrderingConstraintsButtons"].transform.Find($"B{currentOrderingConstraintIndex}").gameObject;
+        currentOrderingConstraintButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+
+        // set the description of the current operator in the description canvas
+        // gameObjects["OrderingConstraintsDescriptionTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = OrderingConstraintToString(OrderingConstraints[currentOrderingConstraintIndex - 1]);
+    }
+
+    public static void OrderingConstraintsMoveUp()
+    {
+        if (currentOrderingConstraintIndex > OrderingConstraints.Count) return;
+
+        int oldidx = currentOrderingConstraintIndex;
+        currentOrderingConstraintIndex = Math.Min(currentOrderingConstraintIndex + 1, OrderingConstraints.Count);
+
+        // set the previous operator button to "#FFFFFF" color
+        GameObject previousOrderingConstraintButton = gameObjects["OrderingConstraintsButtons"].transform.Find($"B{oldidx}").gameObject;
+        previousOrderingConstraintButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+
+        // set the color of the current operator button to "#FF0000" color
+        GameObject currentOrderingConstraintButton = gameObjects["OrderingConstraintsButtons"].transform.Find($"B{currentOrderingConstraintIndex}").gameObject;
+        currentOrderingConstraintButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+
+        // set the description of the current operator in the description canvas
+        // gameObjects["OrderingConstraintsDescriptionTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = OrderingConstraintToString(OrderingConstraints[currentOrderingConstraintIndex - 1]);
+    }
+
     #endregion
 
     #region Setting Variables
@@ -968,6 +1241,28 @@ public class PlayerHelperController : MonoBehaviour
 
         variables.Add(myConstants);
         variables.Add(myVariables);
+    }
+
+    private static void SetOrderingConstraints()
+    {
+        OrderingConstraints = new List<Tuple<Action, Action>>();
+        foreach (var tuple in popController.Planner.PartialPlan.OrderingConstraints)
+        {
+            if (tuple.Item1 == null || tuple.Item2 == null) continue;
+            if (tuple.Item1 == new Action("Start", new(), new(), new string[] { })
+                    || tuple.Item2 == new Action("Finish", new(), new(), new string[] { }))
+                continue;
+
+            bool foundLink = false;
+            foreach (CausalLink link in popController.Planner.PartialPlan.CausalLinks)
+            {
+                // Ordering Constraints implied by the Causal Links will not be shown and cannot be removed
+                if (link.Produceri == tuple.Item1 && link.Consumerj == tuple.Item2) { foundLink = true; break; }
+            }
+            if (foundLink) continue;
+
+            OrderingConstraints.Add(new Tuple<Action, Action>(tuple.Item1, tuple.Item2));
+        }
     }
 
     #endregion
@@ -1034,6 +1329,10 @@ public class PlayerHelperController : MonoBehaviour
 
     public static IEnumerator CheckAndUpdateThreats(Action newAction, CausalLink newCausalLink)
     {
+        // initialize the Causal Links & Ordering Constraints
+        InitCausalLinksMenu();
+        InitOrderingConstraintsMenu();
+
         GameObject ThreatsText = gameObjects["ThreatsDescriptionTextCanvas"];
         /*
             ### Initiating Threat detection protocol...
@@ -1055,6 +1354,8 @@ public class PlayerHelperController : MonoBehaviour
         // update the alert text
         if (threat is null)
         {
+            ThreatAction = null;
+            ThreatenedLink = null;
             ThreatsText.GetComponent<UnityEngine.UI.Text>().text += "\n### No Threats Detected!\n$: ";
             NotebookController.TURNED_ON = true;
             yield break;
@@ -1086,9 +1387,9 @@ public class PlayerHelperController : MonoBehaviour
         yield return new WaitForSeconds(2.0f);
     }
 
-    public static void sayHi()
+    private static string OrderingConstraintToString(Tuple<Action, Action> tuple)
     {
-        print("Hi");
+        return $"{popController.ActionToString(tuple.Item1)} ≺ {popController.ActionToString(tuple.Item2)}";
     }
 
     #endregion

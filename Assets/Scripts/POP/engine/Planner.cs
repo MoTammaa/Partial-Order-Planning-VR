@@ -613,21 +613,25 @@ namespace POP
             Node current = new(PartialPlan, Agenda, 0, null);
             if (action is not null)
             {
-                foreach (CausalLink possibleThreatenedLink in PartialPlan.CausalLinks)
+                if (PartialPlan.Actions.Contains(action))
                 {
-                    if (action.hasPossibleNegatedEffectOf(possibleThreatenedLink.LinkCondition))
+                    foreach (CausalLink possibleThreatenedLink in PartialPlan.CausalLinks)
                     {
-                        // check if the action is a threat to the causal link
-                        if (isThreat(action, possibleThreatenedLink, current))
+                        if (action.hasPossibleNegatedEffectOf(possibleThreatenedLink.LinkCondition))
                         {
-                            Helpers.Log($"***\nThreatened Link: {PartialPlan.CausalLinkToString(possibleThreatenedLink)}, Action: {current.partialPlan.ActionToString(action)} \n****\n");
+                            // check if the action is a threat to the causal link
+                            if (isThreat(action, possibleThreatenedLink, current))
+                            {
+                                Helpers.Log($"***\nThreatened Link: {PartialPlan.CausalLinkToString(possibleThreatenedLink)}, Action: {current.partialPlan.ActionToString(action)} \n****\n");
 
-                            return (action, possibleThreatenedLink);
+                                return (action, possibleThreatenedLink);
+                            }
                         }
                     }
                 }
             }
             if (causalLink is null) return null;
+            if (!PartialPlan.CausalLinks.Contains(causalLink)) return null;
 
             foreach (Action possibleThreateningAction in current.partialPlan.Actions)
             {
