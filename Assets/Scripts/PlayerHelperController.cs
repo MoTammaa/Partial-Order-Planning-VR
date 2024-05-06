@@ -8,6 +8,9 @@ using System;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
+using System.Text;
+using Action = POP.Action;
+using Literal = POP.Literal;
 
 public class PlayerHelperController : MonoBehaviour
 {
@@ -36,12 +39,15 @@ public class PlayerHelperController : MonoBehaviour
 
     private static Dictionary<string, GameObject> gameObjects = new();
     private static int currentAgendaIndex = 1;
-    private static List<Tuple<POP.Action, POP.Literal>> tempAgendaList = new();
+    private static List<Tuple<Action, Literal>> tempAgendaList = new();
 
     private static List<List<Operator>> achievers = new();
 
     private static int currentAchieverIdx = 1;
     private static int currentAchieverJdx = 1;
+
+    private static Action ThreatAction = null;
+    private static CausalLink ThreatenedLink = null;
 
 
     //////////////////////////////////////////////////////
@@ -49,7 +55,7 @@ public class PlayerHelperController : MonoBehaviour
     public static List<Operator> Operators { get { return operators; } }
     private static List<List<string>> variables = new(); // will be set by the POPEngineDriverController
 
-    private static POP.Action currentAction;
+    private static Action currentAction;
 
     private static PartialPlan partialPlan; // will be set by the POPEngineDriverController
     public static PartialPlan PartialPlan { get { return partialPlan; } }
@@ -124,6 +130,12 @@ public class PlayerHelperController : MonoBehaviour
         || gameObjects["AchieversCancelButton"] == null)
         {
             print("One of the AchieversCanvas, AchieversDescriptionTextCanvas, AchieversButtons, AchieversDoneButton, AchieversNavigation, AchieversOptionButtons, AchieversNavigation is null");
+        }
+
+        gameObjects.TryAdd("ThreatsDescriptionTextCanvas", GameObject.Find("PC Setup").transform.Find("ThreatsMonitor").Find("MonitorCanvas").Find("Text").gameObject);
+        if (gameObjects["ThreatsDescriptionTextCanvas"] == null)
+        {
+            print("ThreatsDescriptionTextCanvas is null");
         }
 
         gameObjects["AchieversCanvas"].SetActive(false);
@@ -234,14 +246,17 @@ public class PlayerHelperController : MonoBehaviour
         VarMoveDown();
     }
 
-    private static void InitAgenda()
+    private static void InitAgenda(bool show = true)
     {
         tempAgendaList = new();
 
         // Set Visibility
-        gameObjects["AgendaCanvas"].SetActive(true);
-        gameObjects["AgendaCanvas"].transform.Find("BodyTitle").gameObject.SetActive(true);
-        gameObjects["AchieversCanvas"].SetActive(false);
+        if (show)
+        {
+            gameObjects["AgendaCanvas"].SetActive(true);
+            gameObjects["AgendaCanvas"].transform.Find("BodyTitle").gameObject.SetActive(true);
+            gameObjects["AchieversCanvas"].SetActive(false);
+        }
 
         // Set the Agenda menu
         GameObject AgendaCanvas = gameObjects["AgendaCanvas"];
@@ -263,13 +278,13 @@ public class PlayerHelperController : MonoBehaviour
         // create the Agenda buttons by cloning B0
         GameObject buttons = gameObjects["AgendaButtons"];
         GameObject B0 = buttons.transform.Find("B0").gameObject;
-        foreach (Tuple<POP.Action, POP.Literal> pair in popController.Planner.Agenda)
+        foreach (Tuple<Action, Literal> pair in popController.Planner.Agenda)
         {
             tempAgendaList.Add(pair);
         }
         for (int i = 0; i < tempAgendaList.Count; i++)
         {
-            Tuple<POP.Action, POP.Literal> pair = tempAgendaList[i];
+            Tuple<Action, Literal> pair = tempAgendaList[i];
 
             GameObject button = Instantiate(B0, buttons.transform);
             button.name = "B" + (i + 1);
@@ -334,7 +349,7 @@ public class PlayerHelperController : MonoBehaviour
         {
             for (int j = 0; j < achievers[i].Count; j++)
             {
-                POP.Action actionAchiever = (achievers[i][j] is POP.Action action) ? action : null;
+                Action actionAchiever = (achievers[i][j] is Action action) ? action : null;
                 string achiever = (actionAchiever is not null) ? popController.ActionToString(actionAchiever) : achievers[i][j].ToString();
                 GameObject button = Instantiate(buttonTemplate, gameObjects["AchieversOptionButtons"].transform);
                 button.name = $"B{j + 1}{i + 1}"; // e.g. "B11", "B12", "B21", "B22", etc.
@@ -596,47 +611,78 @@ public class PlayerHelperController : MonoBehaviour
 
     }
 
-    public static IEnumerator ApplyAchiever(bool isNew)
+    //================================================================================================================================================================
+    public static void ActionPromotion()
     {
-        // link the action to the start node
-        print("Linking the action");
-        POP.Action newAction = null;
-        CausalLink newLink = null;
-        POP.Node node = popController.Planner.createNode(plan: popController.Planner.PartialPlan, agenda: popController.Planner.Agenda);
-        bool applied = popController.Planner.ApplyAchiever(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1], tempAgendaList[currentAgendaIndex - 1], node, ref newAction, ref newLink);
+        Instance.StartCoroutine(PromoteAction());
+    }
+    private static IEnumerator PromoteAction()
+    {
+        if (ThreatAction is null || ThreatenedLink is null) yield break;
 
-        if (applied)
+        GameObject ThreatsText = gameObjects["ThreatsDescriptionTextCanvas"];
+        ThreatsText.GetComponent<UnityEngine.UI.Text>().text += " P\n";
+
+        if (ThreatenedLink.Consumerj == new Action("Finish", new(), new(), new string[] { }))
         {
-            print("Achiever Applied Successfully");
-            print(popController.Planner.Agenda.Remove(tempAgendaList[currentAgendaIndex - 1]));
+            yield return Instance.StartCoroutine(UpdateThreatsText($"###ERROR! Cannot promote action after the Finish() action.\n"));
+            yield break;
+        }
 
-            // update the alert text
-            gameObjects["AchieversCancelButton"].SetActive(false);
-            gameObjects["AchieversAlertTextCanvas"].SetActive(true);
-            if (isNew)
-            {
-                gameObjects["AchieversAlertTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = "New Achiever Added and Applied Successfully";
-            }
-            else
-            {
-                gameObjects["AchieversAlertTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = "Achiever Applied and Linked Successfully!\n Please Go check the Graph";
-            }
-            yield return new WaitForSeconds(3.0f);
-            gameObjects["AchieversAlertTextCanvas"].SetActive(false);
-            gameObjects["AchieversCancelButton"].SetActive(true);
+        bool successful = popController.Planner.UserPromoteActionOnLink(ThreatAction, ThreatenedLink);
 
-            // print current plan
-            print(popController.Planner.PartialPlan);
-
-            InitAgenda();
-            AgendaMoveDown();
+        var tempAction = ThreatAction;
+        var tempLink = ThreatenedLink;
+        if (successful)
+        {
+            ThreatAction = null;
+            ThreatenedLink = null;
+            yield return Instance.StartCoroutine(UpdateThreatsText($"Action {popController.ActionToString(tempAction)} has been promoted successfully.\n"));
         }
         else
         {
-            print("Achiever Not Applied Successfully");
+            yield return Instance.StartCoroutine(UpdateThreatsText($"###ERROR! Action {popController.ActionToString(tempAction)} could not be promoted. Cycle Detected! Rolling Back!\n"));
         }
+        yield return Instance.StartCoroutine(UpdateThreatsText("Clearing and restarting...\n"));
+        Instance.StartCoroutine(CheckAndUpdateThreats(tempAction, tempLink));
     }
 
+    public static void ActionDemotion()
+    {
+        Instance.StartCoroutine(DemoteAction());
+    }
+    private static IEnumerator DemoteAction()
+    {
+        if (ThreatAction is null || ThreatenedLink is null) yield break;
+
+        GameObject ThreatsText = gameObjects["ThreatsDescriptionTextCanvas"];
+        ThreatsText.GetComponent<UnityEngine.UI.Text>().text += " D\n";
+
+        if (ThreatenedLink.Consumerj == new Action("Start", new(), new(), new string[] { }))
+        {
+            yield return Instance.StartCoroutine(UpdateThreatsText($"###ERROR! Cannot demote action before the Start() action.\n"));
+            yield break;
+        }
+
+        bool successful = popController.Planner.UserDemoteActionOnLink(ThreatAction, ThreatenedLink);
+
+        var tempAction = ThreatAction;
+        var tempLink = ThreatenedLink;
+        if (successful)
+        {
+            print(popController.Planner.PartialPlan);
+            ThreatAction = null;
+            ThreatenedLink = null;
+            yield return Instance.StartCoroutine(UpdateThreatsText($"Action {popController.ActionToString(tempAction)} has been demoted successfully.\n"));
+        }
+        else
+        {
+            yield return Instance.StartCoroutine(UpdateThreatsText($"###ERROR! Action {popController.ActionToString(tempAction)} could not be demoted. Cycle Detected! Rolling Back!\n"));
+        }
+        print("restarting");
+        yield return Instance.StartCoroutine(UpdateThreatsText("Clearing and restarting...\n"));
+        Instance.StartCoroutine(CheckAndUpdateThreats(tempAction, tempLink));
+    }
     #endregion
 
     #region Navigation
@@ -922,6 +968,127 @@ public class PlayerHelperController : MonoBehaviour
 
         variables.Add(myConstants);
         variables.Add(myVariables);
+    }
+
+    #endregion
+
+    #region Helpers
+
+    public static IEnumerator ApplyAchiever(bool isNew)
+    {
+        // link the action to the start node
+        print("Linking the action");
+        Action newAction = null;
+        CausalLink newLink = null;
+        bool applied = popController.Planner.UserApplyAchiever(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1], tempAgendaList[currentAgendaIndex - 1], ref newAction, ref newLink);
+
+        if (applied)
+        {
+            print("Achiever Applied Successfully");
+            print(popController.Planner.Agenda.Remove(tempAgendaList[currentAgendaIndex - 1]));
+
+            // update the alert text
+            gameObjects["AchieversCancelButton"].SetActive(false);
+            gameObjects["AchieversAlertTextCanvas"].SetActive(true);
+            if (isNew)
+            {
+                gameObjects["AchieversAlertTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = "New Achiever Added and Applied Successfully";
+            }
+            else
+            {
+                gameObjects["AchieversAlertTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = "Achiever Applied and Linked Successfully!\n Please Go check the Graph";
+            }
+            // check for threats
+            Instance.StartCoroutine(CheckAndUpdateThreats(newAction, newLink));
+            // init the agenda but don't show yet
+            InitAgenda(false);
+
+            yield return new WaitForSeconds(3.0f);
+            gameObjects["AchieversAlertTextCanvas"].SetActive(false);
+            gameObjects["AchieversCancelButton"].SetActive(true);
+
+            // print current plan
+            print(popController.Planner.PartialPlan);
+
+            // now show the agenda menu
+            gameObjects["AgendaCanvas"].SetActive(true);
+            gameObjects["AgendaCanvas"].transform.Find("BodyTitle").gameObject.SetActive(true);
+            gameObjects["AchieversCanvas"].SetActive(false);
+        }
+        else
+        {
+            print("Achiever Not Applied Successfully");
+            gameObjects["AchieversAlertTextCanvas"].SetActive(true);
+            gameObjects["AchieversAlertTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = "Conflict: Achiever Couldn't Bind Variables!";
+            yield return new WaitForSeconds(3.0f);
+
+            // show the next, navigation buttons, cancel, done and the achievers options AND hide the request button & alert text
+            gameObjects["AchieversNavigation"].SetActive(true);
+            gameObjects["AchieversDoneButton"].SetActive(true);
+            gameObjects["AchieversOptionButtons"].SetActive(true);
+            gameObjects["AchieversRequestButton"].SetActive(false);
+            gameObjects["AchieversAlertTextCanvas"].SetActive(false);
+            gameObjects["AchieversCancelButton"].SetActive(true);
+        }
+    }
+
+    public static IEnumerator CheckAndUpdateThreats(Action newAction, CausalLink newCausalLink)
+    {
+        GameObject ThreatsText = gameObjects["ThreatsDescriptionTextCanvas"];
+        /*
+            ### Initiating Threat detection protocol...
+            ### Do you want to abort? (Y/N) N
+            $: sudo threat -a action -l link
+            Executing Threat Search Algorithm...
+            ### ERROR! THREAT DETECTED:
+            > Action(p1,p2,p3) is threatening the link:
+            Action2(p1,p2) --Precond()--> Action3(a1,a2)
+            ### PRESS 'P' TO INITIATE PROMOTION PROTOCOL OR 'D' TO INITIATE DEMOTION PROTOCOL...
+        */
+        ThreatsText.GetComponent<UnityEngine.UI.Text>().text = "### Initiating Threat detection protocol...\n### Do you want to abort? (Y/N) N\n$: sudo threat -a action -l link\nExecuting Threat Search Algorithm...";
+
+        yield return new WaitForSeconds(1.0f);
+
+        // check for threats
+        var threat = popController.Planner.UserCheckForThreats(newAction, newCausalLink);
+
+        // update the alert text
+        if (threat is null)
+        {
+            ThreatsText.GetComponent<UnityEngine.UI.Text>().text += "\n### No Threats Detected!\n$: ";
+            NotebookController.TURNED_ON = true;
+            yield break;
+        }
+
+        ThreatAction = threat.Value.Threat;
+        ThreatenedLink = threat.Value.ThreatenedLink;
+
+        ThreatsText.GetComponent<UnityEngine.UI.Text>().text += $"\n### ERROR! THREAT DETECTED:\n> Action {popController.Planner.PartialPlan.ActionToString(ThreatAction)} is threatening the link:\n{popController.Planner.PartialPlan.CausalLinkToString(ThreatenedLink)} \n### PRESS 'P' TO INITIATE PROMOTION PROTOCOL OR 'D' TO INITIATE DEMOTION PROTOCOL... ";
+
+        NotebookController.TURNED_ON = false;
+    }
+
+    private static IEnumerator UpdateThreatsText(string text)
+    {
+        GameObject ThreatsText = gameObjects["ThreatsDescriptionTextCanvas"];
+
+        string[] lines = ThreatsText.GetComponent<UnityEngine.UI.Text>().text.Split('\n');
+        StringBuilder newText = new();
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            if (string.IsNullOrEmpty(lines[i])) continue;
+            newText.Append(lines[i] + "\n");
+        }
+        newText.Append(text + "\n");
+        ThreatsText.GetComponent<UnityEngine.UI.Text>().text = newText.ToString();
+
+        yield return new WaitForSeconds(2.0f);
+    }
+
+    public static void sayHi()
+    {
+        print("Hi");
     }
 
     #endregion

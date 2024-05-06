@@ -215,6 +215,20 @@ namespace POP
         }
 
 
+        public bool UserApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, ref Action? newActionToReturn, ref CausalLink? newCausalLinkToReturn)
+        {
+            Node current = createNode(new(PartialPlan, Agenda, 0, null));
+            bool applied = ApplyAchiever(achiever, agendaActionLiteralPair, current, ref newActionToReturn, ref newCausalLinkToReturn);
+
+            applied = applied && new Graph<Action>(current.partialPlan.OrderingConstraints).IsAcyclic();
+
+            if (applied)
+            {
+                plan = current.partialPlan;
+                agenda = current.agenda;
+            }
+            return applied;
+        }
         public bool ApplyAchiever(Operator achiever, Tuple<Action, Literal> agendaActionLiteralPair, Node node, ref Action? newActionToReturn, ref CausalLink? newCausalLinkToReturn)
         {
             // true if the action is added to the plan, false if couldn't satisfy binding constraints or otherwise
@@ -592,6 +606,72 @@ namespace POP
             graph.AddEdge(a, cl.Consumerj);
 
             return graph.IsAcyclic();
+        }
+
+        public (Action Threat, CausalLink ThreatenedLink)? UserCheckForThreats(Action action, CausalLink causalLink)
+        {
+            Node current = new(PartialPlan, Agenda, 0, null);
+            if (action is not null)
+            {
+                foreach (CausalLink possibleThreatenedLink in PartialPlan.CausalLinks)
+                {
+                    if (action.hasPossibleNegatedEffectOf(possibleThreatenedLink.LinkCondition))
+                    {
+                        // check if the action is a threat to the causal link
+                        if (isThreat(action, possibleThreatenedLink, current))
+                        {
+                            Helpers.Log($"***\nThreatened Link: {PartialPlan.CausalLinkToString(possibleThreatenedLink)}, Action: {current.partialPlan.ActionToString(action)} \n****\n");
+
+                            return (action, possibleThreatenedLink);
+                        }
+                    }
+                }
+            }
+            if (causalLink is null) return null;
+
+            foreach (Action possibleThreateningAction in current.partialPlan.Actions)
+            {
+                if (possibleThreateningAction.hasPossibleNegatedEffectOf(causalLink.LinkCondition))
+                {
+                    // check if the action is a threat to the new causal link
+                    if (isThreat(possibleThreateningAction, causalLink, current))
+                    {
+                        Helpers.Log($"***\n Action: {current.partialPlan.ActionToString(possibleThreateningAction)},\nThreatened Link: {current.partialPlan.CausalLinkToString(causalLink)} \n****\n");
+
+                        return (possibleThreateningAction, causalLink);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public bool UserPromoteActionOnLink(Action action, CausalLink causalLink)
+        {
+            if (causalLink.Consumerj == new Action("Finish", new List<Literal>(), Problem.GoalState, new string[] { }))
+                return false;
+
+            PartialPlan.OrderingConstraints.Add(new(causalLink.Consumerj, action));
+
+            bool isAcyclic = new Graph<Action>(PartialPlan.OrderingConstraints).IsAcyclic();
+            if (!isAcyclic) // rollback the changes
+                PartialPlan.OrderingConstraints.Remove(new(causalLink.Consumerj, action));
+
+            return isAcyclic;
+        }
+
+        public bool UserDemoteActionOnLink(Action action, CausalLink causalLink)
+        {
+            if (causalLink.Produceri == new Action("Start", Problem.InitialState, new List<Literal>(), new string[] { }))
+                return false;
+
+            PartialPlan.OrderingConstraints.Add(new(action, causalLink.Produceri));
+
+            bool isAcyclic = new Graph<Action>(PartialPlan.OrderingConstraints).IsAcyclic();
+            if (!isAcyclic) // rollback the changes
+                PartialPlan.OrderingConstraints.Remove(new(action, causalLink.Produceri));
+
+            return isAcyclic;
         }
 
     }

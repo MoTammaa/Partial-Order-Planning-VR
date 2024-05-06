@@ -11,6 +11,7 @@ namespace POP
 #nullable enable
     public class Helpers
     {
+        public static string Logs = "";
         public static Dictionary<Expression, List<Expression>>? Unify(Literal l1, Literal l2, BindingConstraints bindingConstraints)
         {
             return Unify(Expression.Expressionize(l1, bindingConstraints), Expression.Expressionize(l2, bindingConstraints));
@@ -120,6 +121,14 @@ namespace POP
                 Console.WriteLine(obj);
             }
         }
+
+        public static void Log(object obj)
+        {
+            Logs += obj + "\n";
+            println(obj);
+        }
+
+        public static void FlushLogs() { Logs = ""; }
 
         public static void ThrowIfNull([NotNull] object? argument, string? paramName = null)
         {

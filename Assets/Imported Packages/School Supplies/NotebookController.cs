@@ -7,18 +7,32 @@ public class NotebookController : MonoBehaviour
 {
     private bool Opening = false, Opened = true;
     private bool Closing = false, Closed = false;
+    private bool checking = false;
+    public static bool TURNED_ON = true;
+    private Vector3 originalAgendaScale;
 
     // Start is called before the first frame update
     void Start()
     {
         // Open();
         // Close();
+        originalAgendaScale = this.transform.parent.localScale;
 
     }
 
     // Update is called once per frame
     void Update()
     {
+
+        StartCoroutine(StartCheck());
+    }
+
+    IEnumerator StartCheck()
+    {
+        this.transform.parent.localScale = TURNED_ON ? originalAgendaScale : new Vector3(0.0f, 0.0f, 0.0f);
+        if (checking || !TURNED_ON) yield break;
+        checking = true;
+        yield return new WaitForSeconds(0.5f);
         // TODO: needs testing first with VR
 
         // get the position of the player
@@ -36,8 +50,6 @@ public class NotebookController : MonoBehaviour
         // get the distance between the player and the notebook
         float distance = Vector3.Distance(playerPosition, notebookPosition);
         // if the player is close to the notebook and the notebook is not opening or closing then open the notebook
-        if (distance < 3.5) print("Too close, Distance: " + distance);
-        else print("far, Distance: " + distance);
         if (distance < 3.5 && !Opening && !Opened)
         {
             print("Opening");
@@ -65,8 +77,7 @@ public class NotebookController : MonoBehaviour
             Closing = true;
             Close();
         }
-
-
+        checking = false;
     }
 
     public void Open()
