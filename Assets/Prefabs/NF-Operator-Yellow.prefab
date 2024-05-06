@@ -120,6 +120,7 @@ GameObject:
   - component: {fileID: 1445920736182336464}
   - component: {fileID: 2088468379381467721}
   - component: {fileID: 5690855291338295408}
+  - component: {fileID: 5406552404486369861}
   m_Layer: 0
   m_Name: NF-Operator-Yellow
   m_TagString: Untagged
@@ -298,6 +299,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5406552404486369861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1692904021113701596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b2de1cfba71de84f8db3c1733efe224, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _Node:
+    _Name: Action()
+    _Color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1839851357911706695
 GameObject:
   m_ObjectHideFlags: 0

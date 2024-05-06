@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,12 +27,22 @@ namespace ForceDirectedGraph
         /// </summary>
         private void Awake()
         {
-            Rigidbody = GetComponent<Rigidbody2D>();
-            Draggable = GetComponent<Draggable>();
+            if (GetComponent<Rigidbody2D>() != null)
+                Rigidbody2d = GetComponent<Rigidbody2D>();
+            if (GetComponent<Draggable>() != null)
+                Draggable = GetComponent<Draggable>();
 
             // Freeze rotation
-            Rigidbody.angularVelocity = 0;
-            Rigidbody.freezeRotation = true;
+            if (Rigidbody2d != null)
+            {
+                Rigidbody2d.angularVelocity = 0;
+                Rigidbody2d.freezeRotation = true;
+            }
+            if (Rigidbody != null)
+            {
+                Rigidbody.angularVelocity = Vector3.zero;
+                Rigidbody.freezeRotation = true;
+            }
         }
 
         /// <summary>
@@ -43,7 +54,8 @@ namespace ForceDirectedGraph
             _Node = node;
 
             // Set the color
-            GetComponent<SpriteRenderer>().color = node.Color;
+            if (GetComponent<SpriteRenderer>() != null)
+                GetComponent<SpriteRenderer>().color = node.Color;
 
             // Set name
             UpdateName(node.Name);
@@ -99,7 +111,8 @@ namespace ForceDirectedGraph
         /// <summary>
         /// References the rigid body that handles the movements of the node.
         /// </summary>
-        private Rigidbody2D Rigidbody;
+        private Rigidbody2D Rigidbody2d;
+        private Rigidbody Rigidbody;
 
         /// <summary>
         /// References the draggable script that will notify us if the node is being dragged.
@@ -131,8 +144,15 @@ namespace ForceDirectedGraph
         public void ApplyForces(List<Vector2> forces, bool applyImmediately = false)
         {
             if (applyImmediately)
+            {
                 foreach (var force in forces)
-                    Rigidbody.AddForce(force);
+                {
+                    if (Rigidbody2d != null)
+                        Rigidbody2d.AddForce(force);
+                    else if (Rigidbody != null)
+                        Rigidbody.AddForce(force);
+                }
+            }
             else
                 Forces = forces;
         }
@@ -143,15 +163,21 @@ namespace ForceDirectedGraph
         private void Update()
         {
             // Check if the object is being dragged
-            if (Draggable.IsBeingDragged)
+            if (Draggable)
             {
-                // Do nothing
+                if (Draggable.IsBeingDragged)
+                {
+                    // Do nothing
+                }
             }
 
             // The object is not being dragged
             else
             {
-                Rigidbody.velocity = Vector3.zero;
+                if (Rigidbody2d != null)
+                    Rigidbody2d.velocity = Vector3.zero;
+                if (Rigidbody != null)
+                    Rigidbody.velocity = Vector3.zero;
 
                 Vector2 velocity = Vector2.zero;
                 if (Forces != null)
@@ -160,7 +186,10 @@ namespace ForceDirectedGraph
 
                 velocity = velocity.normalized * Mathf.Clamp(velocity.magnitude, 0f, MAX_VELOCITY_MAGNITUDE);
 
-                Rigidbody.AddForce(velocity);
+                if (Rigidbody2d != null)
+                    Rigidbody2d.AddForce(velocity);
+                else if (Rigidbody != null)
+                    Rigidbody.AddForce(velocity);
             }
             UpdateName(_Node.Name);
         }

@@ -230,7 +230,7 @@ namespace ForceDirectedGraph
         /// Adds & displays a new node to the graph.
         /// </summary>
         /// <param name="node">The node to add.</param>
-        public void AddDisplayNode(DataStructure.Node node, Color color = default, Vector3 position = default)
+        public void AddDisplayNode(DataStructure.Node node, Color color = default, Vector3 position = default, GameObject existingNode = null)
         {
             Color red = Color.red, green = Color.green;
             if (color == default) color = red;
@@ -238,14 +238,17 @@ namespace ForceDirectedGraph
 
             // Create a new entity instance
             int index = (node.Name == "Start()" || node.Name == "Finish()") ? 2 : color == red ? 0 : color == green ? 1 : UnityEngine.Random.Range(0, 2);
-            GameObject graphNode = Instantiate(NoteTemplate[index], NodesParent.transform);
-            graphNode.transform.position = position;
-            // add the starting position offset to the node
-            graphNode.transform.position = new Vector3(graphNode.transform.position.x + GraphPosition.x, graphNode.transform.position.y + GraphPosition.y, graphNode.transform.position.z + GraphPosition.z);
-            graphNode.transform.localRotation = Quaternion.Euler(Vector3.zero);
+            GameObject graphNode = existingNode ?? Instantiate(NoteTemplate[index], NodesParent.transform);
+            if (!existingNode)
+            {
+                graphNode.transform.position = position;
+                // add the starting position offset to the node
+                graphNode.transform.position = new Vector3(graphNode.transform.position.x + GraphPosition.x, graphNode.transform.position.y + GraphPosition.y, graphNode.transform.position.z + GraphPosition.z);
+                graphNode.transform.localRotation = Quaternion.Euler(Vector3.zero);
 
-            if (position == Vector3.zero)
-                graphNode.transform.localPosition = new Vector3(-GRAPH_WIDTH / 2 + 0.1f, -GRAPH_HEIGHT / 2 + 0.1f, 0);
+                if (position == Vector3.zero)
+                    graphNode.transform.localPosition = new Vector3(-GRAPH_WIDTH / 2 + 0.1f, -GRAPH_HEIGHT / 2 + 0.1f, 0);
+            }
 
             // Extract the script
             GraphNode script = graphNode.GetComponent<GraphNode>();
@@ -341,6 +344,7 @@ namespace ForceDirectedGraph
         /// <param name="link">The link to add.</param>
         public void AddDisplayLink(DataStructure.Link link)
         {
+            if (link == null) return;
             // Find graph nodes
             if (!_GraphNodes.ContainsKey(link.FirstNodeId)
                 || !_GraphNodes.ContainsKey(link.SecondNodeId))

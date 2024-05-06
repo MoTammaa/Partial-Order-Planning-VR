@@ -23,7 +23,10 @@ namespace ForceDirectedGraph
         /// </summary>
         private void Awake()
         {
-            Rigidbody = GetComponent<Rigidbody2D>();
+            if (GetComponent<Rigidbody2D>() != null)
+                Rigidbody2d = GetComponent<Rigidbody2D>();
+            if (GetComponent<Rigidbody>() != null)
+                Rigidbody = GetComponent<Rigidbody>();
         }
 
         #endregion
@@ -33,7 +36,8 @@ namespace ForceDirectedGraph
         /// <summary>
         /// References the rigid body that handles the movements of the node.
         /// </summary>
-        private Rigidbody2D Rigidbody;
+        private Rigidbody2D Rigidbody2d;
+        private Rigidbody Rigidbody;
 
         /// <summary>
         /// States whether the object is currently being dragged or not.
@@ -58,8 +62,16 @@ namespace ForceDirectedGraph
         private void OnMouseUp()
         {
             IsBeingDragged = false;
-            Rigidbody.velocity = Vector3.zero;
-            Rigidbody.angularVelocity = 0;
+            if (Rigidbody2d != null)
+            {
+                Rigidbody2d.velocity = Vector3.zero;
+                Rigidbody2d.angularVelocity = 0;
+            }
+            if (Rigidbody != null)
+            {
+                Rigidbody.velocity = Vector3.zero;
+                Rigidbody.angularVelocity = Vector3.zero;
+            }
         }
 
         /// <summary>
@@ -79,8 +91,16 @@ namespace ForceDirectedGraph
             force *= DRAGGING_FORCE * Time.deltaTime;
 
             // Apply force
-            Rigidbody.velocity = Vector3.zero;
-            Rigidbody.AddForce(force);
+            if (Rigidbody != null)
+            {
+                Rigidbody.velocity = Vector3.zero;
+                Rigidbody.AddForce(force);
+            }
+            if (Rigidbody2d != null)
+            {
+                Rigidbody2d.velocity = Vector3.zero;
+                Rigidbody2d.AddForce(force);
+            }
         }
 
         #endregion

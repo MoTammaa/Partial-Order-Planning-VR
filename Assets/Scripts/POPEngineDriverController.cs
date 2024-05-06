@@ -15,12 +15,14 @@ public class POPEngineDriverController : MonoBehaviour
     /// </summary>
     [SerializeField]
     [Tooltip("The graph displaying the network.")]
-    private static GraphManager Graph;
+    private static GraphManager _Graph;
+    public static GraphManager Graph { get { return _Graph; } }
 
     /// <summary>
     /// The Network that contains the graph data.
     /// </summary>
-    private static ForceDirectedGraph.DataStructure.Network Network;
+    private static ForceDirectedGraph.DataStructure.Network _Network;
+    public static ForceDirectedGraph.DataStructure.Network Network { get { return _Network; } }
 
     /// <summary>
     /// POP Backend Controller Reference.
@@ -43,10 +45,10 @@ public class POPEngineDriverController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Graph = FindObjectOfType<GraphManager>();
 
         if (PlayerPrefs.HasKey("Mode")) if (PlayerPrefs.GetString("Mode") == "Spectator")
             {
+                _Graph = GameObject.Find("GraphView").GetComponent<GraphManager>();
                 SearchStrategy searchStrategy = SearchStrategy.AStar;
                 int maxRecommendedDepth;
                 PlanningProblem planningProblem = PlanningProblem.GroceriesBuyProblem(out maxRecommendedDepth);
@@ -54,6 +56,7 @@ public class POPEngineDriverController : MonoBehaviour
             }
             else
             {
+                _Graph = GameObject.Find("GraphDraw").GetComponent<GraphManager>();
                 InitializePlannerAndControllerFromPlayerPrefs();
                 // PlayerHelperController.InitOperatorsMenu();
             }
@@ -122,9 +125,9 @@ public class POPEngineDriverController : MonoBehaviour
             // Display the lineariztion of the final plan
             // AddLinearizedActionsToNetwork(new Graph<POP.Action>(currentNode.partialPlan.OrderingConstraints).Linearize(), currentNode.partialPlan);
 
-            Graph.MaxOutRepulsionForce();
+            _Graph.MaxOutRepulsionForce();
             yield return new WaitForSeconds(2);
-            Graph.ResetForces();
+            _Graph.ResetForces();
         }
 
         Debug.Log($"Done after {(i - 1)} iterations: {currentNode}");
@@ -138,18 +141,19 @@ public class POPEngineDriverController : MonoBehaviour
     {
 
         // Start a new network
-        Network = new ForceDirectedGraph.DataStructure.Network();
+        _Network = new ForceDirectedGraph.DataStructure.Network();
 
         // Generate the network
         if (partialPlan == null)
         {
+            _Graph.Initialize(_Network);
             return;
         }
         // Create a node for each operator
         foreach (POP.Action action in partialPlan.Actions)
         {
             ForceDirectedGraph.DataStructure.Node node = new ForceDirectedGraph.DataStructure.Node(action, partialPlan);
-            Network.Nodes.Add(node);
+            _Network.Nodes.Add(node);
         }
 
         // Create a link for each causal link
@@ -164,7 +168,7 @@ public class POPEngineDriverController : MonoBehaviour
             {
                 ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(GetNodeByAction(cl.Produceri), GetNodeByAction(cl.Consumerj),
                              0.01f, CausalLinkCondition: partialPlan.LiteralToString(cl.LinkCondition));
-                Network.Links.Add(link);
+                _Network.Links.Add(link);
             }
         }
 
@@ -180,15 +184,15 @@ public class POPEngineDriverController : MonoBehaviour
 
             ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(GetNodeByAction(oc.Item1), GetNodeByAction(oc.Item2),
                          0.001f, isOrderingConstraint: true);
-            Network.Links.Add(link);
+            _Network.Links.Add(link);
         }
 
         // Display the network
-        if (Graph is null)
+        if (_Graph is null)
         {
             print("Graph is null");
         }
-        Graph.Initialize(Network);
+        _Graph.Initialize(_Network);
     }
 
     /// <summary>
@@ -197,20 +201,20 @@ public class POPEngineDriverController : MonoBehaviour
     /// <param name="actionsDifference">The differences in actions between the two partial plans.</param>
     public static void UpdateAllNodesColor(List<Tuple<POP.Action, bool>> actionsDifference)
     {
-        if (Network is null)
+        if (_Network is null)
         {
             return;
         }
 
         // Update the old nodes' colors to red
-        foreach (ForceDirectedGraph.DataStructure.Node node in Network.Nodes)
+        foreach (ForceDirectedGraph.DataStructure.Node node in _Network.Nodes)
         {
             if (node.Name == "Start()" || node.Name == "Finish()")
                 continue;
-            GraphNode graphNode = Graph.GraphNodes[node.Id];
+            GraphNode graphNode = _Graph.GraphNodes[node.Id];
             if (graphNode is not null)
             {
-                Graph.ChangeNodeColor(node, Color.red);
+                _Graph.ChangeNodeColor(node, Color.red);
             }
         }
 
@@ -221,10 +225,10 @@ public class POPEngineDriverController : MonoBehaviour
             ForceDirectedGraph.DataStructure.Node node = GetNodeByAction(actionDiff.Item1);
             if (node is not null)
             {
-                GraphNode graphNode = Graph.GraphNodes[node.Id];
+                GraphNode graphNode = _Graph.GraphNodes[node.Id];
                 if (graphNode is not null && actionDiff.Item2)
                 {
-                    Graph.ChangeNodeColor(node, Color.green);
+                    _Graph.ChangeNodeColor(node, Color.green);
                 }
             }
         }
@@ -238,28 +242,28 @@ public class POPEngineDriverController : MonoBehaviour
     /// <param name="linearizedActions">The list of linearized actions to add to the network.</param>
     public static void AddLinearizedActionsToNetwork(List<POP.Action> linearizedActions, PartialPlan partialPlan)
     {
-        if (Network is null)
+        if (_Network is null)
         {
-            Network = new ForceDirectedGraph.DataStructure.Network();
+            _Network = new ForceDirectedGraph.DataStructure.Network();
         }
 
         // Create a node for each Action
         foreach (POP.Action action in linearizedActions)
         {
             ForceDirectedGraph.DataStructure.Node node = new ForceDirectedGraph.DataStructure.Node(action, partialPlan);
-            Network.Nodes.Add(node);
+            _Network.Nodes.Add(node);
         }
 
         // Create a link between each pair of consecutive actions as an ordering constraint
         for (int i = 0; i < linearizedActions.Count - 1; i++)
         {
-            ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(Network.Nodes[Network.Nodes.Count - linearizedActions.Count + i], Network.Nodes[Network.Nodes.Count - linearizedActions.Count + i + 1],
+            ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(_Network.Nodes[_Network.Nodes.Count - linearizedActions.Count + i], _Network.Nodes[_Network.Nodes.Count - linearizedActions.Count + i + 1],
                          0.3f, isOrderingConstraint: true);
-            Network.Links.Add(link);
+            _Network.Links.Add(link);
         }
 
         // Display the network
-        Graph.Initialize(Network);
+        _Graph.Initialize(_Network);
     }
 
 
@@ -272,7 +276,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// <param name="partialPlan">The partial plan to sync the network with.</param>
     public static void UpdateNetwork(PartialPlan partialPlan, List<Tuple<POP.Action, bool>> actionsDifference, List<Tuple<POP.CausalLink, bool>> causalLinksDifference, List<Tuple<Tuple<POP.Action, POP.Action>, bool>> orderingConstraintsDifference)
     {
-        if (Network is null)
+        if (_Network is null)
         {
             return;
         }
@@ -284,15 +288,15 @@ public class POPEngineDriverController : MonoBehaviour
             {
                 // Add the action to the network
                 ForceDirectedGraph.DataStructure.Node node = new ForceDirectedGraph.DataStructure.Node(actionDiff.Item1, partialPlan);
-                Network.Nodes.Add(node);
-                Graph.AddDisplayNode(node);
+                _Network.Nodes.Add(node);
+                _Graph.AddDisplayNode(node);
             }
             else
             {
                 // Remove the action from the network
                 ForceDirectedGraph.DataStructure.Node node = GetNodeByAction(actionDiff.Item1);
-                Network.Nodes.Remove(node);
-                Graph.RemoveNode(node);
+                _Network.Nodes.Remove(node);
+                _Graph.RemoveNode(node);
             }
         }
 
@@ -303,8 +307,8 @@ public class POPEngineDriverController : MonoBehaviour
                 // Add the causal link to the network
                 ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(GetNodeByAction(causalLinkDiff.Item1.Produceri), GetNodeByAction(causalLinkDiff.Item1.Consumerj),
                              0.01f, CausalLinkCondition: partialPlan.LiteralToString(causalLinkDiff.Item1.LinkCondition));
-                Network.Links.Add(link);
-                Graph.AddDisplayLink(link);
+                _Network.Links.Add(link);
+                _Graph.AddDisplayLink(link);
             }
             else
             {
@@ -312,9 +316,9 @@ public class POPEngineDriverController : MonoBehaviour
                 ForceDirectedGraph.DataStructure.Link link = GetLinkByActions(causalLinkDiff.Item1.Produceri, causalLinkDiff.Item1.Consumerj, partialPlan);
                 // Check first if there is no other link with the same actions
                 bool isThereAnotherLink = partialPlan.OrderingConstraints.Contains(new(causalLinkDiff.Item1.Produceri, causalLinkDiff.Item1.Consumerj));
-                if (Graph.RemoveLink(link, isThereAnotherLink, partialPlan.LiteralToString(causalLinkDiff.Item1.LinkCondition)))
+                if (_Graph.RemoveLink(link, isThereAnotherLink, partialPlan.LiteralToString(causalLinkDiff.Item1.LinkCondition)))
                     if (isThereAnotherLink) link.IsOrderingConstraint = true;
-                    else Network.Links.Remove(link);
+                    else _Network.Links.Remove(link);
 
             }
         }
@@ -326,16 +330,16 @@ public class POPEngineDriverController : MonoBehaviour
                 // Add the ordering constraint to the network
                 ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(GetNodeByAction(orderingConstraintDiff.Item1.Item1), GetNodeByAction(orderingConstraintDiff.Item1.Item2),
                              0.001f, isOrderingConstraint: true);
-                Network.Links.Add(link);
-                Graph.AddDisplayLink(link);
+                _Network.Links.Add(link);
+                _Graph.AddDisplayLink(link);
             }
             else
             {
                 // Remove the ordering constraint from the network
                 ForceDirectedGraph.DataStructure.Link link = GetLinkByActions(orderingConstraintDiff.Item1.Item1, orderingConstraintDiff.Item1.Item2, partialPlan);
 
-                Network.Links.Remove(link);
-                Graph.RemoveLink(link, false);
+                _Network.Links.Remove(link);
+                _Graph.RemoveLink(link, false);
             }
         }
 
@@ -348,16 +352,16 @@ public class POPEngineDriverController : MonoBehaviour
     /// <param name="partialPlan">The new partial plan to update the nodes' names with.</param>
     public static void UpdateNodesText(PartialPlan partialPlan)
     {
-        if (Network is null)
+        if (_Network is null)
         {
             return;
         }
 
         // Update the nodes' data
-        foreach (ForceDirectedGraph.DataStructure.Node node in Network.Nodes)
+        foreach (ForceDirectedGraph.DataStructure.Node node in _Network.Nodes)
         {
             node.UpdateName(partialPlan.ActionToString);
-            GraphNode graphNode = Graph.GraphNodes[node.Id];
+            GraphNode graphNode = _Graph.GraphNodes[node.Id];
             if (graphNode is not null)
             {
                 graphNode.UpdatePrecondions(node.Action.Preconditions, partialPlan.LiteralToString);
@@ -375,7 +379,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// <returns>null if no node with the given name is found.</returns>
     public static ForceDirectedGraph.DataStructure.Node GetNodeByName(string name)
     {
-        foreach (ForceDirectedGraph.DataStructure.Node node in Network.Nodes)
+        foreach (ForceDirectedGraph.DataStructure.Node node in _Network.Nodes)
         {
             if (node.Name == name)
             {
@@ -395,7 +399,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// <returns>null if no node with the given name is found.</returns>
     public static ForceDirectedGraph.DataStructure.Node GetNodeByAction(POP.Action action)
     {
-        foreach (ForceDirectedGraph.DataStructure.Node node in Network.Nodes)
+        foreach (ForceDirectedGraph.DataStructure.Node node in _Network.Nodes)
         {
             if (node.Action == action)
             {
@@ -433,7 +437,7 @@ public class POPEngineDriverController : MonoBehaviour
     /// <returns>null if no link with the given producer and consumer actions is found.</returns>
     public static ForceDirectedGraph.DataStructure.Link GetLinkByActions(POP.Action producer, POP.Action consumer, PartialPlan partialPlan)
     {
-        foreach (ForceDirectedGraph.DataStructure.Link link in Network.Links)
+        foreach (ForceDirectedGraph.DataStructure.Link link in _Network.Links)
         {
             if (link.FirstNodeId == GetNodeByAction(producer)?.Id && link.SecondNodeId == GetNodeByAction(consumer)?.Id)
             {
@@ -461,6 +465,7 @@ public class POPEngineDriverController : MonoBehaviour
                 if (Helpers.IsUpper(var[0])) problemConstants.Add(var);
             }
         }
+        GenerateNetwork(null);
         PlayerHelperController.Problem = planningProblem;
         PlayerHelperController.PopController = new POPController(planningProblem);
         print(PlayerHelperController.PopController.Planner.Agenda.Count);

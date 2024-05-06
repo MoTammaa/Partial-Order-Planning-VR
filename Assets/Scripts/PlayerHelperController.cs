@@ -35,7 +35,31 @@ public class PlayerHelperController : MonoBehaviour
     ////// new //////////////////////////////////////////
 
     private static POPController popController;
-    public static POPController PopController { get { return popController; } set { popController = value; InitAgenda(); } }
+    public static POPController PopController
+    {
+        get { return popController; }
+        set
+        {
+            popController = value;
+            InitAgenda();
+            // add the start and finish action nodes to the graph network
+            POPEngineDriverController.Graph.CancelForces();
+            GameObject StartNodeObject = gameObjects["AgendaCanvas"].transform.parent.Find("Actions").Find("Start").gameObject;
+            GameObject FinishNodeObject = gameObjects["AgendaCanvas"].transform.parent.Find("Actions").Find("Finish").gameObject;
+            // Add the actions to the network
+            ForceDirectedGraph.DataStructure.Node node = new ForceDirectedGraph.DataStructure.Node(PopController.Planner.PartialPlan.GetActionByName("Start"), popController.Planner.PartialPlan);
+            POPEngineDriverController.Network.Nodes.Add(node);
+            POPEngineDriverController.Graph.AddDisplayNode(node, Color.green, existingNode: StartNodeObject);
+
+            ForceDirectedGraph.DataStructure.Node node2 = new ForceDirectedGraph.DataStructure.Node(PopController.Planner.PartialPlan.GetActionByName("Finish"), popController.Planner.PartialPlan);
+            POPEngineDriverController.Network.Nodes.Add(node2);
+            POPEngineDriverController.Graph.AddDisplayNode(node2, Color.red, existingNode: FinishNodeObject);
+            //Update the graph text
+            POPEngineDriverController.UpdateNodesText(value.Planner.PartialPlan);
+        }
+    }
+
+    private static PartialPlan ControllerPartialPlan { get { return popController.Planner.PartialPlan; } }
 
     private static Dictionary<string, GameObject> gameObjects = new();
     private static List<Tuple<Action, Literal>> tempAgendaList = new();
@@ -668,7 +692,7 @@ public class PlayerHelperController : MonoBehaviour
 
             // // initialize the agenda menu
             // AgendaMoveDown();
-            Instance.StartCoroutine(ApplyAchiever(false));
+            Instance.StartCoroutine(ApplyAchiever(false, currentAgendaIndex));
         }
     }
 
@@ -690,7 +714,7 @@ public class PlayerHelperController : MonoBehaviour
 
         gameObjects["AgendaCanvas"].SetActive(false);
 
-        Instance.StartCoroutine(InstantiateNewAchiever());
+        Instance.StartCoroutine(InstantiateNewAchiever(currentAgendaIndex));
 
         // reset the current agenda index
         currentAgendaIndex = 1;
@@ -699,7 +723,7 @@ public class PlayerHelperController : MonoBehaviour
         AgendaMoveDown();
     }
 
-    public static IEnumerator InstantiateNewAchiever()
+    public static IEnumerator InstantiateNewAchiever(int AgendaPairIndex)
     {
         // create the operators blocks by using the prefab "NF-Operator-Green" in the Prefabs folder
         GameObject Actions = gameObjects["AgendaCanvas"].transform.parent.Find("Actions").gameObject;
@@ -736,7 +760,7 @@ public class PlayerHelperController : MonoBehaviour
         }
 
         // apply the achiever
-        yield return Instance.StartCoroutine(ApplyAchiever(true));
+        yield return Instance.StartCoroutine(ApplyAchiever(true, AgendaPairIndex, operatorBlock));
 
     }
 
@@ -766,6 +790,14 @@ public class PlayerHelperController : MonoBehaviour
         {
             ThreatAction = null;
             ThreatenedLink = null;
+            // link the ordering constraint visually in the graph
+            ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(POPEngineDriverController.GetNodeByAction(tempLink.Consumerj), POPEngineDriverController.GetNodeByAction(tempAction),
+                         0.001f, isOrderingConstraint: true);
+            POPEngineDriverController.Network.Links.Add(link);
+            POPEngineDriverController.Graph.AddDisplayLink(link);
+            // update the nodes text
+            POPEngineDriverController.UpdateNodesText(popController.Planner.PartialPlan);
+
             yield return Instance.StartCoroutine(UpdateThreatsText($"Action {popController.ActionToString(tempAction)} has been promoted successfully.\n"));
         }
         else
@@ -802,6 +834,15 @@ public class PlayerHelperController : MonoBehaviour
             print(popController.Planner.PartialPlan);
             ThreatAction = null;
             ThreatenedLink = null;
+            // link the ordering constraint visually in the graph
+            ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(POPEngineDriverController.GetNodeByAction(tempAction), POPEngineDriverController.GetNodeByAction(tempLink.Produceri),
+                         0.001f, isOrderingConstraint: true);
+            POPEngineDriverController.Network.Links.Add(link);
+            POPEngineDriverController.Graph.AddDisplayLink(link);
+            // update the nodes text
+            POPEngineDriverController.UpdateNodesText(popController.Planner.PartialPlan);
+
+
             yield return Instance.StartCoroutine(UpdateThreatsText($"Action {popController.ActionToString(tempAction)} has been demoted successfully.\n"));
         }
         else
@@ -836,6 +877,20 @@ public class PlayerHelperController : MonoBehaviour
         Destroy(gameObjects["CausalLinksButtons"].transform.Find($"B{currentCausalLinkIndex}").gameObject);
         // set delete button disabled
         gameObjects["CausalLinksDeleteButton"].GetComponent<UnityEngine.UI.Button>().interactable = false;
+
+        // remove the causal link visually from the graph
+        ForceDirectedGraph.DataStructure.Link graphLink = POPEngineDriverController.GetLinkByActions(link.Produceri, link.Consumerj, popController.Planner.PartialPlan);
+        // Check first if there is no other graphLink with the same actions
+        bool isThereAnotherLink = partialPlan.OrderingConstraints.Contains(new(link.Produceri, link.Consumerj));
+        if (POPEngineDriverController.Graph.RemoveLink(graphLink, isThereAnotherLink, partialPlan.LiteralToString(link.LinkCondition)))
+            if (isThereAnotherLink) graphLink.IsOrderingConstraint = true;
+            else POPEngineDriverController.Network.Links.Remove(graphLink);
+        // update the nodes text
+        POPEngineDriverController.UpdateNodesText(popController.Planner.PartialPlan);
+
+
+
+
         yield return new WaitForSeconds(3.0f);
         gameObjects["CausalLinksDeleteButton"].GetComponent<UnityEngine.UI.Button>().interactable = true;
         CausalLinksText.GetComponent<UnityEngine.UI.Text>().text = "Choose any of the Causal Links to delete.\n";
@@ -868,6 +923,15 @@ public class PlayerHelperController : MonoBehaviour
         Destroy(gameObjects["OrderingConstraintsButtons"].transform.Find($"B{currentOrderingConstraintIndex}").gameObject);
         // set delete button disabled
         gameObjects["OrderingConstraintsDeleteButton"].GetComponent<UnityEngine.UI.Button>().interactable = false;
+
+        // remove the ordering constraint visually from the graph
+        ForceDirectedGraph.DataStructure.Link link = POPEngineDriverController.GetLinkByActions(pair.Item1, pair.Item2, popController.Planner.PartialPlan);
+        POPEngineDriverController.Network.Links.Remove(link);
+        POPEngineDriverController.Graph.RemoveLink(link, false);
+        // update the nodes text
+        POPEngineDriverController.UpdateNodesText(popController.Planner.PartialPlan);
+
+
         yield return new WaitForSeconds(3.0f);
         gameObjects["OrderingConstraintsDeleteButton"].GetComponent<UnityEngine.UI.Button>().interactable = true;
         OrderingConstraintsText.GetComponent<UnityEngine.UI.Text>().text = "Note: Any Ordering Constraint with Start or Finish will not be shown, And any one implied by a causal link will not be shown, as it cannot be deleted.\n";
@@ -1269,18 +1333,18 @@ public class PlayerHelperController : MonoBehaviour
 
     #region Helpers
 
-    public static IEnumerator ApplyAchiever(bool isNew)
+    public static IEnumerator ApplyAchiever(bool isNew, int AgendaPairIndex, GameObject operatorBlock = null)
     {
         // link the action to the start node
         print("Linking the action");
         Action newAction = null;
         CausalLink newLink = null;
-        bool applied = popController.Planner.UserApplyAchiever(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1], tempAgendaList[currentAgendaIndex - 1], ref newAction, ref newLink);
+        bool applied = popController.Planner.UserApplyAchiever(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1], tempAgendaList[AgendaPairIndex - 1], ref newAction, ref newLink);
 
         if (applied)
         {
             print("Achiever Applied Successfully");
-            print(popController.Planner.Agenda.Remove(tempAgendaList[currentAgendaIndex - 1]));
+            print(popController.Planner.Agenda.Remove(tempAgendaList[AgendaPairIndex - 1]));
 
             // update the alert text
             gameObjects["AchieversCancelButton"].SetActive(false);
@@ -1297,6 +1361,21 @@ public class PlayerHelperController : MonoBehaviour
             Instance.StartCoroutine(CheckAndUpdateThreats(newAction, newLink));
             // init the agenda but don't show yet
             InitAgenda(false);
+            // link the action visually
+            if (isNew)
+            {
+                // Add the action to the network
+                ForceDirectedGraph.DataStructure.Node node = new ForceDirectedGraph.DataStructure.Node(newAction, popController.Planner.PartialPlan);
+                POPEngineDriverController.Network.Nodes.Add(node);
+                POPEngineDriverController.Graph.AddDisplayNode(node, Color.green, existingNode: operatorBlock);
+            }
+            // Add the link to the network
+            ForceDirectedGraph.DataStructure.Link link = new ForceDirectedGraph.DataStructure.Link(POPEngineDriverController.GetNodeByAction(newLink.Produceri), POPEngineDriverController.GetNodeByAction(newLink.Consumerj),
+                         0.01f, CausalLinkCondition: partialPlan.LiteralToString(newLink.LinkCondition));
+            POPEngineDriverController.Network.Links.Add(link);
+            POPEngineDriverController.Graph.AddDisplayLink(link);
+            // update the nodes text
+            POPEngineDriverController.UpdateNodesText(popController.Planner.PartialPlan);
 
             yield return new WaitForSeconds(3.0f);
             gameObjects["AchieversAlertTextCanvas"].SetActive(false);
