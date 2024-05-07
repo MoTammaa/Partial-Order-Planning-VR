@@ -144,7 +144,8 @@ namespace ForceDirectedGraph
         /// <summary>
         /// List of all links displayed on the graph.
         /// </summary>
-        private List<GraphLink> GraphLinks;
+        private List<GraphLink> graphLinks;
+        public List<GraphLink> GraphLinks { get { return graphLinks; } }
 
         /// <summary>
         /// Arrow head template.
@@ -208,7 +209,7 @@ namespace ForceDirectedGraph
                 GameObject.Destroy(entity.gameObject);
 
             // Clear paths
-            GraphLinks = new List<GraphLink>();
+            graphLinks = new List<GraphLink>();
             foreach (Transform path in LinksParent.transform)
                 GameObject.Destroy(path.gameObject);
         }
@@ -277,12 +278,12 @@ namespace ForceDirectedGraph
 
             // Remove all links connected to the node
             List<GraphLink> linksToRemove = new List<GraphLink>();
-            foreach (var link in GraphLinks)
+            foreach (var link in graphLinks)
                 if (link.FirstNode.Node.Id == node.Id || link.SecondNode.Node.Id == node.Id)
                     linksToRemove.Add(link);
             foreach (var link in linksToRemove)
             {
-                GraphLinks.Remove(link);
+                graphLinks.Remove(link);
                 Destroy(link.gameObject);
             }
             // Destroy the node from the scene
@@ -314,7 +315,7 @@ namespace ForceDirectedGraph
             AddDisplayNode(newNode, color, graphNode.transform.localPosition);
 
             // Update links to the new replaced node
-            foreach (var link in GraphLinks)
+            foreach (var link in graphLinks)
             {
                 if (link.FirstNode.Node.Id == node.Id)
                     link.FirstNode = _GraphNodes[newNode.Id];
@@ -371,7 +372,7 @@ namespace ForceDirectedGraph
             script.Initialize(link, firstNode, secondNode, linkConditionArrow);
 
             // Add to list
-            GraphLinks.Add(script);
+            graphLinks.Add(script);
         }
 
         /// <summary>
@@ -382,13 +383,13 @@ namespace ForceDirectedGraph
         public bool RemoveLink(DataStructure.Link link, bool thereIsOrderingConstraintInsteadOfThisCausalLink, string linkCondition = null)
         {
             // Find the link
-            GraphLink graphLink = GraphLinks.FirstOrDefault(l => l?.Link?.FirstNodeId == link?.FirstNodeId && l?.Link?.SecondNodeId == link?.SecondNodeId);
+            GraphLink graphLink = graphLinks.FirstOrDefault(l => l?.Link?.FirstNodeId == link?.FirstNodeId && l?.Link?.SecondNodeId == link?.SecondNodeId);
             if (graphLink == null)
                 return false;
             if (linkCondition != null && link.Condition != null)
             {
                 string[] linkConditionsSplit = link.Condition.Split("),");
-                if (linkConditionsSplit.Length > 1)
+                if (linkConditionsSplit.Length > 0)
                 {
                     string newCondition = string.Join("),", linkConditionsSplit.Where(c => !c.Equals(linkCondition + ")")));
                     link.Condition = newCondition + ")";
@@ -397,7 +398,7 @@ namespace ForceDirectedGraph
             }
 
             // Remove the link
-            GraphLinks.Remove(graphLink);
+            graphLinks.Remove(graphLink);
             Destroy(graphLink.gameObject);
 
             if (thereIsOrderingConstraintInsteadOfThisCausalLink)
@@ -451,7 +452,7 @@ namespace ForceDirectedGraph
                         nodeForces[node1].Add(ComputeRepulsiveForce(node1, node2));
 
             // Compute attraction forces
-            foreach (var link in GraphLinks)
+            foreach (var link in graphLinks)
             {
                 var force = ComputeAttractionForce(link);
                 nodeForces[link.FirstNode].Add(-force);

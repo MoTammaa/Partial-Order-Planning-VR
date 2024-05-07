@@ -6,6 +6,7 @@ using POP;
 using System;
 using Unity.VisualScripting;
 using System.Linq;
+using ForceDirectedGraph.DataStructure;
 
 public class POPEngineDriverController : MonoBehaviour
 {
@@ -84,7 +85,7 @@ public class POPEngineDriverController : MonoBehaviour
     {
         POPController ??= new POPController(PlanningProblem, searchStrategy, maxDepth);
         bool nextStep = true;
-        Node currentNode = POPController.CurrentNode;
+        POP.Node currentNode = POPController.CurrentNode;
         int i = 0;
         List<Tuple<POP.Action, bool>> actionsDifference = new();
 
@@ -369,6 +370,41 @@ public class POPEngineDriverController : MonoBehaviour
             }
         }
     }
+
+
+    /// <summary>
+    /// Updates the network links based on the new partial plan.
+    /// </summary>
+    /// <param name="partialPlan">The new partial plan to update the links with.</param>
+    public static void UpdateLinksText(PartialPlan partialPlan)
+    {
+        if (_Network is null)
+        {
+            return;
+        }
+
+        // Update the links' data
+        // foreach (ForceDirectedGraph.DataStructure.Link link in _Network.Links)
+        // {
+        //     if (!link.IsOrderingConstraint)
+        //     {
+        //         ForceDirectedGraph.DataStructure.Node producer = GetNodeByAction(_Graph.GraphNodes[link.FirstNodeId].Node.Action);
+        //         ForceDirectedGraph.DataStructure.Node consumer = GetNodeByAction(_Graph.GraphNodes[link.SecondNodeId].Node.Action);
+        //         print(string.Join(",", partialPlan.CausalLinks.Where(cl => cl.Produceri == producer.Action && cl.Consumerj == consumer.Action).Select(cl => partialPlan.LiteralToString(cl.LinkCondition))));
+        //         link.Condition = string.Join(",", partialPlan.CausalLinks.Where(cl => cl.Produceri == producer && cl.Consumerj == consumer).Select(cl => partialPlan.LiteralToString(cl.LinkCondition)));
+        //     }
+        // }
+        foreach (var graphlink in _Graph.GraphLinks)
+        {
+            if (!graphlink.Link.IsOrderingConstraint)
+            {
+                var producer = GetNodeByAction(_Graph.GraphNodes[graphlink.Link.FirstNodeId].Node.Action);
+                var consumer = GetNodeByAction(_Graph.GraphNodes[graphlink.Link.SecondNodeId].Node.Action);
+                graphlink.Link.Condition = string.Join(",", partialPlan.CausalLinks.Where(cl => cl.Produceri == producer.Action && cl.Consumerj == consumer.Action).Select(cl => partialPlan.LiteralToString(cl.LinkCondition)));
+            }
+        }
+    }
+
 
 
     /// <summary>
