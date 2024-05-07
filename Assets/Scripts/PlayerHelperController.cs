@@ -79,6 +79,8 @@ public class PlayerHelperController : MonoBehaviour
     private static List<CausalLink> CausalLinks = new();
     private static List<Tuple<Action, Action>> OrderingConstraints = new();
 
+    private static bool ThereIsThreat = false;
+
 
     //////////////////////////////////////////////////////
     private static List<Operator> operators = new(); // will be set by the POPEngineDriverController
@@ -190,6 +192,12 @@ public class PlayerHelperController : MonoBehaviour
         || gameObjects["OrderingConstraintsUpDownButtons"] == null)
         {
             print("One of the OrderingConstraintsCanvas, OrderingConstraintsDescriptionTextCanvas, OrderingConstraintsButtons, OrderingConstraintsDeleteButton, OrderingConstraintsUpDownButtons is null");
+        }
+
+        gameObjects.TryAdd("EmergencyAlarm", GameObject.Find("PC Setup").transform.Find("Emergency-Alarm").gameObject);
+        if (gameObjects["EmergencyAlarm"] == null)
+        {
+            print("EmergencyAlarm is null");
         }
 
         // gameObjects["AchieversCanvas"].SetActive(false);
@@ -1456,6 +1464,7 @@ public class PlayerHelperController : MonoBehaviour
             ThreatenedLink = null;
             ThreatsText.GetComponent<UnityEngine.UI.Text>().text += "\n### No Threats Detected!\n$: ";
             NotebookController.TURNED_ON = true;
+            ThereIsThreat = false;
             yield break;
         }
 
@@ -1463,6 +1472,7 @@ public class PlayerHelperController : MonoBehaviour
         ThreatenedLink = threat.Value.ThreatenedLink;
 
         ThreatsText.GetComponent<UnityEngine.UI.Text>().text += $"\n### ERROR! THREAT DETECTED:\n> Action {popController.Planner.PartialPlan.ActionToString(ThreatAction)} is threatening the link:\n{popController.Planner.PartialPlan.CausalLinkToString(ThreatenedLink)} \n### PRESS 'P' TO INITIATE PROMOTION PROTOCOL OR 'D' TO INITIATE DEMOTION PROTOCOL... ";
+        Instance.StartCoroutine(EmergencySoundAndLightOn());
 
         NotebookController.TURNED_ON = false;
     }
@@ -1488,6 +1498,37 @@ public class PlayerHelperController : MonoBehaviour
     private static string OrderingConstraintToString(Tuple<Action, Action> tuple)
     {
         return $"{popController.ActionToString(tuple.Item1)} ≺ {popController.ActionToString(tuple.Item2)}";
+    }
+
+    private static IEnumerator EmergencySoundAndLightOn()
+    {
+        if (ThereIsThreat) yield break;
+        ThereIsThreat = true;
+
+        // turn on the emergency sound 
+        gameObjects["EmergencyAlarm"].GetComponent<AudioSource>().Play();
+
+        // turn on the emergency light
+        while (ThereIsThreat)
+        {
+            gameObjects["EmergencyAlarm"].transform.Find("Light").GetComponent<Light>().enabled = true;
+            yield return new WaitForSeconds(0.55f);
+            gameObjects["EmergencyAlarm"].transform.Find("Light").GetComponent<Light>().enabled = false;
+            yield return new WaitForSeconds(0.5f);
+
+            gameObjects["EmergencyAlarm"].transform.Find("Light").GetComponent<Light>().enabled = true;
+            yield return new WaitForSeconds(0.55f);
+            gameObjects["EmergencyAlarm"].transform.Find("Light").GetComponent<Light>().enabled = false;
+            yield return new WaitForSeconds(0.5f);
+
+            gameObjects["EmergencyAlarm"].transform.Find("Light").GetComponent<Light>().enabled = true;
+            yield return new WaitForSeconds(0.55f);
+            gameObjects["EmergencyAlarm"].transform.Find("Light").GetComponent<Light>().enabled = false;
+            yield return new WaitForSeconds(1.19f);
+        }
+
+        // turn off the emergency sound
+        gameObjects["EmergencyAlarm"].GetComponent<AudioSource>().Stop();
     }
 
     #endregion
