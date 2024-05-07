@@ -73,12 +73,24 @@ namespace ForceDirectedGraph
             transform.Find("Cube").Find("Operator Canvas B").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = name;
         }
 
+        public void UpdatePrecondions(string preconditions)
+        {
+            // update the text written on the block in this object >> Cube >> Preconds Canvas >> Background Button >> Text (TMP)
+            transform.Find("Cube").Find("Preconds Canvas").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = preconditions;
+        }
+
         public void UpdatePrecondions(List<POP.Literal> preconditions, Func<POP.Literal, string> literalToString = null)
         {
             literalToString ??= _Node.LiteralToString;
             // update the text written on the block in this object >> Cube >> Preconds Canvas >> Background Button >> Text (TMP)
             string preconds = "Preconditions: \n" + (preconditions.Count > 0 ? ">" : "") + string.Join("\n>", preconditions.Select(literalToString).ToArray());
             transform.Find("Cube").Find("Preconds Canvas").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = preconds;
+        }
+
+        public void UpdateEffects(string effects)
+        {
+            // update the text written on the block in this object >> Cube >> Effects Canvas >> Background Button >> Text (TMP)
+            transform.Find("Cube").Find("Effects Canvas").Find("Background Button").Find("Text (TMP)").GetComponent<TMPro.TextMeshProUGUI>().text = effects;
         }
 
         public void UpdateEffects(List<POP.Literal> effects, Func<POP.Literal, string> literalToString = null)

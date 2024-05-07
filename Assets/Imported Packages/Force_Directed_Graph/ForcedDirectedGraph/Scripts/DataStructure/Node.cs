@@ -175,6 +175,14 @@ namespace ForceDirectedGraph.DataStructure
             _Name = actionToString != null ? actionToString(_Action) : _Name;
         }
 
+        /// <summary>
+        /// Updates the node's name
+        /// </summary>
+        public void UpdateName(string name)
+        {
+            _Name = name;
+        }
+
         #endregion
 
     }

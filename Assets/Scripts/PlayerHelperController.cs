@@ -11,6 +11,7 @@ using UnityEditor;
 using System.Text;
 using Action = POP.Action;
 using Literal = POP.Literal;
+using ForceDirectedGraph;
 
 public class PlayerHelperController : MonoBehaviour
 {
@@ -729,8 +730,14 @@ public class PlayerHelperController : MonoBehaviour
         GameObject Actions = gameObjects["AgendaCanvas"].transform.parent.Find("Actions").gameObject;
         GameObject operatorBlock = Instantiate(AssetDatabase.LoadAssetAtPath("Assets/Prefabs/NF-Operator-Green.prefab", typeof(GameObject)) as GameObject, Actions.transform);
         operatorBlock.name = "Action" + (++numOfOperators);
-        Vector3 offset = new Vector3(gameObjects["AgendaCanvas"].transform.localPosition.x, gameObjects["AgendaCanvas"].transform.localPosition.y + 10.0f, gameObjects["AgendaCanvas"].transform.localPosition.z - 0.5f);
-        operatorBlock.transform.localPosition = new Vector3(0.0f, 20.0f, 1.1f) + offset;
+        GameObject RoundSpawnPlace = GameObject.Find("Mid_PlayArea_RoundSpawnObject")?.transform.Find("HD_Rounded_Wall_4B").gameObject;
+        Vector3 offset = new Vector3(RoundSpawnPlace.transform.position.x, RoundSpawnPlace.transform.position.y + 10.0f, RoundSpawnPlace.transform.position.z - 0.5f);
+        operatorBlock.transform.position = new Vector3(0.0f, 20.0f, -0.1f) + offset;
+
+        // update name on the block
+        operatorBlock.transform.GetComponent<GraphNode>().Node.UpdateName(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1].Name + "(...)\nPut in graph area to link.");
+        operatorBlock.transform.GetComponent<GraphNode>().UpdatePrecondions(string.Join(", ", achievers[currentAchieverJdx - 1][currentAchieverIdx - 1].Preconditions));
+        operatorBlock.transform.GetComponent<GraphNode>().UpdateEffects(string.Join(", ", achievers[currentAchieverJdx - 1][currentAchieverIdx - 1].Effects));
 
         //get position of the last action
         Vector3 lastActionOriginal = operatorBlock.transform.localPosition;
@@ -894,7 +901,7 @@ public class PlayerHelperController : MonoBehaviour
 
         yield return new WaitForSeconds(3.0f);
         gameObjects["CausalLinksDeleteButton"].GetComponent<UnityEngine.UI.Button>().interactable = true;
-        CausalLinksText.GetComponent<UnityEngine.UI.Text>().text = "Choose any of the Causal Links to delete.\n";
+        CausalLinksText.GetComponent<UnityEngine.UI.Text>().text = "Choose any of the Causal Links & press delete.\n";
 
         InitCausalLinksMenu();
         // reset agenda
