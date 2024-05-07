@@ -30,7 +30,11 @@ public class NotebookController : MonoBehaviour
     IEnumerator StartCheck()
     {
         this.transform.parent.localScale = TURNED_ON ? originalAgendaScale : new Vector3(0.0f, 0.0f, 0.0f);
-        if (checking || !TURNED_ON) yield break;
+        if (checking || !TURNED_ON)
+        {
+            checking = false;
+            yield break;
+        }
         checking = true;
         yield return new WaitForSeconds(0.5f);
         // TODO: needs testing first with VR
@@ -61,7 +65,8 @@ public class NotebookController : MonoBehaviour
                 Closed = false;
             }
             Opening = true;
-            Open();
+            // Open();
+            yield return StartCoroutine(OpenNotebook());
         }
         // if the player is far from the notebook and the notebook is not opening or closing then close the notebook
         else if (distance > 3.5 && !Closing && !Closed)
@@ -75,7 +80,8 @@ public class NotebookController : MonoBehaviour
                 Opened = false;
             }
             Closing = true;
-            Close();
+            // Close();
+            yield return StartCoroutine(CloseNotebook());
         }
         checking = false;
     }
