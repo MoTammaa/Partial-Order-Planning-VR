@@ -766,8 +766,8 @@ public class PlayerHelperController : MonoBehaviour
         lastActionPosition = operatorBlock.transform.position;
 
         print("waiting");
-        while (Math.Sqrt(Math.Pow(lastActionPosition.x - startNode.x, 2) + Math.Pow(lastActionPosition.z - startNode.z, 2)) > 4.0f &&
-               Math.Sqrt(Math.Pow(lastActionPosition.x - finishNode.x, 2) + Math.Pow(lastActionPosition.z - finishNode.z, 2)) > 4.0f)
+        while (Math.Sqrt(Math.Pow(lastActionPosition.x - startNode.x, 2) + Math.Pow(lastActionPosition.z - startNode.z, 2)) > 7.0f &&
+               Math.Sqrt(Math.Pow(lastActionPosition.x - finishNode.x, 2) + Math.Pow(lastActionPosition.z - finishNode.z, 2)) > 7.0f)
         {
             lastActionPosition = operatorBlock.transform.position;
             print($"lastActionPosition: {lastActionPosition}, startNode: {startNode}, difference: {Math.Sqrt(Math.Pow(lastActionPosition.x - startNode.x, 2) + Math.Pow(lastActionPosition.z - startNode.z, 2))}");
