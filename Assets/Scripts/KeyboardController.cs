@@ -58,6 +58,8 @@ public class KeyBoardController : MonoBehaviour
 					if (Edit.GetComponent<UnityEngine.UI.Button>() == null) print("Done_Edit button is null");
 					Edit.GetComponent<UnityEngine.UI.Button>().onClick.RemoveAllListeners();
 					Edit.GetComponent<UnityEngine.UI.Button>().onClick.AddListener(() => WriteText("Done"));
+					// set ArrowController.stage to Name
+					ArrowsController.stage = ArrowsController.Stage.Name;
 					break;
 				case "Done":
 					if (oldname == "")
@@ -91,6 +93,8 @@ public class KeyBoardController : MonoBehaviour
 						child.gameObject.GetComponent<TeleportArea>()?.SetLocked(false);
 						child.gameObject.GetComponent<TeleportPoint>()?.SetLocked(false);
 					}
+					// set ArrowController.stage to Mode
+					ArrowsController.stage = ArrowsController.Stage.Mode;
 					break;
 				case "Space":
 					text = " ";

@@ -751,10 +751,12 @@ public class PlayerHelperController : MonoBehaviour
         Vector3 lastActionOriginal = operatorBlock.transform.localPosition;
         Vector3 lastActionPosition = operatorBlock.transform.localPosition;
 
+        // set ArrowController.stage to ActionsSpawn
+        ArrowsController.stage = ArrowsController.Stage.ActionsSpawn;
         while (Math.Sqrt(Math.Pow(lastActionPosition.x - lastActionOriginal.x, 2) + Math.Pow(lastActionPosition.z - lastActionOriginal.z, 2)) < 1.0f)
         {
             lastActionPosition = operatorBlock.transform.localPosition;
-            yield return new WaitForSeconds(3.0f);
+            yield return new WaitForSeconds(1.0f);
         }
 
         // show the agenda menu
@@ -766,6 +768,8 @@ public class PlayerHelperController : MonoBehaviour
         lastActionPosition = operatorBlock.transform.position;
 
         print("waiting");
+        // set ArrowController.stage to GraphArea
+        ArrowsController.stage = ArrowsController.Stage.GraphArea;
         while (Math.Sqrt(Math.Pow(lastActionPosition.x - startNode.x, 2) + Math.Pow(lastActionPosition.z - startNode.z, 2)) > 7.0f &&
                Math.Sqrt(Math.Pow(lastActionPosition.x - finishNode.x, 2) + Math.Pow(lastActionPosition.z - finishNode.z, 2)) > 7.0f)
         {
@@ -1357,6 +1361,8 @@ public class PlayerHelperController : MonoBehaviour
         Action newAction = null;
         CausalLink newLink = null;
         bool applied = popController.Planner.UserApplyAchiever(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1], tempAgendaList[AgendaPairIndex - 1], ref newAction, ref newLink);
+        // set ArrowsController.stage to Agenda
+        ArrowsController.stage = ArrowsController.Stage.Agenda;
 
         if (applied)
         {
@@ -1465,6 +1471,8 @@ public class PlayerHelperController : MonoBehaviour
             ThreatsText.GetComponent<UnityEngine.UI.Text>().text += "\n### No Threats Detected!\n$: ";
             NotebookController.TURNED_ON = true;
             ThereIsThreat = false;
+            // set ArrowController.stage to Agenda
+            ArrowsController.stage = ArrowsController.Stage.Agenda;
             yield break;
         }
 
@@ -1475,6 +1483,8 @@ public class PlayerHelperController : MonoBehaviour
         Instance.StartCoroutine(EmergencySoundAndLightOn());
 
         NotebookController.TURNED_ON = false;
+        // set ArrowController.stage to Threats
+        ArrowsController.stage = ArrowsController.Stage.Threats;
     }
 
     private static IEnumerator UpdateThreatsText(string text)

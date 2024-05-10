@@ -29,6 +29,9 @@ namespace ForceDirectedGraph
         {
             if (GetComponent<Rigidbody2D>() != null)
                 Rigidbody2d = GetComponent<Rigidbody2D>();
+            // else if (GetComponent<Rigidbody>() != null)
+            //     Rigidbody = GetComponent<Rigidbody>();
+
             if (GetComponent<Draggable>() != null)
                 Draggable = GetComponent<Draggable>();
 
@@ -38,7 +41,7 @@ namespace ForceDirectedGraph
                 Rigidbody2d.angularVelocity = 0;
                 Rigidbody2d.freezeRotation = true;
             }
-            if (Rigidbody != null)
+            else if (Rigidbody != null)
             {
                 Rigidbody.angularVelocity = Vector3.zero;
                 Rigidbody.freezeRotation = true;
@@ -143,7 +146,7 @@ namespace ForceDirectedGraph
         /// <summary>
         /// An instance of a Partial Plan Action.
         /// </summary>
-        private POP.Action _Action;
+        public POP.Action Action { get { return _Node.Action; } }
 
         #endregion
 
@@ -174,13 +177,15 @@ namespace ForceDirectedGraph
         /// </summary>
         private void Update()
         {
+            bool DraggableNotNullAndBeingDragged = Draggable != null;
+            if (DraggableNotNullAndBeingDragged) DraggableNotNullAndBeingDragged = Draggable.IsBeingDragged;
+
+
+
             // Check if the object is being dragged
-            if (Draggable)
+            if (DraggableNotNullAndBeingDragged)
             {
-                if (Draggable.IsBeingDragged)
-                {
-                    // Do nothing
-                }
+                // Do nothing
             }
 
             // The object is not being dragged
@@ -188,7 +193,7 @@ namespace ForceDirectedGraph
             {
                 if (Rigidbody2d != null)
                     Rigidbody2d.velocity = Vector3.zero;
-                if (Rigidbody != null)
+                else if (Rigidbody != null)
                     Rigidbody.velocity = Vector3.zero;
 
                 Vector2 velocity = Vector2.zero;

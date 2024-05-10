@@ -37,7 +37,6 @@ public class NotebookController : MonoBehaviour
         }
         checking = true;
         yield return new WaitForSeconds(0.5f);
-        // TODO: needs testing first with VR
 
         // get the position of the player
         GameObject player = GameObject.Find("Player");

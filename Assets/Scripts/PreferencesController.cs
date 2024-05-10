@@ -85,10 +85,50 @@ public class PreferencesController : MonoBehaviour
                 button.gameObject.SetActive(false);
         }
 
+        if (Mode == "Survival" || Mode == "Creative")
+        {
+            // Hide the strategy menu
+            GameObject.Find("Strategy Menu").SetActive(false);
+        }
+        else
+        {
+            // Hide the Agenda Menu
+            GameObject.Find("Agenda Menu").SetActive(false);
+            // Hide the CausalLinks & OrderingConstraints Menu
+            GameObject.Find("CausalLinks Menu").SetActive(false);
+            GameObject.Find("OrderingConstraints Menu").SetActive(false);
+            // Hide the PC Setup
+            GameObject.Find("PC Setup").SetActive(false);
+            // Hide the Actions
+            GameObject.Find("Actions").SetActive(false);
+            // Hide the Mid_PlayArea_RoundSpawnObject
+            GameObject.Find("Temple Enviroment").transform.Find("Other Stone Temple objs").Find("Mid_PlayArea_RoundSpawnObject").gameObject.SetActive(false);
+
+        }
         // unlock PreferencesArea TeleportArea
         GameObject Teleports = GameObject.Find("Teleports");
         GameObject PreferencesArea = Teleports.transform.Find("PreferencesArea").gameObject;
         PreferencesArea.GetComponent<TeleportArea>()?.SetLocked(false);
+
+        // set ArrowController.stage to Problem
+        ArrowsController.stage = ArrowsController.Stage.Problem;
+
+        StartCoroutine(MoveModeBack());
+    }
+
+    public IEnumerator MoveModeBack()
+    {
+        GameObject ModeMenu = GameObject.Find("Mode Menu");
+        Vector3 currentPosition = ModeMenu.transform.position;
+        Vector3 targetPosition = currentPosition + new Vector3(0, 0, 3.545f);
+
+        while (Vector3.Distance(ModeMenu.transform.position, targetPosition) > 0.01f)
+        {
+            ModeMenu.transform.position = Vector3.Lerp(ModeMenu.transform.position, targetPosition, 0.1f);
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ModeMenu.transform.position = targetPosition;
     }
 
     public void SetSearchStrategy(string strategy)
@@ -162,13 +202,15 @@ public class PreferencesController : MonoBehaviour
             if (button.name != searchStrategy)
                 button.gameObject.SetActive(false);
         }
+        // set ArrowController.stage to Ready
+        ArrowsController.stage = ArrowsController.Stage.Ready;
     }
 
     public void StartGame()
     {
         GameStarted = true;
         // hide the Strategy Menu
-        GameObject.Find("Strategy Menu").SetActive(false);
+        GameObject.Find("Strategy Menu")?.SetActive(false);
         // hide the Planning Problem Menu
         GameObject.Find("Planning Problem Menu").SetActive(false);
         // hide the Ready Menu
@@ -185,6 +227,9 @@ public class PreferencesController : MonoBehaviour
             child.gameObject.GetComponent<TeleportArea>()?.SetLocked(false);
             child.gameObject.GetComponent<TeleportPoint>()?.SetLocked(false);
         }
+
+        // set ArrowController.stage to PlayArea
+        ArrowsController.stage = ArrowsController.Stage.PlayArea;
 
     }
 }
