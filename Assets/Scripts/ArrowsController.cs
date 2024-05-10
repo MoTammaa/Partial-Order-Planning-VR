@@ -120,6 +120,7 @@ public class ArrowsController : MonoBehaviour
                     break;
                 case Stage.Agenda:
                     gameObjects["ToAgenda"].SetActive(true);
+                    gameObjects["ToCausalLinksOrOrderingConstraints"].SetActive(true);
                     break;
                 case Stage.ActionsSpawn:
                     gameObjects["ToActionSpawn"].SetActive(true);
@@ -133,6 +134,7 @@ public class ArrowsController : MonoBehaviour
                     break;
                 case Stage.Threats:
                     gameObjects["ToThreats"].SetActive(true);
+                    gameObjects["ToCausalLinksOrOrderingConstraints"].SetActive(true);
                     break;
                 default:
                     break;

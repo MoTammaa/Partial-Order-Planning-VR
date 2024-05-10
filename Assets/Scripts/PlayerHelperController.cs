@@ -204,6 +204,8 @@ public class PlayerHelperController : MonoBehaviour
         gameObjects["AchieversRequestButton"].SetActive(false);
         gameObjects["AchieversAlertTextCanvas"].SetActive(false);
 
+        Instance.StartCoroutine(CheckForTrashActions());
+
     }
 
     // Update is called once per frame
@@ -367,6 +369,16 @@ public class PlayerHelperController : MonoBehaviour
             // hide the UpDown buttons
             gameObjects["AgendaUpDownButtons"].SetActive(false);
 
+        }
+        else
+        {
+            // show the Done button
+            gameObjects["AgendaDoneButton"].SetActive(true);
+            // show the UpDown buttons
+            gameObjects["AgendaUpDownButtons"].SetActive(true); // Set the Agenda menu description
+            // change the Title text
+            gameObjects["AgendaCanvas"].transform.Find("BodyTitle").Find("TitleCanvas").Find("Text").GetComponent<UnityEngine.UI.Text>().text = "Choose a Pair to achieve:";
+            descriptionCanvas.GetComponent<UnityEngine.UI.Text>().text = "Choose any of the Pairs of Actions/Preconditions to try to achieve.";
         }
 
 
@@ -1541,6 +1553,60 @@ public class PlayerHelperController : MonoBehaviour
         gameObjects["EmergencyAlarm"].GetComponent<AudioSource>().Stop();
     }
 
+    private static IEnumerator CheckForTrashActions()
+    {
+        while (true)
+        {
+            if (POPEngineDriverController.Graph is not null)
+            {
+                if (POPEngineDriverController.Graph.GraphNodes is not null)
+                {
+                    var graphNodesToRemove = new List<GraphNode>();
+                    // check for trash actions
+                    foreach (var graphNode in POPEngineDriverController.Graph.GraphNodes.Values)
+                    {
+                        if (graphNode.gameObject.transform.position.y < 0)
+                        {
+                            if (graphNode.Action.Name == "Start" || graphNode.Action.Name == "Finish")
+                            {
+                                continue;
+                            }
+                            // remove the action from the partial plan
+                            popController.Planner.PartialPlan.Actions.Remove(graphNode.Action);
+                            // remove any causal link that has this action as a producer or consumer
+                            var links = popController.Planner.PartialPlan.CausalLinks.Where(link => link.Produceri == graphNode.Action || link.Consumerj == graphNode.Action).ToList();
+                            foreach (var link in links)
+                            {
+                                popController.Planner.PartialPlan.CausalLinks.Remove(link);
+                                // add the conditions to the agenda
+                                popController.Planner.Agenda.Add(new Tuple<Action, Literal>(link.Consumerj, link.LinkCondition));
+                            }
+                            var agendaPairs = popController.Planner.Agenda.Where(pair => pair.Item1 == graphNode.Action).ToList();
+                            foreach (var pair in agendaPairs)
+                            {
+                                popController.Planner.Agenda.Remove(pair);
+                            }
+                            // Init the agenda
+                            InitAgenda();
+                            // remove any ordering constraint that has this action
+                            var orderContraints = popController.Planner.PartialPlan.OrderingConstraints.Where(tuple => tuple.Item1 == graphNode.Action || tuple.Item2 == graphNode.Action).ToList();
+                            foreach (var tuple in orderContraints)
+                            {
+                                popController.Planner.PartialPlan.OrderingConstraints.Remove(tuple);
+                            }
+                            // remove the action from the network
+                            graphNodesToRemove.Add(graphNode);
+                        }
+                    }
+                    foreach (var graphNode in graphNodesToRemove)
+                    {
+                        POPEngineDriverController.Graph.RemoveNode(graphNode.Node);
+                    }
+                }
+            }
+            yield return new WaitForSeconds(3.0f);
+        }
+    }
     #endregion
 
 

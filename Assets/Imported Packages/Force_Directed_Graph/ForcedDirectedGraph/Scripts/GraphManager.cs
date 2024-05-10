@@ -275,6 +275,7 @@ namespace ForceDirectedGraph
 
             // Remove the node
             _GraphNodes.Remove(node.Id);
+            Network.Nodes.Remove(node);
 
             // Remove all links connected to the node
             List<GraphLink> linksToRemove = new List<GraphLink>();
@@ -284,6 +285,7 @@ namespace ForceDirectedGraph
             foreach (var link in linksToRemove)
             {
                 graphLinks.Remove(link);
+                Network.Links.Remove(link.Link);
                 Destroy(link.gameObject);
             }
             // Destroy the node from the scene
