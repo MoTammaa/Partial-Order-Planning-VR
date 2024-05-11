@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -56,7 +57,7 @@ public class ArrowsController : MonoBehaviour
         Vector3 playerPosition = VRCamera.transform.position;
 
         Vector3 PlannigProblemPosition = gameObjects["PlanningProblem"].transform.position;
-        if (Vector3.Distance(playerPosition, PlannigProblemPosition) < 2.0f)
+        if (Math.Sqrt(Math.Pow(playerPosition.x - PlannigProblemPosition.x, 2) + Math.Pow(playerPosition.z - PlannigProblemPosition.z, 2)) < 2.5f)
         {
             // check mode
             if (PlayerPrefs.HasKey("Mode"))

@@ -7,6 +7,8 @@ using System;
 using Unity.VisualScripting;
 using System.Linq;
 using ForceDirectedGraph.DataStructure;
+using Valve.VR;
+using Valve.VR.InteractionSystem;
 
 public class POPEngineDriverController : MonoBehaviour
 {
@@ -36,6 +38,17 @@ public class POPEngineDriverController : MonoBehaviour
     private static HashSet<string> problemConstants = new();
     public static HashSet<string> ProblemConstants { get { return problemConstants; } }
 
+    /// <summary>
+    /// Gets whether the SteamVR Menu button is pressed or not.
+    /// </summary>
+    public static bool IsSteamVRMenuButtonPressedDown { get; set; } = false;
+
+    /// <summary>
+    /// The SteamVR player object.
+    /// </summary>
+    private static Player player;
+
+
     #endregion
 
 
@@ -46,6 +59,7 @@ public class POPEngineDriverController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        player = Player.instance;
 
         if (PlayerPrefs.HasKey("Mode")) if (PlayerPrefs.GetString("Mode") == "Spectator")
             {
@@ -67,10 +81,28 @@ public class POPEngineDriverController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        SetSteamVRMenuButtonPressed();
     }
 
     #region Methods
+
+    /// <summary>
+    /// Gets whether the SteamVR Menu button is pressed or not.
+    /// </summary>
+    /// <returns>True if the SteamVR Menu button is pressed, False otherwise.</returns>
+    public static bool SetSteamVRMenuButtonPressed()
+    {
+        foreach (Hand hand in player.hands)
+        {
+            if (SteamVR_Actions._default.Menu.GetStateDown(hand.handType))
+            {
+                IsSteamVRMenuButtonPressedDown = true;
+                return true;
+            }
+        }
+        IsSteamVRMenuButtonPressedDown = false;
+        return false;
+    }
 
     /// <summary>
     /// Sets Operators Menu to choose from.
