@@ -154,12 +154,13 @@ public class PlayerHelperController : MonoBehaviour
         gameObjects.TryAdd("AchieversOptionButtons", gameObjects["AchieversButtons"]?.transform.Find("Options")?.gameObject);
         gameObjects.TryAdd("AchieversRequestButton", gameObjects["AchieversButtons"]?.transform.Find("Request")?.gameObject);
         gameObjects.TryAdd("AchieversAlertTextCanvas", gameObjects["AchieversCanvas"]?.transform.Find("BodyTitle")?.Find("AlertCanvas")?.Find("Text")?.gameObject);
+        gameObjects.TryAdd("ChosenAchieverTextCanvas", gameObjects["AchieversCanvas"]?.transform.Find("BodyTitle")?.Find("ChosenAchieverCanvas")?.Find("Text")?.gameObject);
 
         if (gameObjects["AchieversCanvas"] == null || gameObjects["AchieversDescriptionTextCanvas"] == null
         || gameObjects["AchieversButtons"] == null || gameObjects["AchieversDoneButton"] == null
         || gameObjects["AchieversNavigation"] == null || gameObjects["AchieversOptionButtons"] == null
         || gameObjects["AchieversRequestButton"] == null || gameObjects["AchieversAlertTextCanvas"] == null
-        || gameObjects["AchieversCancelButton"] == null)
+        || gameObjects["AchieversCancelButton"] == null || gameObjects["ChosenAchieverTextCanvas"] == null)
         {
             print("One of the AchieversCanvas, AchieversDescriptionTextCanvas, AchieversButtons, AchieversDoneButton, AchieversNavigation, AchieversOptionButtons, AchieversNavigation is null");
         }
@@ -1034,6 +1035,8 @@ public class PlayerHelperController : MonoBehaviour
         // set the color of the current variable button to "#FF0000" color
         GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
         currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+        // set the description of the current achiever in the ChosenCanvas
+        gameObjects["ChosenAchieverTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = $"{(currentAchieverJdx != 1 ? "Existing Action" : "New Action")}: {(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1] is Action a ? popController.ActionToString(a) : achievers[currentAchieverJdx - 1][currentAchieverIdx - 1].ToString())}";
     }
 
     public static void AchieversMoveRight()
@@ -1058,6 +1061,8 @@ public class PlayerHelperController : MonoBehaviour
         // set the color of the current variable button to "#FF0000" color
         GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
         currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+        // set the description of the current achiever in the ChosenCanvas
+        gameObjects["ChosenAchieverTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = $"{(currentAchieverJdx != 1 ? "Existing Action" : "New Action")}: {(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1] is Action a ? popController.ActionToString(a) : achievers[currentAchieverJdx - 1][currentAchieverIdx - 1].ToString())}";
     }
     public static void AchieversMoveDown()
     {
@@ -1073,6 +1078,8 @@ public class PlayerHelperController : MonoBehaviour
         // set the color of the current variable button to "#FF0000" color
         GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
         currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+        // set the description of the current achiever in the ChosenCanvas
+        gameObjects["ChosenAchieverTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = $"{(currentAchieverJdx != 1 ? "Existing Action" : "New Action")}: {(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1] is Action a ? popController.ActionToString(a) : achievers[currentAchieverJdx - 1][currentAchieverIdx - 1].ToString())}";
     }
     public static void AchieversMoveUp()
     {
@@ -1088,6 +1095,8 @@ public class PlayerHelperController : MonoBehaviour
         // set the color of the current variable button to "#FF0000" color
         GameObject currentAchieverButton = gameObjects["AchieversOptionButtons"].transform.Find($"B{currentAchieverIdx}{currentAchieverJdx}").gameObject;
         currentAchieverButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1.0f, 0.0f, 0.0f);
+        // set the description of the current achiever in the ChosenCanvas
+        gameObjects["ChosenAchieverTextCanvas"].GetComponent<UnityEngine.UI.Text>().text = $"{(currentAchieverJdx != 1 ? "Existing Action" : "New Action")}: {(achievers[currentAchieverJdx - 1][currentAchieverIdx - 1] is Action a ? popController.ActionToString(a) : achievers[currentAchieverJdx - 1][currentAchieverIdx - 1].ToString())}";
     }
     //================================================================================================================================================================
     public static void OpMoveUp()
