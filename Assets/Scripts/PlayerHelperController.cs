@@ -792,7 +792,7 @@ public class PlayerHelperController : MonoBehaviour
             lastActionPosition = operatorBlock.transform.position;
             startNode = start.transform.position;
             finishNode = finish.transform.position;
-            print($"lastActionPosition: {lastActionPosition}, local {operatorBlock.transform.localPosition},\n startNode: {startNode} , local {start.transform.localPosition}, difference: {Math.Sqrt(/*Math.Pow(lastActionPosition.x - startNode.x, 2) +*/ Math.Pow(lastActionPosition.z - startNode.z, 2))}");
+            print($"lastActionPosition: {lastActionPosition}, local {operatorBlock.transform.localPosition},\n startNode: {startNode} , local {start.transform.localPosition},\n finishNode: {finishNode}, local {finish.transform.localPosition}\n difference: {Math.Sqrt(/*Math.Pow(lastActionPosition.x - startNode.x, 2) +*/ Math.Pow(lastActionPosition.z - startNode.z, 2))}");
             yield return new WaitForSeconds(3.0f);
         }
 
@@ -1583,6 +1583,16 @@ public class PlayerHelperController : MonoBehaviour
                         {
                             if (graphNode.Action.Name == "Start" || graphNode.Action.Name == "Finish")
                             {
+                                /* startNode: (-5.89, 10.26, 17.24),
+                                finishNode: (4.51, 10.26, 17.24)*/
+                                if (graphNode.Action.Name == "Start")
+                                {
+                                    graphNode.gameObject.transform.position = new Vector3(-5.89f, 10.26f + 2.0f, 17.24f);
+                                }
+                                else
+                                {
+                                    graphNode.gameObject.transform.position = new Vector3(4.51f, 10.26f + 2.0f, 17.24f);
+                                }
                                 continue;
                             }
                             // remove the action from the partial plan
