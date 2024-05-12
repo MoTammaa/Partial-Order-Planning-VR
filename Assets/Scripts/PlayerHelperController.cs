@@ -1579,12 +1579,30 @@ public class PlayerHelperController : MonoBehaviour
                     // check for trash actions
                     foreach (var graphNode in POPEngineDriverController.Graph.GraphNodes.Values)
                     {
+                        if (graphNode.gameObject.transform.position.y < 8)
+                        {
+                            if (graphNode.Action.Name == "Start" || graphNode.Action.Name == "Finish")
+                            {
+                                /* startNode: (-5.89, 10.26, 17.24),
+                                finishNode: (4.51, 10.26, 17.24)*/
+                                if (graphNode.Action.Name == "Start")
+                                {
+                                    graphNode.gameObject.transform.position = new Vector3(-5.89f, 10.26f + 2.0f, 17.24f);
+                                }
+                                else
+                                {
+                                    graphNode.gameObject.transform.position = new Vector3(4.51f, 10.26f + 1.0f, 17.24f);
+                                }
+                                continue;
+                            }
+                        }
                         if (graphNode.gameObject.transform.position.y < 0)
                         {
                             if (graphNode.Action.Name == "Start" || graphNode.Action.Name == "Finish")
                             {
                                 /* startNode: (-5.89, 10.26, 17.24),
                                 finishNode: (4.51, 10.26, 17.24)*/
+                                graphNode.gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
                                 if (graphNode.Action.Name == "Start")
                                 {
                                     graphNode.gameObject.transform.position = new Vector3(-5.89f, 10.26f + 2.0f, 17.24f);
