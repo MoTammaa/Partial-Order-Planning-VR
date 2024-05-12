@@ -53,7 +53,7 @@ public class NotebookController : MonoBehaviour
         // get the distance between the player and the notebook
         float distance = Vector3.Distance(playerPosition, notebookPosition);
         // if the player is close to the notebook and the notebook is not opening or closing then open the notebook
-        if (distance < 3.5 && !Opening && !Opened)
+        if (distance < 4.2 && !Opening && !Opened)
         {
             print("Opening");
             //if closing, stop closing
@@ -68,7 +68,7 @@ public class NotebookController : MonoBehaviour
             yield return StartCoroutine(OpenNotebook());
         }
         // if the player is far from the notebook and the notebook is not opening or closing then close the notebook
-        else if (distance > 3.5 && !Closing && !Closed)
+        else if (distance > 4.2 && !Closing && !Closed)
         {
             print("Closing");
             // if opening, stop opening

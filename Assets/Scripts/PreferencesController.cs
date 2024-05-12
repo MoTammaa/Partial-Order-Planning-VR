@@ -22,7 +22,14 @@ public class PreferencesController : MonoBehaviour
     void Start()
     {
         DepthLimitCanvas = GameObject.Find("Strategy Menu").transform.Find("Depth Menu").gameObject;
-        SetMode("Creative");
+        if (PlayerPrefs.HasKey("Mode"))
+        {
+            SetMode(PlayerPrefs.GetString("Mode"));
+        }
+        else
+        {
+            SetMode("Creative");
+        }
         if (DepthLimitCanvas == null)
         {
             print("DepthLimitCanvas is null");
@@ -197,6 +204,18 @@ public class PreferencesController : MonoBehaviour
     {
         // hide the unrelevant buttons
         GameObject Buttons = GameObject.Find("Strategy Menu").transform.Find("BodyTitle").Find("BodyCanvas").Find("Buttons").gameObject;
+        // save the recommended depth to the playerprefs as DepthLimit if the depth is not set
+        if (PlayerPrefs.HasKey("RecommendedDepthForDFS") && !PlayerPrefs.HasKey("DepthLimit"))
+        {
+            PlayerPrefs.SetInt("DepthLimit", PlayerPrefs.GetInt("RecommendedDepthForDFS"));
+        }
+        else if (PlayerPrefs.HasKey("RecommendedDepthForDFS"))
+        {
+            if (PlayerPrefs.GetInt("DepthLimit") < PlayerPrefs.GetInt("RecommendedDepthForDFS"))
+            {
+                PlayerPrefs.SetInt("DepthLimit", PlayerPrefs.GetInt("RecommendedDepthForDFS"));
+            }
+        }
         foreach (Transform button in Buttons.transform)
         {
             if (button.name != searchStrategy)
@@ -212,9 +231,9 @@ public class PreferencesController : MonoBehaviour
         // hide the Strategy Menu
         GameObject.Find("Strategy Menu")?.SetActive(false);
         // hide the Planning Problem Menu
-        GameObject.Find("Planning Problem Menu").SetActive(false);
+        GameObject.Find("Planning Problem Menu")?.SetActive(false);
         // hide the Ready Menu
-        GameObject.Find("Ready Menu").SetActive(false);
+        GameObject.Find("Ready Menu")?.SetActive(false);
 
         // Get EngineStart object and enable the disabled POPEngineDriverController script
         GameObject.Find("EngineStart").GetComponent<POPEngineDriverController>().enabled = true;

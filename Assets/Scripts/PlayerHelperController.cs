@@ -776,18 +776,22 @@ public class PlayerHelperController : MonoBehaviour
         gameObjects["AgendaCanvas"].SetActive(true);
 
         // wait till it is near the graph nodes (start or finish) then link it
-        Vector3 startNode = Actions.transform.Find("Start").transform.position;
-        Vector3 finishNode = Actions.transform.Find("Finish").transform.position;
+        GameObject start = GameObject.Find("Start");
+        GameObject finish = GameObject.Find("Finish");
+        Vector3 startNode = start.transform.position;
+        Vector3 finishNode = finish.transform.position;
         lastActionPosition = operatorBlock.transform.position;
 
         print("waiting");
         // set ArrowController.stage to GraphArea
         ArrowsController.stage = ArrowsController.Stage.GraphArea;
-        while (Math.Sqrt(Math.Pow(lastActionPosition.x - startNode.x, 2) + Math.Pow(lastActionPosition.z - startNode.z, 2)) > 7.0f &&
-               Math.Sqrt(Math.Pow(lastActionPosition.x - finishNode.x, 2) + Math.Pow(lastActionPosition.z - finishNode.z, 2)) > 7.0f)
+        while (Math.Sqrt(/*Math.Pow(lastActionPosition.x - startNode.x, 2) +*/ Math.Pow(lastActionPosition.z - startNode.z, 2)) > 7.0f &&
+               Math.Sqrt(/*Math.Pow(lastActionPosition.x - finishNode.x, 2) +*/ Math.Pow(lastActionPosition.z - finishNode.z, 2)) > 5.0f)
         {
             lastActionPosition = operatorBlock.transform.position;
-            print($"lastActionPosition: {lastActionPosition}, startNode: {startNode}, difference: {Math.Sqrt(Math.Pow(lastActionPosition.x - startNode.x, 2) + Math.Pow(lastActionPosition.z - startNode.z, 2))}");
+            startNode = start.transform.position;
+            finishNode = finish.transform.position;
+            print($"lastActionPosition: {lastActionPosition}, startNode: {startNode}, difference: {Math.Sqrt(/*Math.Pow(lastActionPosition.x - startNode.x, 2) +*/ Math.Pow(lastActionPosition.z - startNode.z, 2))}");
             yield return new WaitForSeconds(3.0f);
         }
 

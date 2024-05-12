@@ -44,6 +44,21 @@ public class POPEngineDriverController : MonoBehaviour
     public static bool IsSteamVRMenuButtonPressedDown { get; set; } = false;
 
     /// <summary>
+    /// Gets whether the SteamVR Grip button is pressed or not.
+    /// </summary>
+    public static bool IsSteamVRGripButtonPressedDown { get; set; } = false;
+
+    /// <summary>
+    /// Gets whether the Keyboard 'N' key is pressed or not.
+    /// </summary>
+    public static bool IsNKeyPressed { get; set; } = false;
+
+    /// <summary>
+    /// Gets whether the Keyboard 'B' key is pressed or not.
+    /// </summary>
+    public static bool IsBKeyPressed { get; set; } = false;
+
+    /// <summary>
     /// The SteamVR player object.
     /// </summary>
     private static Player player;
@@ -82,6 +97,10 @@ public class POPEngineDriverController : MonoBehaviour
     void Update()
     {
         SetSteamVRMenuButtonPressed();
+        SetSteamVRGripButtonPressed();
+        // SetNKeyPressed();
+        // SetBKeyPressed();
+
     }
 
     #region Methods
@@ -101,6 +120,55 @@ public class POPEngineDriverController : MonoBehaviour
             }
         }
         IsSteamVRMenuButtonPressedDown = false;
+        return false;
+    }
+
+    /// <summary>
+    /// Gets whether the SteamVR Grip button is pressed or not.
+    /// </summary>
+    /// <returns>True if the SteamVR Grip button is pressed, False otherwise.</returns>
+    public static bool SetSteamVRGripButtonPressed()
+    {
+        foreach (Hand hand in player.hands)
+        {
+            if (SteamVR_Actions._default.GrabGrip.GetStateDown(hand.handType))
+            {
+                IsSteamVRGripButtonPressedDown = true;
+                return true;
+            }
+        }
+        IsSteamVRGripButtonPressedDown = false;
+        return false;
+    }
+
+
+    /// <summary>
+    /// Gets whether the Keyboard 'N' key is pressed or not.
+    /// </summary>
+    /// <returns>True if the Keyboard 'N' key is pressed, False otherwise.</returns>
+    public static bool SetNKeyPressed()
+    {
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            IsNKeyPressed = true;
+            return true;
+        }
+        IsNKeyPressed = false;
+        return false;
+    }
+
+    /// <summary>
+    /// Gets whether the Keyboard 'B' key is pressed or not.
+    /// </summary>
+    /// <returns>True if the Keyboard 'B' key is pressed, False otherwise.</returns>
+    public static bool SetBKeyPressed()
+    {
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            IsBKeyPressed = true;
+            return true;
+        }
+        IsBKeyPressed = false;
         return false;
     }
 
@@ -142,6 +210,17 @@ public class POPEngineDriverController : MonoBehaviour
             //     yield return new WaitForSeconds(3);
             // }
             // UpdateNodesText(currentNode is null ? null : currentNode.partialPlan);
+            while (!IsSteamVRMenuButtonPressedDown && !Input.GetKeyDown(KeyCode.N) && currentNode != null)
+            {
+                yield return new WaitForSeconds(0.0001f);
+                if (PlayerPrefs.HasKey("Mode")) if (PlayerPrefs.GetString("Mode") == "Spectator")
+                    {
+                        if (IsSteamVRGripButtonPressedDown || Input.GetKeyDown(KeyCode.B))
+                        {
+                            GenerateNetwork(currentNode.partialPlan);
+                        }
+                    }
+            }
 
             currentNode = POPController.CurrentNode;
             // Display the new Plan
@@ -563,9 +642,9 @@ public class POPEngineDriverController : MonoBehaviour
     /// <returns>-1 if no max depth is found in the player preferences.</returns>
     public static int GetMaxDepthFromPlayerPrefs()
     {
-        if (PlayerPrefs.HasKey("MaxDepth"))
+        if (PlayerPrefs.HasKey("DepthLimit"))
         {
-            return PlayerPrefs.GetInt("MaxDepth");
+            return PlayerPrefs.GetInt("DepthLimit");
         }
         return -1;
     }
