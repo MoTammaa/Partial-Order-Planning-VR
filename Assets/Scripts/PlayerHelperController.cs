@@ -45,8 +45,8 @@ public class PlayerHelperController : MonoBehaviour
             InitAgenda();
             // add the start and finish action nodes to the graph network
             POPEngineDriverController.Graph.CancelForces();
-            GameObject StartNodeObject = gameObjects["AgendaCanvas"].transform.parent.Find("Actions").Find("Start").gameObject;
-            GameObject FinishNodeObject = gameObjects["AgendaCanvas"].transform.parent.Find("Actions").Find("Finish").gameObject;
+            GameObject StartNodeObject = gameObjects["AgendaCanvas"].transform.parent.Find("Actions").Find("StartAction").gameObject;
+            GameObject FinishNodeObject = gameObjects["AgendaCanvas"].transform.parent.Find("Actions").Find("FinishAction").gameObject;
             // Add the actions to the network
             ForceDirectedGraph.DataStructure.Node node = new ForceDirectedGraph.DataStructure.Node(PopController.Planner.PartialPlan.GetActionByName("Start"), popController.Planner.PartialPlan);
             POPEngineDriverController.Network.Nodes.Add(node);
@@ -528,6 +528,7 @@ public class PlayerHelperController : MonoBehaviour
         }
 
         // initialize the OrderingConstraints description text
+        currentOrderingConstraintIndex = 1;
         OrderingConstraintsMoveDown();
     }
 
@@ -776,8 +777,8 @@ public class PlayerHelperController : MonoBehaviour
         gameObjects["AgendaCanvas"].SetActive(true);
 
         // wait till it is near the graph nodes (start or finish) then link it
-        GameObject start = GameObject.Find("Start");
-        GameObject finish = GameObject.Find("Finish");
+        GameObject start = GameObject.Find("StartAction");
+        GameObject finish = GameObject.Find("FinishAction");
         Vector3 startNode = start.transform.position;
         Vector3 finishNode = finish.transform.position;
         lastActionPosition = operatorBlock.transform.position;
@@ -785,13 +786,13 @@ public class PlayerHelperController : MonoBehaviour
         print("waiting");
         // set ArrowController.stage to GraphArea
         ArrowsController.stage = ArrowsController.Stage.GraphArea;
-        while (Math.Sqrt(/*Math.Pow(lastActionPosition.x - startNode.x, 2) +*/ Math.Pow(lastActionPosition.z - startNode.z, 2)) > 7.0f &&
-               Math.Sqrt(/*Math.Pow(lastActionPosition.x - finishNode.x, 2) +*/ Math.Pow(lastActionPosition.z - finishNode.z, 2)) > 5.0f)
+        while (Math.Sqrt(/*Math.Pow(lastActionPosition.x - startNode.x, 2) +*/ Math.Pow(lastActionPosition.z - startNode.z, 2)) > 6.2f &&
+               Math.Sqrt(/*Math.Pow(lastActionPosition.x - finishNode.x, 2) +*/ Math.Pow(lastActionPosition.z - finishNode.z, 2)) > 6.2f)
         {
             lastActionPosition = operatorBlock.transform.position;
             startNode = start.transform.position;
             finishNode = finish.transform.position;
-            print($"lastActionPosition: {lastActionPosition}, startNode: {startNode}, difference: {Math.Sqrt(/*Math.Pow(lastActionPosition.x - startNode.x, 2) +*/ Math.Pow(lastActionPosition.z - startNode.z, 2))}");
+            print($"lastActionPosition: {lastActionPosition}, local {operatorBlock.transform.localPosition},\n startNode: {startNode} , local {start.transform.localPosition}, difference: {Math.Sqrt(/*Math.Pow(lastActionPosition.x - startNode.x, 2) +*/ Math.Pow(lastActionPosition.z - startNode.z, 2))}");
             yield return new WaitForSeconds(3.0f);
         }
 
@@ -991,9 +992,9 @@ public class PlayerHelperController : MonoBehaviour
         int oldidx = currentAgendaIndex;
         currentAgendaIndex = Math.Max(currentAgendaIndex - 1, 1);
 
-        // set the next operator button to "#FFFFFF" color
-        GameObject nextAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{oldidx}").gameObject;
-        nextAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
+        // set the previous operator button to "#FFFFFF" color
+        GameObject previousAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{oldidx}").gameObject;
+        previousAgendaButton.GetComponent<UnityEngine.UI.Button>().GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1);
 
         // set the color of the current operator button to "#FF0000" color
         GameObject currentAgendaButton = gameObjects["AgendaButtons"].transform.Find($"B{currentAgendaIndex}").gameObject;
