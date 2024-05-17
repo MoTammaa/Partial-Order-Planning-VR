@@ -131,6 +131,13 @@ The class diagram of the \ac{POP} algorithm presented in \autoref{fig:pop} shows
               \item The \textbf{Planner} class has the \textit{POP()} method that implements the \ac{POP} algorithm. The \textit{POP()} method is responsible for generating the plan by creating a priority queue or stack to store nodes to be used while searching. The \textit{POP()} method also has a loop that iterates over the priority queue or stack until the goal is reached or no nodes are left.
                     For each node, it checks if the node partial plan is not acyclic, if it is not, then it pops the node from the priority queue or stack and continues to the next node. If the partial plan is acyclic, then it checks if the node is a goal node, if it is, then it returns the plan. If the node is not a goal node, then it expands the node by applying the applicable actions to the node.
 
+                    % image of the pop class diagram (POP.png)
+                    \begin{figure}[H]
+                        \centering
+                        \includegraphics[width=0.89\textwidth]{images/POP.png}
+                        \caption[Class Diagram of the POP Algorithm]{Class Diagram of the POP Algorithm}
+                        \label{fig:pop}
+                    \end{figure}
               \item The \textit{EXPAND()} method is responsible for expanding the node. It first chooses a pair of ($action$, $precondition$) from the $agenda$ based on some heuristic. The heuristic that I chose is to prioritize the pair with the precondition that has the least number of achievers, and this will be discussed in more details later in this section in the \textbf{Agenda} class implementation. Then, after selecting a pair of ($action$, $precondition$), the \textit{POP()} method gets the achievers by gathering the existing actions and new operators that can achieve this precondition, and for each achiever, it creates a new node applies this achiever to it and then adds this node to the main queue or stack.
 
               \item The \textbf{POP} method also has a helper method called \textit{ApplyAchiever()} that applies the achiever to the node. The \textit{ApplyAchiever()} method works by unifying the achiever's effect with the precondition of the action, then it adds the binding constraints to the partial plan of the node, and then it adds the causal link to the partial plan, as well as updating the ordering constraints with the achiever being ordered before the action with the precondition we are trying to achieve. It also checks whether the achiever is an existing action or a new action, so that if it is a new action, it adds it to the partial plan, update its ordering constraints to be between the \textit{Start} and \textit{Finish} actions, and adds the new action's preconditions to the agenda.
@@ -162,7 +169,7 @@ The class diagram of the \ac{POP} algorithm presented in \autoref{fig:pop} shows
 
           As for the \textbf{equality constraints} between the variables, I used a \textit{Disjoint Sets} representation. \textbf{Disjoint Sets} data structure is a set of elements partitioned into a number of non-overlapping subsets\cite{WikiDisjointSet}\cite{GeeksForGeeksDisjointSet}. The main reason for using a \textit{Disjoint Set} is that it is efficient in terms of time complexity. The implementation used in this project uses the \textit{Union-Find} algorithm to merge the sets and find the representative of the set, in other words, the constant term that is bound to the variable, or a variable if no constant term is bound to it. The \textit{Union-Find} implementation guarantees a time complexity of $O(\log n)$, where $n$ is the number of variables in the partial plan. This number may be large for some problems as the planner uses an incremented counter to generate new variables in action's parameters, as well as in the effects and preconditions of the actions. This number continues to grow as the planner decides to backtrack and generate new actions. Besides the time complexity, the \textit{Disjoint Set} was chosen because for all equal variables in a set, it will always have the same root, which is the representative of the set, which can make things easier to trace for humans.
 
-          Using both data structures, the \textit{Dictionary} and the \textit{Disjoint Set}, the planner can easily check if there exists some logical contradiction in the binding constraints. For example, if there is a variable $x$ that is bound equal to a variable $y$, and $y$ is bound equal to a third variable $z$, then another constraint that makes $x$ not equal to $z$ is added direcly or indirectly, then the \textbf{BindingConstraints} class can easily detect this contradiction and stop the search.
+          Using both data structures, the \textit{Dictionary} and the \textit{Disjoint Set}, the planner can easily check if there exists some logical contradiction in the binding constraints. For example, if there is a variable $x$ that is bound equal to a variable $y$, and $y$ is bound equal to a third variable $z$, then another constraint that makes $x$ not equal to $z$ is added directly or indirectly, then the \textbf{BindingConstraints} class can easily detect this contradiction and stop the search.
 
     \item \textbf{CausalLink Class:} \\
           The \textbf{CausalLink} class is responsible for representing the causal links that are used in the partial plan. The exact definition of a causal link is discussed in the definition in Section \ref{def:causal_link}. The \textbf{CausalLink} class has a \textit{LinkCondition} of type \textit{Literal}, a \textit{Produceri} of type \textit{Action}, and a \textit{Consumerj} of type \textit{Action}.
@@ -173,18 +180,11 @@ The class diagram of the \ac{POP} algorithm presented in \autoref{fig:pop} shows
 
 \end{itemize}
 
-% image of the pop class diagram (POP.png)
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.9\textwidth]{images/POP.png}
-    \caption[Class Diagram of the POP Algorithm]{Class Diagram of the POP Algorithm}
-    \label{fig:pop}
-\end{figure}
 
 % showing the results and outputs of running the code
 \subsection{POP Terminal Output} \label{subsec:pop_output}
 
-The \ac{POP} algorithm was tested using the \textit{Socks and Shoes problem}, the \textit{Milk, Bananas, and Cordless Drill problem}, the \textit{Groceries Buying problem}, the \textit{Spare Tires problem}, and some other custom problems. The \ac{POP} algorithm was able to find the optimal solution for all the problems that were tested.
+The \ac{POP} algorithm was tested using the \textit{Socks and Shoes problem}, the \textit{Milk, Bananas, and Cordless Drill problem}, the \textit{Groceries Buying problem}, the \textit{Spare Tires problem}, and some other custom problems. The \ac{POP} algorithm was able to find the optimal solution for all the problems that were tested. Next, we will show the output for the \textit{Milk, Bananas, and Cordless Drill problem} and the \textit{Spare Tires problem}.
 
 \subsubsection{Milk, Bananas, and Cordless Drill Problem} \label{subsubsec:milk_bananas_cordless_drill_output}
 The \textit{Milk, Bananas, and Cordless Drill problem} is a problem where the agent needs to buy milk and bananas from the supermarket and go to the hardware store to buy a cordless drill. Now let's see the input to the planner in \autoref{code:milk_bananas_cordless_drill_input}:
@@ -334,6 +334,105 @@ Ordering Constraints: (Start() < Finish()), (Start() < PutOn(Spare, Axle)), (Put
 
 RunTime: 00.520 seconds
 \end{lstlisting}
+
+
+
+% --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Virtual Reality Game} \label{sec:vr_game}
+The \ac{POP} algorithm was visualized using a \ac{VR} game that was developed using the Unity game engine. The \ac{VR} game was developed to allow the user to interact with the \ac{POP} algorithm and try to be the planner himself, or just watch the algorithm looping through the actions and causal links to find the optimal plan. The \ac{VR} game was developed to be used with the HTC Vive \ac{VR} headset and the Vive controllers. In this section, we will discuss the design and implementation of the \ac{VR} game, how every object of the algorithm was visualized, and how the user can interact with the game.
+
+\subsection{Plugins, Devices and Setup} \label{subsec:plugins_devices_setup}
+The \ac{VR} game was developed using the Unity game engine version 2020.3.20f1 \ac{LTS}. The game was targeted to be used with the HTC Vive Pro \ac{VR} headset and the Vive controllers. The Vive Pro was released in 2018 as an upgrade to the original HTC Vive headset, and has a resolution of 1440 x 1600 pixels per eye\cite{WikiHTCVive}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/htc_vive_pro_full.PNG}
+    \caption[HTC Vive Pro]{HTC Vive Pro \cite{ViveProFullKit}}
+    \label{fig:htc_vive_pro}
+\end{figure}
+
+The \ac{VR} game was developed using the SteamVR plugin version 2.8.0, which is a plugin developed by Valve Corporation that allows the Unity game engine to interact with the HTC Vive \ac{VR} headset and the Vive controllers. The SteamVR plugin provides the necessary scripts and prefabs to interact with the \ac{VR} headset and the controllers. The SteamVR plugin also provides the necessary scripts to interact with the \ac{VR} camera rig, which is the main camera that is used to render the \ac{VR} scene. SteamVR uses the OpenVR SDK, which is a software development kit developed by Valve Corporation that serves as the interface between the \ac{VR} hardware and the game engine\cite{WikiOpenVR}.
+
+
+\subsection{Visualization of the Elements} \label{subsec:visualization_elements}
+
+The \ac{VR} game was developed to visualize the elements of the \ac{POP} algorithm, which are the actions, the causal links, the binding constraints, the ordering constraints, and the whole plan as a \acf{DAG}. The visualization of the elements was done using the Unity game engine, the SteamVR plugin and some external assets and scripts. The following list will discuss how each element was visualized in the \ac{VR} game:
+
+\begin{itemize}
+    \item \textbf{Actions/Operators:} \\
+          The actions or the operators were visualized as children building blocks. Each action was represented as a building block with the name of the action written on the block, and the preconditions and effects of the action were written on the sides of the block. The \textit{Start()} and \textit{Finish()} actions were represented as a yellow block. New actions were represented as a green block, and existing actions were represented as a red block. When the user is creating the plan, he can create new actions, interact with them, and move them around in the scene.
+
+          \begin{figure}[H]
+              \centering
+              \includegraphics[width=0.9\textwidth]{images/VR_Actions_Links.png}
+              \caption[Actions and Causal Links in VR]{Actions and Causal Links in VR}
+              \label{fig:vr_actions_links}
+          \end{figure}
+
+    \item \textbf{Causal Links:} \\
+          The causal links were visualized as lines connecting the producer action to the consumer action. The links were represented as chains with an arrow-like object in the middle of the chain that had the link conditions written on it. A link sample is shown in \autoref{fig:vr_actions_links}.
+
+          \begin{figure}[H]
+              \centering
+              \includegraphics[width=0.5\textwidth]{images/Agenda.jpg}
+              \caption[Agenda in VR]{Agenda in VR}
+              \label{fig:vr_agenda}
+          \end{figure}
+
+    \item \textbf{Agenda:} \\
+          The agenda was visualized as an actual agenda that the user can interact with. The agenda had the actions and the preconditions that need to be achieved. The user can interact with the agenda by selecting the action that he wants to achieve, and then it will get the list of possible achievers for this action, whether they are existing actions or new actions.
+
+    \item \textbf{Threats:} \\
+          The threats were always being checked in the background, and if a threat was found, the user would be notified with an emergency sound and a red alarm\cite{3DAlarmLight} light placed on a computer screen in the scene. The user can then interact with the computer screen and a keyboard to see the threats and resolve them.
+
+          \begin{figure}[H]
+              \centering
+              \begin{minipage}{0.48\textwidth}
+                  \centering
+                  \includegraphics[width=\textwidth]{images/Threats1.png}
+                  \caption[Threats in VR]{Threats Computer Desk}
+                  \label{fig:vr_threats}
+              \end{minipage}\hfill
+              \begin{minipage}{0.48\textwidth}
+                  \centering
+                  \includegraphics[width=\textwidth]{images/Threats2.png}
+                  \caption[Threats in VR]{Threats Alert}
+                  \label{fig:vr_threats2}
+              \end{minipage}
+          \end{figure}
+
+    \item \textbf{Auto Graph Layout:} \\
+          The \ac{DAG} of the plan was visualized using the \textit{Force Directed Graph} algorithm. \textit{Force Directed Graph} is an algorithm that is used to visualize graphs in a 2D or 3D space. The algorithm uses forces to simulate the physical behavior of the nodes and the edges of the graph. The algorithm was used to show the user the final plan and the intermediate steps that the planner went through as a floating graph in the scene.
+
+          The implementation of the \textit{Force Directed Graph} algorithm was mainly inspired by the implementation in the GitHub repository, \textit{Force-Directed-Graph}, of the Ph.D. candidate, \textit{Omar Addam}, that is under the MIT license\cite{GitHubFDG}. The code was modified to fit the needs of the \ac{VR} game and the \ac{POP} algorithm, as the original implementation was visualized using a 2D view in Unity3D and was designed to use the mouse to interact with 2D image nodes. The modified implementation was designed to use the Vive controllers to interact with the 3D nodes in the \ac{VR} game and to carry all needed data to synchronize the \ac{POP} algorithm with the graph.           A snapshot of the \textit{Force Directed Graph} in the \ac{VR} game is shown in \autoref{fig:vr_dag}.
+
+          \begin{figure}[H]
+              \centering
+              \includegraphics[width=0.5\textwidth]{images/snapshot_of_spectator.png}
+              \caption[Force Directed Graph in VR]{Floating Force Directed Graph (Spectator View)}
+              \label{fig:vr_dag}
+          \end{figure}
+
+    \item \textbf{Game Starting Environment:} \\
+          The game starting environment was designed to look like an old temple with some ancient artifacts. The user starts the game in the temple, and then he can teleport to the different options in the game, where he can choose some properties of the planner before starting the game. The exact options that the user can choose are discussed in later sections. A top view of the game starting environment is shown in \autoref{fig:vr_pre_environment}.
+
+          \begin{figure}[h]
+              \centering
+              \includegraphics[width=0.8\textwidth]{images/Enviroment1.png}
+              \caption[Game Starting Environment in VR]{Game Starting Environment Top View}
+              \label{fig:vr_pre_environment}
+          \end{figure}
+
+    \item \textbf{Main Game Environment:} \\
+          The main game environment was designed to look like a grass open area with some trees and mountains in the background. The graph area, where the user can see or even construct the plan, was marked by yellow sand color. The environment has a computer desk with a screen that shows the threats, the agenda, two menus to delete links or ordering constraints, and other options. A top view of the main game environment is shown in \autoref{fig:vr_main_environment}.
+
+          \begin{figure}[h]%TODO take a better screenshot
+              \centering
+              \includegraphics[width=0.8\textwidth]{images/Enviroment2.png}
+              \caption[Main Game Environment in VR]{Main Game Environment Top View}
+              \label{fig:vr_main_environment}
+          \end{figure}
+\end{itemize}
 
 
 
