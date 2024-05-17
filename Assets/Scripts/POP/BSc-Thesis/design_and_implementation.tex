@@ -382,6 +382,15 @@ The \ac{VR} game was developed to visualize the elements of the \ac{POP} algorit
     \item \textbf{Agenda:} \\
           The agenda was visualized as an actual agenda that the user can interact with. The agenda had the actions and the preconditions that need to be achieved. The user can interact with the agenda by selecting the action that he wants to achieve, and then it will get the list of possible achievers for this action, whether they are existing actions or new actions.
 
+    \item \textbf{Ordering Constraints:} \\
+          The ordering constraints were visualized as lines connecting the actions with a blue arrow-like object in the middle of the line that had the ordering constraints written on it. An ordering constraint sample is shown in \autoref{fig:vr_ordering_constraints}.
+          \begin{figure}[H]
+              \centering
+              \includegraphics[width=0.3\textwidth]{images/ordering_constraints.png}
+              \caption[Ordering Constraints in VR]{Ordering Constraints in VR}
+              \label{fig:vr_ordering_constraints}
+          \end{figure}
+
     \item \textbf{Threats:} \\
           The threats were always being checked in the background, and if a threat was found, the user would be notified with an emergency sound and a red alarm\cite{3DAlarmLight} light placed on a computer screen in the scene. The user can then interact with the computer screen and a keyboard to see the threats and resolve them.
 
@@ -414,7 +423,7 @@ The \ac{VR} game was developed to visualize the elements of the \ac{POP} algorit
           \end{figure}
 
     \item \textbf{Game Starting Environment:} \\
-          The game starting environment was designed to look like an old temple with some ancient artifacts. The user starts the game in the temple, and then he can teleport to the different options in the game, where he can choose some properties of the planner before starting the game. The exact options that the user can choose are discussed in later sections. A top view of the game starting environment is shown in \autoref{fig:vr_pre_environment}.
+          The game starting environment was designed to look like an old temple with some ancient artifacts. The user starts the game in the temple, and then he can teleport to the different options in the game, where he can choose some properties of the planner before starting the game. The exact options that the user can choose are discussed in later sections. A top view of the game starting environment is shown in \autoref{fig:vr_pre_environment}.\\
 
           \begin{figure}[h]
               \centering
@@ -435,5 +444,137 @@ The \ac{VR} game was developed to visualize the elements of the \ac{POP} algorit
 \end{itemize}
 
 
+\subsection{User Interaction} \label{subsec:user_interaction}
+The user can interact with the \ac{VR} game using the HTC Vive controllers or the mouse and the keyboard in case of using a simulated \ac{VR} environment. The main interactions that the user can do in the game are as follows:
+
+\begin{itemize}
+    \item \textbf{Teleportation:} \\
+          The user can teleport to different locations in the game by pressing the touchpad of the Vive controller. The user can point anywhere, where teleport markers are put in the game, then leave the teleport button to teleport there. The teleportation was implemented using the SteamVR plugin. In the case of using the simulated \ac{VR} environment, the user can either use the arrow keys to move around or use the button \textit{T} to mimic the Vive controller teleportation.
+
+    \item \textbf{Interacting with Buttons:} \\
+          The user can interact with buttons in the game by approaching the button and pressing the trigger button of the Vive controller when the button is highlighted. In the case of using the simulated \ac{VR} environment, the user can use the mouse to click on the buttons.
+
+    \item \textbf{Interacting with Interactables:} \\
+          The user can interact interactables in the game by approaching the interactable and pressing the trigger button of the Vive controller when the interactable is highlighted. If the interactable can be held or moved, the user can hold the trigger button and move the interactable around in the scene. Usually, there are limitations from the SteamVR plugin that the user cannot hold the interactable and teleport at the same time, so the user can simply hold the interactable with one controller and teleport with the other. In the case of using the simulated \ac{VR} environment, the user can use the mouse to click on the interactables and drag them around. The right mouse button can be used to rotate the camera view.
+\end{itemize}
+
+\subsection{Game Walkthrough} \label{subsec:game_walkthrough}
+This section will discuss the walkthrough of the \ac{VR} game, the options that the user can choose, and how the user can interact with the game. This section will also discuss the different modes that the user can choose to interact with the graph.
+
+\subsubsection{Pre-Game Options} \label{subsubsec:pre_game_options}
+
+The user starts the game in the temple environment, where he can choose some options before starting the game. This stage is called the \textit{Pre-Game Options}. The user can choose the following options:
+
+\begin{itemize}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{images/name_menu.png}
+        \caption[Name Entering Menu in VR]{Name Entering Menu in VR}
+        \label{fig:vr_name_entering_menu}
+    \end{figure}
+    \item \textbf{Name Entering Menu:} \\
+          The first menu that the user encounters is the \textit{Name Entering Menu}, where the user can enter his name. The user can enter his name using the keyboard that is placed in front of him inside the scene. The user can then press the \textit{Done} button to save his name.
+
+          \begin{figure}[H]
+              \centering
+              \includegraphics[width=0.4\textwidth]{images/mode_menu.png}
+              \caption[Mode Selection Menu in VR]{Mode Selection Menu}
+              \label{fig:vr_mode_selection_menu}
+          \end{figure}
 
 
+    \item \textbf{Mode Selection Menu:} \\
+          The second menu that the user encounters is the \textit{Mode Selection Menu}, where the user can choose the mode that he wants to play in. The user can choose between the \textit{Creative Mode} and the \textit{Spectator Mode}.
+
+          The \textit{Creative Mode} allows the user to be the planner, where he can check the agenda, create new actions and delete them, create new causal links and delete them, and check the threats and resolve them. The user has full control over the planner in this mode, while given some guidance from the planner, helping with the bindings and suggesting achievers.
+
+          The \textit{Spectator Mode} allows the user to watch the planner working on the plan, applying achievers, resolving threats, backtracking from wrong decisions, and finally finding the optimal plan. The user can only watch the planner in this mode, and the only interactions that the user can do are starting or pausing the planner to check the new steps, and teleporting around the scene to see the plan from different angles.
+
+    \item \textbf{Planning Problem Selection Menu:} \\
+          The third menu that the user sees is the \textit{Planning Problem Selection Menu}, where the user can choose the planning problem that he wants to solve or watch the planner solving. The user can choose between the \textit{Socks and Shoes problem}, the \textit{Milk, Bananas, and Cordless Drill problem}, the \textit{Groceries Buying problem} and the \textit{Spare Tires problem}. When the user chooses the planning problem, the initial state, the goal state, and the operators of the problem with their preconditions and effects are shown to the user to the right and left of the \textit{Planning Problem Menu}. The user can explore the problem and understand it before starting the planner.
+
+          \begin{figure}[H]
+              \centering
+              \includegraphics[width=0.7\textwidth]{images/planning_problem.png}
+              \caption[Planning Problem Selection Menu in VR]{Planning Problem Selection Menu}
+              \label{fig:vr_problem_selection_menu}
+          \end{figure}
+
+    \item \textbf{Search Algorithm Selection Menu:} \\
+          The fourth menu that the user sees \textbf{if he chooses the \textit{Spectator Mode}} is the \textit{Search Algorithm Selection Menu}, where the user can choose the search algorithm that he wants to watch the planner using it. The user can choose between \textit{\ac{DFS}}, \textit{\ac{BFS}} and \textit{\ac{A*} Search}. The user see a brief explanation of each search algorithm and how it works. The user can then choose the search algorithm that he wants to watch the planner using it. If the user chooses the \textit{\ac{DFS}}, another menu will appear and the user will be asked to enter the maximum depth of the search tree that the planner can go through. Entering the maximum depth is important to avoid infinite loops in the search tree. Moreover, the game will suggest a maximum depth based on the planning problem that the user chose.
+
+          \begin{figure}[H]
+              \centering
+              \includegraphics[width=0.6\textwidth]{images/search_strategy.png}
+              \caption[Search Algorithm Selection Menu in VR]{Search Algorithm Selection Menu in VR}
+              \label{fig:vr_search_algorithm_menu}
+          \end{figure}
+
+    \item \textbf{Ready to Start Menu:} \\
+          The last menu that the user sees before starting the game is that he is asked if he is ready to start the planner. When the user confirms that he is ready, the game will start and the planner will start working on the plan, or initializes the environment for the user to start planning.
+
+\end{itemize}
+
+\subsubsection{Spectator Game Environment} \label{subsubsec:spectator_game_environment}
+The user is instructed to go to the main game environment, where he can watch the planner working on the plan. The user can teleport around the scene to see the plan.
+There are two buttons used in the \textit{Vive Controller} to interact with the planner:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/vive_controller.png}
+    \caption[Vive Controller]{Vive Controller\cite{UE4ViveController}}
+    \label{fig:vive_controller}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Menu Button:} \\
+          The user can press the menu button of the Vive controller to let the planner show the next step of the plan. After the planner shows the next step, it will stop and wait for the user to press the menu button again to show the next step.
+
+    \item \textbf{Grip Button:} \\
+          The user can press the grip button of the Vive controller to shuffle the graph nodes. The reason why the user can shuffle the graph nodes is to avoid the nodes or edges from overlapping each other, as the \textit{Force Directed Graph} algorithm may not always give the best layout of the graph. The user can press the grip button multiple times to shuffle the graph nodes until he gets a better layout of the graph.
+\end{itemize}
+
+
+\subsubsection{Creative Game Environment} \label{subsubsec:creative_game_environment}
+When the user chooses the \textit{Creative Mode}, he is instructed to go to the main game environment, where he can start planning. The user can check the agenda, create new actions, throw actions in the trash and delete them, create new causal links, delete causal links and ordering constraints, check the threats, and resolve the threats. The user can also interact with the graph and move the nodes around to get a better layout of the graph. In this mode, the graph is not floating in the scene, but it is placed on the yellow sand area in the scene to be more easier for the user to interact with the graph. The following list will discuss the interactions that the user can do in the \textit{Creative Mode}:
+
+\begin{itemize}
+    \item \textbf{Agenda:} \\
+          The user can check the agenda by approaching the agenda and then the agenda will automatically open. The user can then select the pair of action and preconditions that he wants to achieve, and then the planner will suggest the possible achievers for this action. The user can then choose between creating a new action or selecting an existing action to achieve the preconditions. The agenda will give the feedback to the user if he chose an existing action that cannot unify or bind the preconditions, or if he chose to link an action that will cause the graph to have a cycle. (See \autoref{fig:vr_agenda})
+
+    \item \textbf{Actions Spawn Point} \\
+          If the user chooses to create a new action as an achiever for the preconditions, he can go to the \textit{Actions Spawn Point} where the new action will fall from the sky. The user is then asked to take the action and place it in the graph for it to be linked automatically. The user can then move the action around in the scene, or throw it in the trash if he does not want to use it. (See \autoref{fig:vr_actions_spawn_point})
+
+          \begin{figure}[h]
+              \centering
+              \includegraphics[width=0.4\textwidth]{images/actions_spawn.png}
+              \caption[Actions Spawn Point in VR]{Actions Spawn Point}
+              \label{fig:vr_actions_spawn_point}
+          \end{figure}
+
+    \item \textbf{Trash:} \\
+          If the user wants to delete an action, he can go to the \textit{Trash} and throw the action in the trash. The action will then be deleted from the graph. If the user decides to delete an action that has causal links, the causal links will also be deleted. The \textit{Start()} and \textit{Finish()} actions will be respawned back in the scene if they are thrown in the trash, as they are essential for the planner to work. (See \autoref{fig:vr_trash})
+
+          \begin{figure}[h]
+              \centering
+              \includegraphics[width=0.4\textwidth]{images/trash.png}
+              \caption[Trash in VR]{Actions Trash}
+              \label{fig:vr_trash}
+          \end{figure}
+
+    \item \textbf{Causal Links and Ordering Constraints Deletion:} \\
+          The user can delete causal links and ordering constraints by going to any of the causal links or ordering constraints menus and selecting the link or constraint that he wants to delete. The user can then press the delete button to delete the link or constraint. (See \autoref{fig:vr_causal_links_ordering_constraints_menu})
+
+          \begin{figure}[h]
+              \centering
+              \includegraphics[width=0.5\textwidth]{images/delete_links_order.png}
+              \caption[Causal Links and Ordering Constraints Menu in VR]{Causal Links and Ordering Constraints Menu}
+              \label{fig:vr_causal_links_ordering_constraints_menu}
+          \end{figure}
+
+    \item \textbf{Threats Desk:} \\
+          When the user is notified with a threat, he can go to the \textit{Threats Desk} and interact with the computer screen to see the threats and resolve them. The user is notified with an emergency sound and a red alarm light placed on the computer desk. The user is asked to resolve the threats before continuing with the planner. All agenda actions will be disabled until the threats are resolved. There are four ways to resolve the threats, the user can either delete the action that causes the threat, delete the causal link that causes the threat, promote the action that is threatening the link, or demote the action that is threatened by the link. The user can use the in-game keyboard to either press \textit{P} to promote the action or \textit{D} to demote the action.
+          (See Figures \ref{fig:vr_threats} and \ref{fig:vr_threats2})
+
+
+\end{itemize}
