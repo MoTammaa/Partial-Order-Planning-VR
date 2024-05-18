@@ -351,7 +351,7 @@ The \ac{VR} game was developed using the Unity game engine version 2020.3.20f1 \
     \label{fig:htc_vive_pro}
 \end{figure}
 
-The \ac{VR} game was developed using the SteamVR plugin version 2.8.0, which is a plugin developed by Valve Corporation that allows the Unity game engine to interact with the HTC Vive \ac{VR} headset and the Vive controllers. The SteamVR plugin provides the necessary scripts and prefabs to interact with the \ac{VR} headset and the controllers. The SteamVR plugin also provides the necessary scripts to interact with the \ac{VR} camera rig, which is the main camera that is used to render the \ac{VR} scene. SteamVR uses the OpenVR SDK, which is a software development kit developed by Valve Corporation that serves as the interface between the \ac{VR} hardware and the game engine\cite{WikiOpenVR}.
+The \ac{VR} game was developed using the SteamVR plugin version 2.8.0, which is a plugin developed by Valve Corporation that allows the Unity game engine to interact with the HTC Vive \ac{VR} headset and the Vive controllers. The SteamVR plugin provides the necessary scripts and prefabs to interact with the \ac{VR} headset and the controllers. The plugin also provides the necessary scripts to interact with the \ac{VR} camera rig, which is the main camera that is used to render the \ac{VR} scene. SteamVR uses the OpenVR SDK, which is a software development kit developed by Valve Corporation that serves as the interface between the \ac{VR} hardware and the game engine\cite{WikiOpenVR}.
 
 
 \subsection{Visualization of the Elements} \label{subsec:visualization_elements}
@@ -459,7 +459,17 @@ The user can interact with the \ac{VR} game using the HTC Vive controllers or th
 \end{itemize}
 
 \subsection{Game Walkthrough} \label{subsec:game_walkthrough}
-This section will discuss the walkthrough of the \ac{VR} game, the options that the user can choose, and how the user can interact with the game. This section will also discuss the different modes that the user can choose to interact with the graph.
+This section will discuss the walkthrough of the \ac{VR} game, the options that the user can choose, how the user can interact with the game, and how the game can guide the user. This section will also discuss the different modes that the user can choose to interact with the graph.
+
+\subsubsection{User Path Guidance} \label{subsubsec:user_path_guidance}
+When the user starts the game, he is guided to the temple environment, where he can choose some options before starting the game. The user is guided to the temple environment by a path of green arrows that are placed on the ground. The green arrows are placed in the direction that the user should follow to reach the next step in the game. The arrows guide are shown when the user presses the teleport button of the Vive controller, and they disappear when the user releases the teleport button. The main environment also has some green arrows that guide the user to the agenda, the threats and so on. There are also some yellow arrows that indicate an optional path.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{images/user_guide.png}
+    \caption[User Path Guidance in VR]{User Path Guidance in the Environment}
+    \label{fig:vr_user_guide}
+\end{figure}
 
 \subsubsection{Pre-Game Options} \label{subsubsec:pre_game_options}
 
@@ -545,21 +555,23 @@ When the user chooses the \textit{Creative Mode}, he is instructed to go to the 
     \item \textbf{Actions Spawn Point} \\
           If the user chooses to create a new action as an achiever for the preconditions, he can go to the \textit{Actions Spawn Point} where the new action will fall from the sky. The user is then asked to take the action and place it in the graph for it to be linked automatically. The user can then move the action around in the scene, or throw it in the trash if he does not want to use it. (See \autoref{fig:vr_actions_spawn_point})
 
-          \begin{figure}[h]
-              \centering
-              \includegraphics[width=0.4\textwidth]{images/actions_spawn.png}
-              \caption[Actions Spawn Point in VR]{Actions Spawn Point}
-              \label{fig:vr_actions_spawn_point}
-          \end{figure}
 
     \item \textbf{Trash:} \\
           If the user wants to delete an action, he can go to the \textit{Trash} and throw the action in the trash. The action will then be deleted from the graph. If the user decides to delete an action that has causal links, the causal links will also be deleted. The \textit{Start()} and \textit{Finish()} actions will be respawned back in the scene if they are thrown in the trash, as they are essential for the planner to work. (See \autoref{fig:vr_trash})
-
           \begin{figure}[h]
               \centering
-              \includegraphics[width=0.4\textwidth]{images/trash.png}
-              \caption[Trash in VR]{Actions Trash}
-              \label{fig:vr_trash}
+              \begin{minipage}{0.4\textwidth}
+                  \centering
+                  \includegraphics[width=\textwidth]{images/actions_spawn.png}
+                  \caption[Actions Spawn Point in VR]{Actions Spawn Point}
+                  \label{fig:vr_actions_spawn_point}
+              \end{minipage}\hfill
+              \begin{minipage}{0.4\textwidth}
+                  \centering
+                  \includegraphics[width=\textwidth]{images/trash.png}
+                  \caption[Trash in VR]{Actions Trash}
+                  \label{fig:vr_trash}
+              \end{minipage}
           \end{figure}
 
     \item \textbf{Causal Links and Ordering Constraints Deletion:} \\
@@ -567,7 +579,7 @@ When the user chooses the \textit{Creative Mode}, he is instructed to go to the 
 
           \begin{figure}[h]
               \centering
-              \includegraphics[width=0.5\textwidth]{images/delete_links_order.png}
+              \includegraphics[width=0.6\textwidth]{images/delete_links_order.png}
               \caption[Causal Links and Ordering Constraints Menu in VR]{Causal Links and Ordering Constraints Menu}
               \label{fig:vr_causal_links_ordering_constraints_menu}
           \end{figure}
