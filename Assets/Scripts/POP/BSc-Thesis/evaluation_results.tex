@@ -123,3 +123,40 @@ The results show that the majority of the participants found the \ac{VR} environ
     \caption[]{Participants' response on the POP Algorithm and the VR Environment Feedback Questions 1, 2, and 3 respectively}
     \label{fig:feedback}
 \end{figure}
+
+\subsection{System Usability Scale (SUS) Results}
+% Standard Deviation	s =	11.363463
+% Variance	s2 =	129.12829
+% Count	n =	20
+% Mean	x¯¯¯
+%  =	79.125
+% Sum of Squares	SS =	2453.4375
+
+The results of the \ac{SUS} questionnaire are shown in \autoref{fig:sus_results}. The average \ac{SUS} score was 79.125, which is higher than the average \ac{SUS} score of 68. This indicates that the \ac{VR} environment had good usability, and the participants found it easy to use and engaging. The standard deviation of the \ac{SUS} score was 11.363, which indicates that the participants' opinions were not significantly high or low, and the variance was 129.128, which indicates that the participants' opinions were not significantly different from each other.
+
+
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=0.7\textwidth,
+                height=5cm,
+                ybar,
+                enlargelimits=0.15,
+                legend style={at={(0.5,-0.15)},
+                        anchor=north,legend columns=-1},
+                ylabel={\#Participants},
+                symbolic x coords={0,10,20,30,40,50,60,70,80,90,100},
+                xtick=data,
+                nodes near coords,
+                nodes near coords align={vertical},
+                yticklabel={\pgfmathprintnumber{\tick}},
+            ]
+            \addplot coordinates {(0,0) (10,0) (20,0) (30,0) (40,0) (50,0) (60,2) (70,2) (80,4) (90,8) (100,4)};
+        \end{axis}
+    \end{tikzpicture}
+    \captionsetup{justification=centering}
+    \caption[]{Participants' response on the System Usability Scale (SUS) Questionnaire}
+    \label{fig:sus_results}
+\end{figure}
