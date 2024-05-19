@@ -1,8 +1,7 @@
 \chapter{Background}\label{chap:background}
 %\section{Introduction to Planning}
 Planning in \acf{AI} is a fundamental aspect in the field that allows agents to formulate sequences of actions and strategies
-to achieve a specific goal. It is used in a wide range of fields where agents need to make decisions and take actions based on the
-current state of the environment.
+to achieve a specific goal. It is used in a wide range of fields where agents need to make decisions and take actions based on the current state of the environment
 
 Classical planning is a type of planning that is used in \ac{AI} to solve problems that can be represented as a set of states and actions.
 It deals with straightforward actions \& with predictable and deterministic environments, where the agent can predict the outcome of its actions.
@@ -13,6 +12,10 @@ actions and steps in chronological order.
 Among the different types of planning, we have \textbf{state space planning} %, which is a type of planning that is used in \ac{AI} to solve problems searching through a set of states and actions,
 and \textbf{plan space planning}. (They will be discussed in more details in the Key Definition section \ref{sec:key_definitions}) %, which is a type of planning that is used in \ac{AI} to solve problems searching through a set of partial plans and actions. 
 In this thesis, we will focus on plan space planning, and more specifically on \acf{POP}.
+
+Unity3D is a powerful game engine that is used to develop games, simulations, and virtual reality applications. It provides a lot of tools and features that can be used to create interactive and immersive experiences. \ac{VR} is a type of simulation that is used to create a virtual environment for the user.
+
+In this chapter, we will start by providing some key definitions and concepts that are important to understand the \ac{POP} algorithm. Then, we will provide an overview of the \ac{POP} algorithm, the Unity3D game engine, and the applications of \ac{VR} and how it can be used to visualize the \ac{POP} algorithm.
 
 
 %-----------------------------------------------------------------------------------------------------------------------------------
@@ -335,10 +338,22 @@ The threat resolution mechanism is an essential part of the \ac{POP} algorithm, 
 
 
 \section{Unity 3D Engine} \label{sec:unity3d}
-Unity is a cross-platform game engine developed by Unity Technologies. It was first announced and released in June 2005 at Apple Inc.'s Worldwide Developers Conference as a Mac OS X-exclusive game engine. The engine has since been gradually extended to support more than 25 platforms. It is used to create interactive 2D, 3D, VR, and AR applications. The engine can be used to create both three-dimensional and two-dimensional games as well as simulations for its many platforms. Unity's core advantages are its ease of use, and flexibility. Unity is a powerful engine that is used by developers around the world to create a wide range of games and applications.
+Unity is a cross-platform game engine developed by Unity Technologies. It was first announced and released in June 2005 at Apple Inc.'s Worldwide Developers Conference as a MacOS X-exclusive game engine \cite{WikiUnity}. The engine has since been gradually extended to support more than 25 platforms. It is used to create interactive 2D, 3D, \ac{VR}, and \ac{AR} applications. The engine can be used to create both three-dimensional and two-dimensional games as well as simulations for its many platforms. Unity's core advantages are its ease of use, and flexibility. Unity is a powerful engine that is used by developers around the world to create a wide range of games and applications.
 One of the strongest features of Unity is its built-in physics engine, which allows developers to create realistic physics simulations in their games in a short amount of time.
+
+\subsection{Virtual Reality} \label{subsec:virtual_reality}
+\acf{VR} is a computer-generated simulation of an environment that can be interacted with in a seemingly real or physical way by a person using special electronic equipment \cite{WikiVR}. It has a wide range of applications. An important application of \ac{VR} is in the field of education and training. \ac{VR} was found effective in teaching complex subjects, such as engineering, medicine, and science. It allows students to interact with the subject in a more engaging and immersive way, which can help them better understand the concepts and principles behind the subject \cite{VRapps}\cite{WikiVR}.
+
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=0.4\textwidth]{images/VR.jpg}
+      \caption{Virtual Reality in training and education. \cite{WikiVR}}
+      \label{fig:vr_training}
+\end{figure}
+
+
 \subsection{\acf{VR} in Unity} \label{subsec:vr_in_unity}
-Unity is a popular game engine that is used to create \ac{VR} applications. Unity provides a wide range of tools and features that make it easy to create \ac{VR} experiences. It supports a wide range of \ac{VR} devices, including the Oculus Rift, HTC Vive, and PlayStation \ac{VR}. It also provides a set of tools and APIs that make it easy to create \ac{VR} applications. Unity's \ac{VR} support includes features such as stereoscopic rendering, head tracking, and motion controllers. \acf{VR} now has a wide range of applications, from games and simulations to training and education. It is a powerful tool that allows developers to create immersive and interactive experiences for users.
+Unity is a popular game engine that is used to create \ac{VR} applications. Unity provides a wide range of tools and features that make it easy to create \ac{VR} experiences. It supports a wide range of \ac{VR} devices, including the Oculus Rift, HTC Vive, and PlayStation \ac{VR}. It also provides a set of tools and APIs that make it easy to create \ac{VR} applications. Unity's \ac{VR} support includes features such as stereoscopic rendering, head tracking, and motion controllers.
 \subsection{Visualization of the \acf{POP} Algorithm in Unity} \label{subsec:visualization_pop_unity}
 In this thesis, Unity was used to visualize the \ac{POP} algorithm.
 I created a 3D environment that represents the planning problem, and I used Unity's physics engine to simulate the actions and effects of the operators as a self arranging \ac{DAG} in the plan. I also used Unity's \ac{VR} support to create an immersive \ac{VR} experience that allows users to interact with the planning problem in a virtual environment. The goal of this visualization is to provide a more intuitive and interactive way to understand the \ac{POP} algorithm and how it works for new learners. By visualizing the algorithm in Unity, we hope to make it more accessible and engaging for users, and to help them better understand the concepts and principles behind the \ac{POP} algorithm.
