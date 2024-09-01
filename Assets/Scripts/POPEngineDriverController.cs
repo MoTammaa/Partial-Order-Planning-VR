@@ -81,7 +81,8 @@ public class POPEngineDriverController : MonoBehaviour
                 _Graph = GameObject.Find("GraphView").GetComponent<GraphManager>();
                 SearchStrategy searchStrategy = SearchStrategy.AStar;
                 int maxRecommendedDepth;
-                PlanningProblem planningProblem = PlanningProblem.GroceriesBuyProblem(out maxRecommendedDepth);
+                // PlanningProblem planningProblem = PlanningProblem.GroceriesBuyProblem(out maxRecommendedDepth);
+                PlanningProblem planningProblem = GetPlanningProblemFromPlayerPrefs(out maxRecommendedDepth);
                 StartCoroutine(StartPOPEngine(planningProblem, searchStrategy, maxRecommendedDepth));
             }
             else
@@ -660,21 +661,22 @@ public class POPEngineDriverController : MonoBehaviour
         GB: Groceries Buying Problem
         SP: Spare Tires Problem
     */
-    public static PlanningProblem GetPlanningProblemFromPlayerPrefs()
+    public static PlanningProblem GetPlanningProblemFromPlayerPrefs() { return GetPlanningProblemFromPlayerPrefs(out _); }
+    public static PlanningProblem GetPlanningProblemFromPlayerPrefs(out int RecommendedDepthForDFS)
     {
         if (PlayerPrefs.HasKey("ProblemName"))
         {
             string planningProblem = PlayerPrefs.GetString("ProblemName");
             return planningProblem switch
             {
-                "SS" => PlanningProblem.SocksShoesProblem(out _),
-                "MBCD" => PlanningProblem.MilkBananasCordlessDrillProblem(out _),
-                "GB" => PlanningProblem.GroceriesBuyProblem(out _),
-                "SP" => PlanningProblem.SpareTiresProblem(out _),
-                _ => PlanningProblem.GroceriesBuyProblem(out _) // Default to Groceries Buy Problem
+                "SS" => PlanningProblem.SocksShoesProblem(out RecommendedDepthForDFS),
+                "MBCD" => PlanningProblem.MilkBananasCordlessDrillProblem(out RecommendedDepthForDFS),
+                "GB" => PlanningProblem.GroceriesBuyProblem(out RecommendedDepthForDFS),
+                "SP" => PlanningProblem.SpareTiresProblem(out RecommendedDepthForDFS),
+                _ => PlanningProblem.GroceriesBuyProblem(out RecommendedDepthForDFS) // Default to Groceries Buy Problem
             };
         }
-        return PlanningProblem.GroceriesBuyProblem(out _);
+        return PlanningProblem.GroceriesBuyProblem(out RecommendedDepthForDFS);
     }
 
 
